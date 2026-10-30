@@ -169,7 +169,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['projects', 'built', 'work', 'portfolio', 'showcase', 'apps', 'systems'],
     answer:
-      "Sahil's work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key highlights include [Sahil Recreation](#/projects)—this 3D audio-reactive portfolio engineered with React 18, GSAP, and Web Audio—alongside the browser-based [Web Audio Synth](#/projects).\n\nHe has also developed the [ConnectKit Theme](#/projects) for Web3 wallet onboarding and built [Lurian AI](#/chat) for streaming conversational interfaces. Explore the full interactive gallery in [Projects](#/projects) or browse his code on [GitHub](https://github.com/sahilaw22).",
+      "Sahil's work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key highlights include [Sahil Recreation](#/projects), his 3D audio-reactive portfolio engineered with React 18, GSAP, and Web Audio, alongside the browser-based [Web Audio Synth](#/projects).\n\nHe has also developed the [ConnectKit Theme](#/projects) for Web3 wallet onboarding and built [Lurian AI](#/chat) for streaming conversational interfaces. Explore the full interactive gallery in [Projects](#/projects) or browse his code on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'View Projects', url: '#/projects' },
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
@@ -366,7 +366,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['big block theory', 'reddit', 'growth', 'research', 'analytics'],
     answer:
-      "At **Big Block Theory** (JUL 2026 — PRESENT), Sahil serves as a Reddit Growth & Research Intern. He analyzes user behavior and platform engagement to develop data-driven content formats that drive organic user acquisition.\n\nHe works closely with cross-functional product teams to scale user retention. Learn more in his [Resume](#/careers).",
+      "At **Big Block Theory** (JUL 2026 - PRESENT), Sahil serves as a Reddit Growth & Research Intern. He analyzes user behavior and platform engagement to develop data-driven content formats that drive organic user acquisition.\n\nHe works closely with cross-functional product teams to scale user retention. Learn more in his [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Big Block Theory', 'Growth Strategy', 'Reddit Analytics'],
   },
@@ -381,7 +381,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['flyrank', 'flyrank ai', 'frontend ai', 'streaming', 'llm', 'ranking'],
     answer:
-      "At **FlyRank AI** (JUL 2026 — SEP 2026), Sahil worked as a Frontend AI Intern. He engineered responsive interfaces for AI-driven ranking tools using React, Next.js, TypeScript, and Tailwind CSS.\n\nHis primary contribution was designing real-time streaming chat surfaces and latency-optimized search dashboards. Read more in his [Resume](#/careers).",
+      "At **FlyRank AI** (JUL 2026 - SEP 2026), Sahil worked as a Frontend AI Intern. He engineered responsive interfaces for AI-driven ranking tools using React, Next.js, TypeScript, and Tailwind CSS.\n\nHis primary contribution was designing real-time streaming chat surfaces and latency-optimized search dashboards. Read more in his [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['FlyRank AI', 'React', 'Next.js', 'LLM Streaming'],
   },
@@ -396,7 +396,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['perplexity', 'perplexity ai', 'campus partner', 'ambassador', 'workshops'],
     answer:
-      "At **Perplexity** (SEP 2025 — NOV 2025), Sahil served as a Campus Partner. He spearheaded AI awareness initiatives and organized hands-on developer workshops demonstrating workflow optimization with Perplexity Pro.\n\nHis role focused on helping students and developers integrate AI search engines into their research workflows. Learn more in his [Resume](#/careers).",
+      "At **Perplexity** (SEP 2025 - NOV 2025), Sahil served as a Campus Partner. He spearheaded AI awareness initiatives and organized hands-on developer workshops demonstrating workflow optimization with Perplexity Pro.\n\nHis role focused on helping students and developers integrate AI search engines into their research workflows. Learn more in his [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Perplexity', 'AI Evangelism', 'Perplexity Pro'],
   },

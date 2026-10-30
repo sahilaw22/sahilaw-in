@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
-// Hash-based router — reads window.location.hash and listens for changes.
+// Hash-based router: reads window.location.hash and listens for changes.
 // Returns: { route, navigate }
-//   route    — e.g. '/', '/blog', '/blog/my-slug'
-//   navigate — helper to push a new hash
+//   route: e.g. '/', '/projects', '/resume'
+//   navigate: helper to push a new hash
 export function useHashRouter() {
   function getRoute() {
     const hash = window.location.hash;

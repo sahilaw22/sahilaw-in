@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { PORTFOLIO_EMAIL, openGmailDirect } from '../lib/emailHelper.js';
 
-// Social media icon links — only visible on the home page hero
+// Social media icon links: visible on the home page hero
 export default function SocialIcons() {
   const containerRef = useRef(null);
 

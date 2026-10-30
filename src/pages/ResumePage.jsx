@@ -57,7 +57,7 @@ function FormattedSectionContent({ value }) {
                   <span className="resume-entry-role">{headerParts[0]}</span>
                   {headerParts[1] && (
                     <span className="resume-entry-company">
-                      {' — '}{headerParts[1]}
+                      {' · '}{headerParts[1]}
                       {headerParts[2] && headerParts.length > 3 ? ` · ${headerParts[2]}` : ''}
                     </span>
                   )}

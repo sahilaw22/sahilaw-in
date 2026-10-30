@@ -592,7 +592,7 @@ export default function AdminPage() {
       id: `exp-${Date.now()}`,
       company: '',
       role: '',
-      period: 'JUL 2026 — PRESENT',
+      period: 'JUL 2026 - PRESENT',
       location: 'India',
       isCurrent: true,
       desc: '',
@@ -661,7 +661,7 @@ export default function AdminPage() {
       id: `edu-${Date.now()}`,
       degree: '',
       institution: '',
-      period: '2024 — 2028',
+      period: '2024 - 2028',
       isCurrent: true,
       desc: '',
       courses: '',
@@ -2514,7 +2514,7 @@ export default function AdminPage() {
                     className="admin-input"
                     value={expForm.period}
                     onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
-                    placeholder="e.g. JUL 2026 — PRESENT"
+                    placeholder="e.g. JUL 2026 - PRESENT"
                     required
                   />
                 </div>
@@ -2638,7 +2638,7 @@ export default function AdminPage() {
                     className="admin-input"
                     value={eduForm.period}
                     onChange={(e) => setEduForm({ ...eduForm, period: e.target.value })}
-                    placeholder="e.g. 2024 — 2028"
+                    placeholder="e.g. 2024 - 2028"
                     required
                   />
                 </div>

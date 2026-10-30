@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-// Web Audio API sound engine — returns { muted, toggle, play }
+// Web Audio API sound engine: returns { muted, toggle, play }
 export function useSoundEngine() {
   const ctxRef = useRef(null);
   const [muted, setMuted] = useState(

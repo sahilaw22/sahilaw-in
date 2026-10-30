@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import MarkdownContent from './MarkdownContent.jsx';
 import './AnswerTextEditor.css';
 
-const QUICK_SYMBOLS = ['>', '•', '→', '✓', '›', '—', '|'];
+const QUICK_SYMBOLS = ['>', '•', '→', '✓', '›', '-', '|'];
 
 export default function AnswerTextEditor({
   value = '',
