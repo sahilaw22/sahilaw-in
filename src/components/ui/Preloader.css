@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--preloader-bg, #f0191a);
+  background-color: transparent !important;
   color: #ffffff;
 }
 
@@ -33,7 +33,7 @@
   background-color: var(--preloader-stair-bg, #f0191a);
   border: none !important;
   outline: none !important;
-  box-shadow: none !important;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.22);
   margin: 0 !important;
   padding: 0 !important;
 }

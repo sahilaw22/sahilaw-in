@@ -117,7 +117,7 @@ export default function Preloader({
           style={{
             position,
             zIndex,
-            backgroundColor: bgColor,
+            backgroundColor: variant === 'stairs' || variant === 'curtain' ? 'transparent' : bgColor,
             '--preloader-bg': bgColor,
             '--preloader-stair-bg': bgColor,
           }}
