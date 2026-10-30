@@ -1,7 +1,4 @@
-/* ==========================================================================
-   SlidingSquareLoaderView — Inspired by Vitaly Silkin & SteelKiwi
-   Smooth, geometric sliding square loader with shared dynamic gradient
-   ========================================================================== */
+/* Sliding square loader view */
 
 .sslv-overlay {
   position: fixed;

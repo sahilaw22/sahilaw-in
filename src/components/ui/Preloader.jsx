@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Preloader.css';
 
-/**
- * Preloader — React Bits Pro (@reactbits-starter/preloader-tw)
- * Centered pixel "Loading" text with reddish staircase transition.
- */
+// Preloader: React Bits Pro (@reactbits-starter/preloader-tw)
+// Centered pixel "Loading" text with reddish staircase transition
 export default function Preloader({
   stairCount = 10,
   stairsRevealFrom = 'left',

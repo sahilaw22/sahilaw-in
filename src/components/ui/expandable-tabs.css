@@ -1,6 +1,4 @@
-/* ==========================================================================
-   ExpandableTabs Floating Pill Navigation
-   ========================================================================== */
+/* Expandable tabs floating navigation dock */
 
 /* Outer wrapper: centers navbar horizontally across all viewports without transform conflicts */
 .expandable-tabs-wrapper {
@@ -133,9 +131,7 @@ body.project-detail-active .expandable-tabs-wrapper {
   pointer-events: none !important;
 }
 
-/* ==========================================================================
-   Mobile responsive: Floating Pill at TOP of screen
-   ========================================================================== */
+/* Mobile view: top docked floating pill */
 @media screen and (max-width: 920px) {
   .expandable-tabs-wrapper {
     top: max(0.85rem, env(safe-area-inset-top, 0.85rem));

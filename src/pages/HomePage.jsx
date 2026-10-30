@@ -18,7 +18,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// Home page — full scrolling portfolio with 4-pill quick navigation
+// Home page: full scrolling portfolio with 4-pill quick navigation
 export default function HomePage({ sound }) {
   // Preloader only appears when opening portfolio for the first time in the session; normal reloads bypass it
   const [showIntro, setShowIntro] = useState(() => {
@@ -95,7 +95,6 @@ export default function HomePage({ sound }) {
       {/* React Bits Pro Preloader: First-time entrance only with centered pixel Loading and reddish transition */}
       {showIntro && <Preloader onComplete={handleIntroComplete} />}
 
-      {/* 1. HERO SECTION (ALL CONTENT CENTERED) */}
       <section id="section-hero" className="portfolio-section hero-section">
         <div className="hero-center-all-wrap">
           <HeroHeader />
@@ -108,25 +107,12 @@ export default function HomePage({ sound }) {
         </div>
       </section>
 
-      {/* 2. ABOUT ME & CREATIVE DESCRIPTION */}
       <AboutSection play={sound.play} />
-
-      {/* 3. EXPERIENCE SECTION */}
       <ExperienceSection />
-
-      {/* 4. FEATURED PROJECTS SHOWCASE */}
       <FeaturedProjectsSection play={sound.play} />
-
-      {/* 5. EDUCATION & ACADEMIC BACKGROUND */}
       <EducationSection />
-
-      {/* 5. SKILLS & CORE CAPABILITIES */}
       <SkillsSection />
-
-      {/* 6. CERTIFICATIONS & RECOGNITION */}
       <CertificationsSection play={sound?.play} />
-
-      {/* 7. CONTACT & GET IN TOUCH */}
       <ContactSection play={sound.play} />
     </div>
   );

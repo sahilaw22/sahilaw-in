@@ -2,11 +2,7 @@ import React from 'react';
 import TextRevealParagraph from './TextRevealParagraph';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 
-/**
- * AboutSection — Matching the header "ABOUT ME"
- * Contains the animated text reveal narrative with inline SkillIcons,
- * a minimalist 3D View Resume action, and the technical career timeline.
- */
+// About section with text reveal narrative and skill badges
 export default function AboutSection({ play }) {
   const { about } = usePortfolioData();
 

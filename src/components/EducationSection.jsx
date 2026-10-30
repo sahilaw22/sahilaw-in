@@ -1,10 +1,7 @@
 import React from 'react';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 
-/**
- * EducationSection — Matching the header "EDUCATION"
- * Renders educational milestones, university & high school tracks, courses, and active badges.
- */
+// Education section with institution nodes, coursework, and credentials
 export default function EducationSection() {
   const { education } = usePortfolioData();
 

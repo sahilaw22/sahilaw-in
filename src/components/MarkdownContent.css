@@ -1,7 +1,4 @@
-/* ==========================================================================
-   MarkdownContent Styles — Ultra-clean, authentic portfolio typography
-   Zero green button pills, clean text with white underline & bold social links
-   ========================================================================== */
+/* Markdown typography and link formatting */
 
 .markdown-content {
   color: inherit;
@@ -96,7 +93,7 @@
   color: #ffffff;
 }
 
-/* Lists & Blockquotes — Minimal Precision Styling */
+/* Lists and blockquotes */
 .markdown-ol,
 .markdown-ul {
   margin: 0.55rem 0;

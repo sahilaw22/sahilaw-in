@@ -2,10 +2,7 @@ import React from 'react';
 import { TechIcon } from './TechIcons.jsx';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 
-/**
- * SkillsSection — Matching the header "SKILLS"
- * Renders categorized skills with technical badges and icons.
- */
+// Skills section displaying categorized technology badges
 export default function SkillsSection() {
   const { skills } = usePortfolioData();
 

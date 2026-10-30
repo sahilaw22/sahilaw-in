@@ -1,10 +1,7 @@
 import React from 'react';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 
-/**
- * ExperienceSection — Matching the header "EXPERIENCE"
- * Renders connected experience nodes with company logos, connecting spine, and technical tags.
- */
+// Experience section rendering role milestones, timeline nodes, and tech stack tags
 export default function ExperienceSection() {
   const { experiences } = usePortfolioData();
 

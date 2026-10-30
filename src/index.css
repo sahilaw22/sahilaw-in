@@ -1,7 +1,4 @@
-/* ===================================================
-   Global custom styles — all extracted from old index.html <style> tag
-   Avara base design (4e31a4da7006a8eb.css) is loaded via index.html
-   =================================================== */
+/* Global custom styles */
 
 /*  */
 @font-face {
@@ -967,7 +964,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
     margin: 0 !important;
   }
 
-  /* Orbit deck wrapper — full width, centered */
+  /* Orbit deck wrapper */
   .project-stack-wrap {
     width: 100%;
     align-items: center;
@@ -978,7 +975,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   /* Grid: single column */
   .projects-grid { grid-template-columns: 1fr; }
 
-  /* Explore button — gap above and exact size of inside content */
+  /* Explore button */
   .projects-more-section {
     margin-top: 1.05rem;
     width: auto;
@@ -1370,7 +1367,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
     width: 100%;
     margin: 0 auto;
   }
-  /* Initial center position on mobile — positioned comfortably below top navbar */
+  /* Initial center position on mobile */
   .chat-shell.is-empty {
     height: 100%;
     min-height: 0;
@@ -1411,7 +1408,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
     width: 100%;
   }
 
-  /* When user sends a message / chatting — dock fully visible in bottom with generous clearance */
+  /* Chat active layout */
   .chat-shell:not(.is-empty) {
     display: flex !important;
     flex-direction: column !important;
@@ -2911,7 +2908,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   letter-spacing: 0.03em;
 }
 
-/* My Stack — Rubik Font */
+/* Stack title font */
 .my-stack-title-custom {
   font-family: 'Rubik', var(--font-secondary), sans-serif !important;
   font-size: clamp(1.5rem, 2.6vw, 2rem) !important;
@@ -3000,7 +2997,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   border-radius: 50% !important;
 }
 
-/* Avatar Hover Tooltip — plain formatted text (React, Vite, etc.), no pill */
+/* Avatar hover tooltip text */
 .avatar-tooltip {
   position: absolute;
   bottom: calc(100% + 8px);
@@ -4193,10 +4190,19 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   }
 
   .portfolio-scroll-pill-btn {
-    min-width: unset !important;
-    min-height: unset !important;
-    padding: 3px 2px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 4px !important;
     cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .portfolio-scroll-pill-btn:focus-visible {
+    outline: 2px solid #61dca3 !important;
+    outline-offset: 2px !important;
   }
 
   .portfolio-scroll-pill-img {

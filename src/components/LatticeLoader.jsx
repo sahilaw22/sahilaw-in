@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-/**
- * LatticeLoader — Matrix grid loader with orbital/wave patterns and timing metrics
- */
+// Matrix grid loader with orbital patterns and timing metrics
 export default function LatticeLoader({
   status = 'working',
   label = 'Answering...',
