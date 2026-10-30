@@ -43,6 +43,10 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   const [activeSlug, setActiveSlug] = useState('about');
   const [hoveredSlug, setHoveredSlug] = useState(null);
 
+  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 4s idle
+  const [isMobileVisible, setIsMobileVisible] = useState(false);
+  const mobileHideTimerRef = useRef(null);
+
   // In-memory vertical slide offset (resets back to 0 on page reload)
   const [offsetY, setOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -68,6 +72,19 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     function handleScroll() {
+      // Reveal notch on mobile when user scrolls; hide after 4 seconds of inactivity
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        setIsMobileVisible(true);
+        if (mobileHideTimerRef.current) {
+          clearTimeout(mobileHideTimerRef.current);
+        }
+        mobileHideTimerRef.current = setTimeout(() => {
+          if (!isDraggingRef.current) {
+            setIsMobileVisible(false);
+          }
+        }, 4000);
+      }
+
       if (!isHome) return;
 
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
@@ -92,6 +109,9 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (mobileHideTimerRef.current) {
+        clearTimeout(mobileHideTimerRef.current);
+      }
     };
   }, [currentRoute]);
 
@@ -143,6 +163,16 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
             navRef.current.releasePointerCapture?.(e.pointerId);
           }
         } catch (_) {}
+
+        // Schedule hide after 4 seconds of idle time following drag
+        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+          if (mobileHideTimerRef.current) {
+            clearTimeout(mobileHideTimerRef.current);
+          }
+          mobileHideTimerRef.current = setTimeout(() => {
+            setIsMobileVisible(false);
+          }, 4000);
+        }
       }
     };
 
@@ -215,14 +245,17 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   return (
     <nav
       ref={navRef}
-      className="portfolio-scroll-pills-nav"
+      className={`portfolio-scroll-pills-nav ${
+        isMobileVisible ? 'is-mobile-visible' : 'is-mobile-hidden'
+      }`}
       aria-label="Portfolio quick section navigation"
       onPointerDown={handlePointerDown}
       style={{
+        '--notch-offset-y': `${offsetY}px`,
         transform: `translateY(calc(-50% + ${offsetY}px))`,
         transition: isDragging
           ? 'none'
-          : 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
+          : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease',
       }}
     >
       {/* Mobile notch drag indicator handle */}

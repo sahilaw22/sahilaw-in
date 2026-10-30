@@ -4122,6 +4122,21 @@ body.project-detail-active .portfolio-scroll-pills-nav {
     touch-action: none;
     user-select: none;
     cursor: grab;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
+  }
+
+  /* Hidden by default on mobile, slides off-screen */
+  .portfolio-scroll-pills-nav.is-mobile-hidden {
+    transform: translateY(calc(-50% + var(--notch-offset-y, 0px))) translateX(120%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* When scrolling on mobile, slides into view */
+  .portfolio-scroll-pills-nav.is-mobile-visible {
+    transform: translateY(calc(-50% + var(--notch-offset-y, 0px))) translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   .portfolio-scroll-pills-nav.is-hidden {

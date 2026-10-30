@@ -20,9 +20,20 @@ if (typeof window !== 'undefined') {
 
 // Home page — full scrolling portfolio with 4-pill quick navigation
 export default function HomePage({ sound }) {
-  const [showIntro, setShowIntro] = useState(true);
+  // Preloader only appears when opening portfolio for the first time in the session; normal reloads bypass it
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !sessionStorage.getItem('portfolio_opened_before');
+    } catch {
+      return false;
+    }
+  });
 
   const handleIntroComplete = () => {
+    try {
+      sessionStorage.setItem('portfolio_opened_before', 'true');
+    } catch {}
     setShowIntro(false);
   };
 
@@ -81,8 +92,8 @@ export default function HomePage({ sound }) {
         />
       </div>
 
-      {/* React Bits Pro Preloader: Stairs variant with portfolio tokens & minimal anti-slop copy */}
-      <Preloader onComplete={handleIntroComplete} />
+      {/* React Bits Pro Preloader: First-time entrance only with centered pixel Loading and reddish transition */}
+      {showIntro && <Preloader onComplete={handleIntroComplete} />}
 
       {/* 1. HERO SECTION (ALL CONTENT CENTERED) */}
       <section id="section-hero" className="portfolio-section hero-section">
