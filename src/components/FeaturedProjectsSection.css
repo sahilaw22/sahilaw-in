@@ -1,0 +1,196 @@
+/* ==========================================================================
+   Featured Projects Section — React Bits Scroll Stack Component
+   Cards that stack, scale down, and fade away as you scroll
+   ========================================================================== */
+
+.portfolio-featured-projects-section {
+  position: relative;
+  width: 100%;
+  padding: 4.5rem 1.25rem 5.5rem;
+  background: transparent;
+  color: #ededed;
+  z-index: 2;
+}
+
+/* Center-aligned Featured Work Header */
+.featured-work-center-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+/* Stack Scroll Container */
+.scroll-stack-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Sticky Slot for Each Card */
+.scroll-stack-card-slot {
+  position: sticky;
+  top: calc(14vh + var(--stack-idx, 0) * 14px);
+  width: 420px;
+  max-width: 100%;
+  height: 21.5rem;
+  margin-bottom: 22vh;
+  display: flex;
+  justify-content: center;
+  transform-origin: top center;
+  will-change: transform, opacity, filter;
+  transition: transform 0.15s ease-out, opacity 0.15s ease-out, filter 0.15s ease-out;
+}
+
+.scroll-stack-card-slot:last-child {
+  margin-bottom: 3.5rem;
+}
+
+/* Card Styling: Exact Dimensions and Tokens from Project Pages */
+.scroll-stack-card {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.25rem;
+  background: #111215;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  text-decoration: none !important;
+  color: inherit;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.scroll-stack-card:hover {
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: 0 30px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+/* Image preview banner */
+.scroll-stack-image-box {
+  position: relative;
+  height: 11.25rem;
+  width: 100%;
+  overflow: hidden;
+  background: #0d0e11;
+  flex-shrink: 0;
+}
+
+.scroll-stack-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-stack-card:hover .scroll-stack-img {
+  transform: scale(1.04);
+}
+
+.scroll-stack-image-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, rgba(17, 18, 21, 0.95) 100%);
+  pointer-events: none;
+}
+
+/* Card Body */
+.scroll-stack-body {
+  padding: 0.75rem 1.1rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  justify-content: space-between;
+}
+
+.scroll-stack-title {
+  margin: 0 0 0.2rem;
+  color: #ffffff;
+  font: 700 1.2rem 'Outfit', var(--font-secondary), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.scroll-stack-details {
+  margin: 0 0 0.4rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.8rem;
+  line-height: 1.42;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scroll-stack-bottom-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.scroll-stack-tech-dotted {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem 0.35rem;
+  flex: 1;
+}
+
+.scroll-stack-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.48rem;
+  border-radius: 2rem;
+  border: 1px dotted rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.68rem;
+  font-family: 'Space Grotesk', monospace;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.scroll-stack-arrow-link {
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.2s ease, color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.scroll-stack-arrow-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(2px, -2px) scale(1.08);
+}
+
+@media (max-width: 480px) {
+  .scroll-stack-card-slot {
+    width: 92vw;
+    height: 19.5rem;
+    margin-bottom: 18vh;
+  }
+  .scroll-stack-image-box {
+    height: 10rem;
+  }
+}

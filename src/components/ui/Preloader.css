@@ -1,0 +1,217 @@
+/* ==========================================================================
+   React Bits Pro — Preloader (@reactbits-starter/preloader-tw)
+   Loading screens in five styles: stairs, percentage, circle, slide, curtain
+   Tailored to portfolio design tokens (obsidian #07080b, emerald #61dca3)
+   ========================================================================== */
+
+.rb-preloader-root {
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #ffffff;
+}
+
+/* Stairs Variant */
+.rb-preloader-stairs-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rb-preloader-stair-col {
+  height: 100%;
+  position: relative;
+  will-change: transform;
+}
+
+.rb-preloader-content-layer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  text-align: center;
+  padding: 1.5rem;
+  pointer-events: none;
+}
+
+.rb-preloader-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: rgba(97, 220, 163, 0.08);
+  border: 1px solid rgba(97, 220, 163, 0.22);
+  color: var(--preloader-accent, #61dca3);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rb-preloader-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--preloader-accent, #61dca3);
+  box-shadow: 0 0 10px var(--preloader-accent, #61dca3);
+  animation: rbPreloaderPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes rbPreloaderPulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.rb-preloader-text {
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .rb-preloader-text {
+    font-size: 1.5rem;
+  }
+}
+
+.rb-preloader-subtext {
+  font-family: 'Disket Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.rb-preloader-skip-hint {
+  position: absolute;
+  bottom: 2rem;
+  font-family: 'Disket Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.24);
+  transition: color 0.2s ease;
+  z-index: 3;
+}
+
+.rb-preloader-root:hover .rb-preloader-skip-hint {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Percentage Variant */
+.rb-preloader-percentage-num {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: clamp(3rem, 12vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #ffffff;
+  font-feature-settings: 'tnum' on, 'lnum' on;
+}
+
+.rb-preloader-percentage-num span {
+  color: var(--preloader-accent, #61dca3);
+  font-size: 0.55em;
+  margin-left: 0.15em;
+}
+
+.rb-preloader-progress-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 4;
+}
+
+.rb-preloader-progress-track.position-top {
+  top: 0;
+}
+
+.rb-preloader-progress-track.position-bottom {
+  bottom: 0;
+}
+
+.rb-preloader-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--preloader-accent, #61dca3), #38bdf8);
+  box-shadow: 0 0 12px var(--preloader-accent, #61dca3);
+  transition: width 0.1s linear;
+}
+
+/* Circle Variant */
+.rb-preloader-spinner-svg {
+  width: 56px;
+  height: 56px;
+  animation: rbPreloaderRotate 1.6s linear infinite;
+}
+
+@keyframes rbPreloaderRotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rb-preloader-spinner-circle {
+  stroke: var(--preloader-accent, #61dca3);
+  stroke-dasharray: 120, 200;
+  stroke-dashoffset: 0;
+  animation: rbPreloaderDash 1.4s ease-in-out infinite;
+}
+
+@keyframes rbPreloaderDash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -125;
+  }
+}
+
+/* Curtain Variant */
+.rb-preloader-curtain-half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: var(--preloader-bg, #07080b);
+  z-index: 1;
+}
+
+.rb-preloader-curtain-left {
+  left: 0;
+}
+
+.rb-preloader-curtain-right {
+  right: 0;
+}

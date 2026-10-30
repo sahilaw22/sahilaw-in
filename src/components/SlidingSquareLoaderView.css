@@ -1,0 +1,188 @@
+/* ==========================================================================
+   SlidingSquareLoaderView — Inspired by Vitaly Silkin & SteelKiwi
+   Smooth, geometric sliding square loader with shared dynamic gradient
+   ========================================================================== */
+
+.sslv-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background-color: var(--sslv-bg, #060709);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  opacity: 1;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sslv-overlay.is-hiding {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.sslv-container {
+  --square: var(--sslv-square-size, 26px);
+  --margin: var(--sslv-margin, 8px);
+  --offset: calc(var(--square) + var(--margin));
+  --duration: 2.4s;
+  --timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+
+  position: relative;
+  width: calc(3 * var(--offset) + var(--square));
+  height: calc(2 * var(--offset) + var(--square));
+}
+
+.sslv-square {
+  position: absolute;
+  width: var(--square);
+  height: var(--square);
+  border-radius: var(--sslv-corner-radius, 6px);
+  background: linear-gradient(135deg, var(--sslv-start-color, #8c65f7), var(--sslv-end-color, #38bdf8));
+  background-size: 200% 200%;
+  box-shadow: 0 4px 18px rgba(140, 101, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  animation-duration: var(--duration), 4s;
+  animation-timing-function: var(--timing-function), ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
+  will-change: left, top, background-position;
+}
+
+#sslv-square-1 {
+  left: calc(0 * var(--offset));
+  top: calc(0 * var(--offset));
+  animation-name: sslvSquare1, sslvGradientFlow;
+}
+
+#sslv-square-2 {
+  left: calc(1 * var(--offset));
+  top: calc(0 * var(--offset));
+  animation-name: sslvSquare2, sslvGradientFlow;
+}
+
+#sslv-square-3 {
+  left: calc(1 * var(--offset));
+  top: calc(1 * var(--offset));
+  animation-name: sslvSquare3, sslvGradientFlow;
+}
+
+#sslv-square-4 {
+  left: calc(2 * var(--offset));
+  top: calc(1 * var(--offset));
+  animation-name: sslvSquare4, sslvGradientFlow;
+}
+
+#sslv-square-5 {
+  left: calc(3 * var(--offset));
+  top: calc(1 * var(--offset));
+  animation-name: sslvSquare5, sslvGradientFlow;
+}
+
+@keyframes sslvGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes sslvSquare1 {
+  0% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  8.333% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  16.667% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  25% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  33.333% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+  41.667% { left: calc(3 * var(--offset)); top: calc(2 * var(--offset)); }
+  50% { left: calc(2 * var(--offset)); top: calc(2 * var(--offset)); }
+  58.333% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  66.667% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  75% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  83.333% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  100% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+}
+
+@keyframes sslvSquare2 {
+  0% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  8.333% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  16.667% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  25% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+  33.333% { left: calc(3 * var(--offset)); top: calc(2 * var(--offset)); }
+  41.667% { left: calc(2 * var(--offset)); top: calc(2 * var(--offset)); }
+  50% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  58.333% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  66.667% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  75% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  83.333% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  100% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+}
+
+@keyframes sslvSquare3 {
+  0%, 100% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  8.333% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  16.667% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+  25% { left: calc(3 * var(--offset)); top: calc(2 * var(--offset)); }
+  33.333% { left: calc(2 * var(--offset)); top: calc(2 * var(--offset)); }
+  41.667% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  50% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  58.333% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  66.667% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  75% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  83.333% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+}
+
+@keyframes sslvSquare4 {
+  0%, 100% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  8.333% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+  16.667% { left: calc(3 * var(--offset)); top: calc(2 * var(--offset)); }
+  25% { left: calc(2 * var(--offset)); top: calc(2 * var(--offset)); }
+  33.333% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  41.667% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  50% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  58.333% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  66.667% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  75% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  83.333% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+}
+
+@keyframes sslvSquare5 {
+  0%, 100% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+  8.333% { left: calc(3 * var(--offset)); top: calc(2 * var(--offset)); }
+  16.667% { left: calc(2 * var(--offset)); top: calc(2 * var(--offset)); }
+  25% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  33.333% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  41.667% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  50% { left: calc(0 * var(--offset)); top: calc(0 * var(--offset)); }
+  58.333% { left: calc(1 * var(--offset)); top: calc(0 * var(--offset)); }
+  66.667% { left: calc(1 * var(--offset)); top: calc(1 * var(--offset)); }
+  75% { left: calc(2 * var(--offset)); top: calc(1 * var(--offset)); }
+  83.333% { left: calc(3 * var(--offset)); top: calc(1 * var(--offset)); }
+}
+
+.sslv-caption {
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.sslv-skip-hint {
+  font-family: 'Disket Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+  transition: color 0.2s ease;
+}
+
+.sslv-overlay:hover .sslv-skip-hint {
+  color: rgba(255, 255, 255, 0.55);
+}
+

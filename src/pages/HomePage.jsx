@@ -1,33 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import GlassDistortionSVG from '../components/GlassDistortionSVG.jsx';
+import LetterGlitch from '../components/LetterGlitch.jsx';
 import HeroHeader from '../components/HeroHeader.jsx';
 import SocialIcons from '../components/SocialIcons.jsx';
-import IntroSequence from '../components/IntroSequence.jsx';
+import Preloader from '../components/Preloader.jsx';
 import AboutSection from '../components/AboutSection.jsx';
 import ExperienceSection from '../components/ExperienceSection.jsx';
+import FeaturedProjectsSection from '../components/FeaturedProjectsSection.jsx';
 import EducationSection from '../components/EducationSection.jsx';
 import SkillsSection from '../components/SkillsSection.jsx';
 import CertificationsSection from '../components/CertificationsSection.jsx';
 import ContactSection from '../components/ContactSection.jsx';
 
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 // Home page — full scrolling portfolio with 4-pill quick navigation
 export default function HomePage({ sound }) {
-  const [showIntro, setShowIntro] = useState(() => {
-    try {
-      return !sessionStorage.getItem('sahil_has_seen_intro');
-    } catch {
-      return true;
-    }
-  });
+  const [showIntro, setShowIntro] = useState(true);
 
   const handleIntroComplete = () => {
-    try {
-      sessionStorage.setItem('sahil_has_seen_intro', 'true');
-    } catch {
-      // Ignore sessionStorage errors
-    }
     setShowIntro(false);
   };
+
+  useEffect(() => {
+    if (showIntro) return;
+
+    const ctx = gsap.context(() => {
+      const sections = document.querySelectorAll('.portfolio-section:not(.hero-section)');
+      sections.forEach((section) => {
+        gsap.fromTo(
+          section,
+          { opacity: 0, y: 32 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 86%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
+    });
+
+    return () => ctx.revert();
+  }, [showIntro]);
 
   const handleScrollTo = (id) => {
     const el = document.getElementById(id);
@@ -41,8 +65,24 @@ export default function HomePage({ sound }) {
     <div id="view-home" className="app-view active portfolio-scroll-view">
       <GlassDistortionSVG />
 
-      {/* First-time opening entrance preloader: "Hi" -> "I'm Sahil" -> reveals centered hero content */}
-      {showIntro && <IntroSequence onComplete={handleIntroComplete} />}
+      {/* Restored Fixed Matrix Glitch Background on Home page */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <LetterGlitch
+          glitchColors={['#ffffff', '#61dca3']}
+          glitchAmount={0}
+          speed={0}
+          flow={0}
+          interactive={false}
+          clickEffect="none"
+          fontSize={10}
+          baseOpacity={0.12}
+          characters="0123456789ABCDEF"
+          intro={false}
+        />
+      </div>
+
+      {/* React Bits Pro Preloader: Stairs variant with portfolio tokens & minimal anti-slop copy */}
+      <Preloader onComplete={handleIntroComplete} />
 
       {/* 1. HERO SECTION (ALL CONTENT CENTERED) */}
       <section id="section-hero" className="portfolio-section hero-section">
@@ -55,25 +95,6 @@ export default function HomePage({ sound }) {
 
           <SocialIcons />
         </div>
-
-        {/* Hanging spider scroll indicator */}
-        <div
-          className="hero-spider-scroll-cue"
-          onClick={() => handleScrollTo('section-about')}
-          role="button"
-          tabIndex={0}
-          aria-label="Scroll to About section"
-          title="Scroll down"
-        >
-          <img
-            src="/spider.png"
-            alt="Hanging spider scroll indicator"
-            className="hero-spider-img"
-            width={68}
-            height={68}
-            draggable={false}
-          />
-        </div>
       </section>
 
       {/* 2. ABOUT ME & CREATIVE DESCRIPTION */}
@@ -82,14 +103,17 @@ export default function HomePage({ sound }) {
       {/* 3. EXPERIENCE SECTION */}
       <ExperienceSection />
 
-      {/* 4. EDUCATION & ACADEMIC BACKGROUND */}
+      {/* 4. FEATURED PROJECTS SHOWCASE */}
+      <FeaturedProjectsSection play={sound.play} />
+
+      {/* 5. EDUCATION & ACADEMIC BACKGROUND */}
       <EducationSection />
 
       {/* 5. SKILLS & CORE CAPABILITIES */}
       <SkillsSection />
 
       {/* 6. CERTIFICATIONS & RECOGNITION */}
-      <CertificationsSection />
+      <CertificationsSection play={sound?.play} />
 
       {/* 7. CONTACT & GET IN TOUCH */}
       <ContactSection play={sound.play} />

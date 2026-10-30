@@ -616,9 +616,11 @@ body::-webkit-scrollbar {
   to { opacity: 1; }
 }
 
-/* Hide floating navbar ONLY when viewing project details, restore on return */
-body.project-detail-active .expandable-tabs-wrapper {
+/* When project detail modal is open, completely hide floating navbar and side notch to prevent any overlap */
+body.project-detail-active .expandable-tabs-wrapper,
+body.project-detail-active .portfolio-scroll-pills-nav {
   display: none !important;
+  visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
@@ -746,7 +748,7 @@ body.project-detail-active .expandable-tabs-wrapper {
 /* Mobile responsive styling */
 @media screen and (max-width: 860px) {
   .project-detail-backdrop {
-    padding: max(1.1rem, env(safe-area-inset-top, 1.1rem)) 0.85rem max(1.2rem, env(safe-area-inset-bottom, 1.2rem)) !important;
+    padding: max(1.6rem, env(safe-area-inset-top, 1.6rem)) 0.85rem max(1.5rem, env(safe-area-inset-bottom, 1.5rem)) !important;
     justify-content: flex-start !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -767,7 +769,7 @@ body.project-detail-active .expandable-tabs-wrapper {
     top: auto !important;
     left: auto !important;
     align-self: flex-start !important;
-    margin: 0 0 0.75rem 0.25rem !important;
+    margin: 0.25rem 0 0.85rem 0.25rem !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -775,11 +777,11 @@ body.project-detail-active .expandable-tabs-wrapper {
     -webkit-backdrop-filter: none !important;
     border-radius: 0 !important;
     padding: 0.35rem 0.5rem !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-    font-size: 0.85rem !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 0.88rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    z-index: 10 !important;
+    z-index: 100 !important;
   }
   .project-modal-top-back:hover {
     color: #ffffff !important;
@@ -3980,85 +3982,7 @@ body.project-detail-active .expandable-tabs-wrapper {
   background: transparent !important;
 }
 
-/* Hanging Spider Scroll Indicator (Replaces scroll text button) */
-.hero-spider-scroll-cue {
-  position: absolute;
-  bottom: 3.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  z-index: 25;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  animation: spiderDangle 3.6s ease-in-out infinite;
-  transform-origin: top center;
-}
-
-/* Spider silk thread ascending upwards */
-.hero-spider-scroll-cue::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% - 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1.5px;
-  height: 90px;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.08) 70%, transparent);
-  pointer-events: none;
-}
-
-.hero-spider-img {
-  width: 68px;
-  height: 68px;
-  display: block;
-  object-fit: contain;
-  filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.85)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75));
-  transition: all 0.25s ease;
-  pointer-events: auto;
-}
-
-.hero-spider-scroll-cue:hover .hero-spider-img {
-  transform: scale(1.08) translateY(4px);
-  filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.85)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.85));
-}
-
-.hero-spider-scroll-cue:active .hero-spider-img {
-  transform: scale(0.96) translateY(8px);
-}
-
-@keyframes spiderDangle {
-  0%, 100% {
-    transform: translateX(-50%) translateY(0) rotate(0deg);
-  }
-  25% {
-    transform: translateX(-50%) translateY(8px) rotate(1.8deg);
-  }
-  50% {
-    transform: translateX(-50%) translateY(2px) rotate(0deg);
-  }
-  75% {
-    transform: translateX(-50%) translateY(10px) rotate(-1.8deg);
-  }
-}
-
-@media (max-width: 768px) {
-  .hero-spider-scroll-cue {
-    bottom: 2.8rem;
-  }
-  .hero-spider-scroll-cue::before {
-    height: 60px;
-  }
-  .hero-spider-img {
-    width: 56px;
-    height: 56px;
-  }
-}
-
-/*  */
+/* Portfolio Scroll Navigation Pills */
 .portfolio-scroll-pills-nav {
   position: fixed;
   right: 1.25rem;
@@ -4955,7 +4879,7 @@ body.project-detail-active .expandable-tabs-wrapper {
 
 .cert-clean-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1.25rem;
   padding: 1.15rem 0.5rem;
@@ -4984,7 +4908,7 @@ body.project-detail-active .expandable-tabs-wrapper {
 
 .cert-row-left {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   min-width: 0;
   flex: 1;
@@ -5000,6 +4924,7 @@ body.project-detail-active .expandable-tabs-wrapper {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-top: 2px;
   transition: all 0.22s ease;
 }
 
@@ -5041,6 +4966,7 @@ body.project-detail-active .expandable-tabs-wrapper {
   align-items: center;
   gap: 0.85rem;
   flex-shrink: 0;
+  margin-top: 3px;
 }
 
 .cert-clean-year {
@@ -5090,7 +5016,7 @@ body.project-detail-active .expandable-tabs-wrapper {
   }
 }
 
-/*  */
+/* Contact / Footer Section - generous bottom padding on desktop so floating navbar never overlaps footer */
 .portfolio-contact-section {
   position: relative;
   min-height: auto !important;
@@ -5100,7 +5026,7 @@ body.project-detail-active .expandable-tabs-wrapper {
     linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
   background-size: 38px 38px;
   background-position: center center;
-  padding: 5.5rem 1.75rem 1.5rem !important;
+  padding: 4.5rem 1.75rem 3.5rem !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
@@ -5122,7 +5048,7 @@ body.project-detail-active .expandable-tabs-wrapper {
 
 @media (max-width: 768px) {
   .portfolio-contact-section {
-    padding: 4.5rem 1.25rem 1.5rem !important;
+    padding: 3.5rem 1.25rem 2.5rem !important;
     min-height: auto !important;
   }
   .portfolio-contact-section .contact-image-container {
@@ -5216,16 +5142,17 @@ body.project-detail-active .expandable-tabs-wrapper {
   width: fit-content !important;
   max-width: 100% !important;
   display: inline-flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   justify-content: flex-start;
-  gap: 0.85rem;
+  gap: 0 !important;
   background: #f5f1ea;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  padding: 0.35rem 0.4rem 0.35rem 1.15rem;
+  border-radius: 12px;
+  padding: 0 !important;
   box-shadow: 0 6px 0 #b9ad9c, 0 14px 28px rgba(0, 0, 0, 0.45);
   cursor: pointer;
   outline: none;
+  overflow: hidden;
   transition: transform 0.11s ease, box-shadow 0.11s ease, background 0.15s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -5245,6 +5172,26 @@ body.project-detail-active .expandable-tabs-wrapper {
 .contact-email-capsule.is-copied {
   background: #e8f5e9;
   box-shadow: 0 5px 0 #a5d6a7, 0 10px 22px rgba(0, 0, 0, 0.45);
+}
+
+.email-capsule-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  outline: none;
+  overflow: hidden;
+  transition: background 0.15s ease, opacity 0.2s ease;
+  flex: 1;
+}
+
+.email-capsule-copy-btn:hover {
+  background: rgba(0, 0, 0, 0.025);
 }
 
 .email-capsule-left {
@@ -5276,25 +5223,39 @@ body.project-detail-active .expandable-tabs-wrapper {
 
 .email-capsule-divider {
   width: 1px;
-  background: rgba(0, 0, 0, 0.14);
-  margin: 0.4rem 0.75rem;
+  background: rgba(0, 0, 0, 0.12);
+  align-self: stretch;
   flex-shrink: 0;
+  margin: 0 !important;
 }
 
 .email-capsule-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1.15rem;
+  padding: 0 1.25rem;
+  min-width: 52px;
+  align-self: stretch;
+  background: transparent;
+  border: none;
   color: #111317;
-  text-decoration: none;
-  transition: transform 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s ease, color 0.15s ease;
   flex-shrink: 0;
 }
 
 .email-capsule-arrow:hover {
-  transform: scale(1.15);
+  background: rgba(0, 0, 0, 0.04);
   color: #000000;
+}
+
+.email-capsule-arrow svg {
+  transition: transform 0.15s ease;
+}
+
+.email-capsule-arrow:hover svg {
+  transform: translate(2px, -2px);
 }
 
 /* Secondary Socials: Exact 3D Jet-Black Keycaps matching reference design */
@@ -5370,6 +5331,13 @@ body.project-detail-active .expandable-tabs-wrapper {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
+  margin-bottom: 3.25rem !important;
+}
+
+@media (max-width: 768px) {
+  .contact-image-colophon {
+    margin-bottom: 2.25rem !important;
+  }
 }
 
 .colophon-copyright {
@@ -5547,3 +5515,5 @@ body.project-detail-active .expandable-tabs-wrapper {
   outline: 2px solid var(--pill-accent, #8c65f7);
   outline-offset: 3px;
 }
+
+
