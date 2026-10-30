@@ -33,7 +33,7 @@
   background-color: var(--preloader-stair-bg, #f0191a);
   border: none !important;
   outline: none !important;
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.22);
+  box-shadow: none !important;
   margin: 0 !important;
   padding: 0 !important;
 }

@@ -133,7 +133,7 @@ export default function Preloader({
                   key={`stair-${i}`}
                   className="rb-preloader-stair-col"
                   style={{
-                    width: `calc(100% / ${stairCount} + 0.5px)`,
+                    width: `calc(100% / ${stairCount} + 1px)`,
                     backgroundColor: bgColor,
                   }}
                   initial={{ y: '0%' }}
