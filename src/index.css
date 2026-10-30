@@ -5047,7 +5047,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
     linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
   background-size: 38px 38px;
   background-position: center center;
-  padding: 4.5rem 1.75rem 3.5rem !important;
+  padding: 4.5rem 1.75rem 1.75rem !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
@@ -5069,7 +5069,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 
 @media (max-width: 768px) {
   .portfolio-contact-section {
-    padding: 3.5rem 1.25rem 2.5rem !important;
+    padding: 3.5rem 1.25rem 1.25rem !important;
     min-height: auto !important;
   }
   .portfolio-contact-section .contact-image-container {
@@ -5160,17 +5160,17 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 }
 
 .contact-email-capsule {
-  width: fit-content !important;
-  max-width: 100% !important;
-  display: inline-flex !important;
+  width: 100% !important;
+  max-width: 520px !important;
+  display: flex !important;
   align-items: stretch !important;
   justify-content: flex-start;
   gap: 0 !important;
-  background: #f5f1ea;
+  background: #f6f3ed;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0 !important;
-  box-shadow: 0 6px 0 #b9ad9c, 0 14px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 7px 0 #cfc3b0, 0 16px 28px rgba(0, 0, 0, 0.42);
   cursor: pointer;
   outline: none;
   overflow: hidden;
@@ -5181,13 +5181,13 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 
 .contact-email-capsule:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 #b9ad9c, 0 18px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 9px 0 #cfc3b0, 0 20px 32px rgba(0, 0, 0, 0.48);
   background: #faf7f0;
 }
 
 .contact-email-capsule:active {
   transform: translateY(5px);
-  box-shadow: 0 1px 0 #b9ad9c, 0 4px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 0 #cfc3b0, 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .contact-email-capsule.is-copied {
@@ -5196,10 +5196,10 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 }
 
 .email-capsule-copy-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.8rem 1.25rem;
+  padding: 0.95rem 1.25rem;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -5233,7 +5233,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 
 .email-capsule-address {
   font-family: 'Space Grotesk', var(--font-secondary), sans-serif;
-  font-size: clamp(0.92rem, 2.5vw, 1.12rem);
+  font-size: clamp(0.95rem, 2.6vw, 1.12rem);
   font-weight: 650;
   color: #111317;
   letter-spacing: -0.01em;
@@ -5254,8 +5254,8 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 1.25rem;
-  min-width: 52px;
+  width: 58px;
+  min-width: 54px;
   align-self: stretch;
   background: transparent;
   border: none;
@@ -5288,12 +5288,12 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 }
 
 .contact-keycap-btn {
-  --face: #171717;
-  --skirt: #050505;
+  --face: #141416;
+  --skirt: #000000;
   --edge: rgba(255, 255, 255, 0.09);
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
   background: var(--face);
   border: 1px solid var(--edge);
   color: #ffffff;
@@ -5301,7 +5301,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  box-shadow: 0 6px 0 var(--skirt), 0 14px 28px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 7px 0 var(--skirt), 0 16px 28px rgba(0, 0, 0, 0.45);
   transition: transform 0.11s ease, box-shadow 0.11s ease, background-color 0.15s ease;
   position: relative;
   user-select: none;
@@ -5317,13 +5317,13 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 
 .contact-keycap-btn:hover {
   background: #1f1f1f;
-  box-shadow: 0 8px 0 var(--skirt), 0 18px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 9px 0 var(--skirt), 0 20px 32px rgba(0, 0, 0, 0.5);
   transform: translateY(-2px);
   color: #ffffff;
 }
 
 .contact-keycap-btn:active {
-  box-shadow: 0 1px 0 var(--skirt), 0 4px 10px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 0 var(--skirt), 0 4px 10px rgba(0, 0, 0, 0.45);
   transform: translateY(5px);
 }
 
@@ -5333,8 +5333,8 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   }
 
   .contact-keycap-btn {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -5352,12 +5352,12 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
-  margin-bottom: 3.25rem !important;
+  margin-bottom: 2.25rem !important;
 }
 
 @media (max-width: 768px) {
   .contact-image-colophon {
-    margin-bottom: 2.25rem !important;
+    margin-bottom: 4.5rem !important;
   }
 }
 
