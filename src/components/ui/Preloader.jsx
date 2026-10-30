@@ -2,25 +2,38 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Preloader.css';
 
-// Preloader: seamless background, refined green Welcome text, and smooth reveal
+// Preloader: React Bits Pro (@reactbits-starter/preloader-tw)
+// Supports 5 styles: 'stairs', 'curtain', 'slide', 'circle', 'percentage'
+// Default: 'stairs' on solid #f0191a canvas, white "Glad you're here" in Caacupe One hero font
 export default function Preloader({
-  text = 'Welcome',
-  stairCount = 8,
+  variant = 'stairs',
+  text,
+  loadingText = "Glad you're here",
+  stairCount = 10,
   stairsRevealFrom = 'left',
   stairsRevealDirection = 'up',
-  duration = 1700,
+  duration = 1800,
   position = 'fixed',
   zIndex = 99999,
-  bgColor = '#060709',
-  textColor = '#61dca3',
+  bgColor = '#f0191a',
+  percentagePosition = 'center',
+  showPercentageSign = true,
+  showProgressBar = true,
+  progressBarPosition = 'bottom',
+  textClassName = '',
+  percentageTextClassName = '',
   active,
+  loading,
   onComplete,
 }) {
-  const isControlled = typeof active === 'boolean';
+  const displayText = text || loadingText;
+  const isControlled = typeof active === 'boolean' || typeof loading === 'boolean';
+  const controlledVal = typeof active === 'boolean' ? active : loading;
   const [internalActive, setInternalActive] = useState(true);
+  const [progress, setProgress] = useState(0);
   const completedRef = useRef(false);
 
-  const isActive = isControlled ? active : internalActive;
+  const isActive = isControlled ? controlledVal : internalActive;
 
   const handleDismiss = () => {
     if (!isControlled) {
@@ -31,12 +44,26 @@ export default function Preloader({
   useEffect(() => {
     if (!isActive) return;
 
+    if (variant === 'percentage') {
+      const start = Date.now();
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const next = Math.min(100, Math.round((elapsed / duration) * 100));
+        setProgress(next);
+        if (next >= 100) {
+          clearInterval(interval);
+          setTimeout(() => handleDismiss(), 180);
+        }
+      }, 25);
+      return () => clearInterval(interval);
+    }
+
     const timer = setTimeout(() => {
       handleDismiss();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [isActive, duration, isControlled]);
+  }, [isActive, duration, isControlled, variant]);
 
   // Click or key to skip
   useEffect(() => {
@@ -67,7 +94,6 @@ export default function Preloader({
     }
   };
 
-  // Compute stair stagger delay
   const getStairDelay = (index) => {
     const stepDuration = 0.045;
     if (stairsRevealFrom === 'right') {
@@ -87,56 +113,125 @@ export default function Preloader({
       {isActive && (
         <motion.div
           key="rb-preloader-root"
-          className="rb-preloader-root"
+          className={`rb-preloader-root variant-${variant}`}
           style={{
             position,
             zIndex,
             backgroundColor: bgColor,
             '--preloader-bg': bgColor,
             '--preloader-stair-bg': bgColor,
-            '--preloader-text-color': textColor,
           }}
           onClick={handleDismiss}
           role="dialog"
-          aria-label="Loading preview"
+          aria-label="Welcome screen"
         >
-          {/* Seamless Transition Columns: zero borders, zero grid lines, zero shadows */}
-          <div className="rb-preloader-stairs-wrap">
-            {Array.from({ length: stairCount }).map((_, i) => (
+          {/* Variant 1: Stairs (signature React Bits Pro stair reveal) */}
+          {variant === 'stairs' && (
+            <div className="rb-preloader-stairs-wrap">
+              {Array.from({ length: stairCount }).map((_, i) => (
+                <motion.div
+                  key={`stair-${i}`}
+                  className="rb-preloader-stair-col"
+                  style={{
+                    width: `calc(100% / ${stairCount} + 0.5px)`,
+                    backgroundColor: bgColor,
+                  }}
+                  initial={{ y: '0%' }}
+                  exit={{
+                    y: exitY,
+                    transition: {
+                      duration: 0.65,
+                      ease: [0.76, 0, 0.24, 1],
+                      delay: getStairDelay(i),
+                    },
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Variant 2: Curtain (split horizontal reveal) */}
+          {variant === 'curtain' && (
+            <div className="rb-preloader-curtain-wrap">
               <motion.div
-                key={`stair-${i}`}
-                className="rb-preloader-stair-col"
-                style={{
-                  width: `calc(100% / ${stairCount} + 0.5px)`,
-                  backgroundColor: bgColor,
-                }}
-                initial={{ y: '0%' }}
+                className="rb-preloader-curtain-half left"
+                style={{ backgroundColor: bgColor }}
+                initial={{ x: '0%' }}
                 exit={{
-                  y: exitY,
-                  transition: {
-                    duration: 0.65,
-                    ease: [0.76, 0, 0.24, 1],
-                    delay: getStairDelay(i),
-                  },
+                  x: '-100%',
+                  transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] },
                 }}
               />
-            ))}
-          </div>
+              <motion.div
+                className="rb-preloader-curtain-half right"
+                style={{ backgroundColor: bgColor }}
+                initial={{ x: '0%' }}
+                exit={{
+                  x: '100%',
+                  transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] },
+                }}
+              />
+            </div>
+          )}
 
-          {/* Centered Green Welcome Typography */}
+          {/* Variant 3: Slide (monolithic vertical or horizontal slide) */}
+          {variant === 'slide' && (
+            <motion.div
+              className="rb-preloader-slide-overlay"
+              style={{ backgroundColor: bgColor }}
+              initial={{ y: '0%' }}
+              exit={{
+                y: exitY,
+                transition: { duration: 0.7, ease: [0.76, 0, 0.24, 1] },
+              }}
+            />
+          )}
+
+          {/* Variant 4: Circle (expanding circular mask) */}
+          {variant === 'circle' && (
+            <motion.div
+              className="rb-preloader-circle-overlay"
+              style={{ backgroundColor: bgColor }}
+              initial={{ clipPath: 'circle(100% at 50% 50%)' }}
+              exit={{
+                clipPath: 'circle(0% at 50% 50%)',
+                transition: { duration: 0.75, ease: [0.76, 0, 0.24, 1] },
+              }}
+            />
+          )}
+
+          {/* Typography: Caacupe One hero font */}
           <motion.div
-            className="rb-preloader-welcome-wrap"
-            initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+            className={`rb-preloader-text-wrap ${textClassName}`}
+            initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{
               opacity: 0,
-              y: -12,
-              filter: 'blur(6px)',
-              transition: { duration: 0.32, ease: 'easeOut' },
+              y: -14,
+              filter: 'blur(4px)',
+              transition: { duration: 0.35, ease: 'easeOut' },
             }}
             transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="rb-preloader-welcome-text">{text}</h1>
+            {variant === 'percentage' ? (
+              <div className={`rb-preloader-percentage-box ${percentagePosition}`}>
+                <h1 className={`rb-preloader-percentage-num ${percentageTextClassName}`}>
+                  {progress}
+                  {showPercentageSign && '%'}
+                </h1>
+                <p className="rb-preloader-percentage-sub">{displayText}</p>
+                {showProgressBar && (
+                  <div className={`rb-preloader-progressbar ${progressBarPosition}`}>
+                    <div
+                      className="rb-preloader-progress-fill"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <h1 className="rb-preloader-heading">{displayText}</h1>
+            )}
           </motion.div>
         </motion.div>
       )}

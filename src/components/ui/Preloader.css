@@ -1,4 +1,4 @@
-/* Preloader: seamless solid background, refined green Welcome typography, and smooth reveal */
+/* Preloader: plain solid #f0191a background, white "Glad you're here" with Caacupe One hero font */
 
 .rb-preloader-root {
   inset: 0;
@@ -10,11 +10,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--preloader-bg, #060709);
-  color: #61dca3;
+  background-color: var(--preloader-bg, #f0191a);
+  color: #ffffff;
 }
 
-/* Seamless staircase reveal without grid lines or column borders */
+/* Staggered staircase reveal without grid lines or column borders */
 .rb-preloader-stairs-wrap {
   position: absolute;
   inset: 0;
@@ -30,7 +30,7 @@
   height: 100%;
   position: relative;
   will-change: transform;
-  background-color: var(--preloader-stair-bg, #060709);
+  background-color: var(--preloader-stair-bg, #f0191a);
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
@@ -38,8 +38,37 @@
   padding: 0 !important;
 }
 
-/* Center Welcome typography */
-.rb-preloader-welcome-wrap {
+/* Variant: Curtain */
+.rb-preloader-curtain-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.rb-preloader-curtain-half {
+  width: 50%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* Variant: Slide & Circle */
+.rb-preloader-slide-overlay,
+.rb-preloader-circle-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Centered typography matching "Hi, I'm Sahil" styling */
+.rb-preloader-text-wrap {
   position: relative;
   z-index: 5;
   display: flex;
@@ -50,27 +79,64 @@
   pointer-events: none;
 }
 
-.rb-preloader-welcome-text {
-  font-family: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-size: clamp(2rem, 5.5vw, 3.25rem);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: var(--preloader-text-color, #61dca3);
+.rb-preloader-heading {
+  font-family: 'Caacupe One', cursive, sans-serif;
+  font-size: clamp(2.6rem, 6.4vw, 4.2rem);
+  font-weight: 400;
+  letter-spacing: 0.065em;
+  line-height: 1.08;
+  text-transform: none;
+  color: #ffffff;
+  background: linear-gradient(180deg, #ffffff 45%, rgba(255, 255, 255, 0.85) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 20px rgba(255, 255, 255, 0.15)) drop-shadow(0 8px 32px rgba(0, 0, 0, 0.35));
   margin: 0;
-  line-height: 1.1;
-  text-shadow:
-    0 0 24px rgba(97, 220, 163, 0.42),
-    0 0 52px rgba(97, 220, 163, 0.2);
-  animation: rbWelcomeGlow 2.2s ease-in-out infinite alternate;
 }
 
-@keyframes rbWelcomeGlow {
-  0% {
-    opacity: 0.88;
-    filter: drop-shadow(0 0 16px rgba(97, 220, 163, 0.35));
+@media (max-width: 768px) {
+  .rb-preloader-heading {
+    font-size: clamp(3rem, 10vw, 4.2rem) !important;
   }
-  100% {
-    opacity: 1;
-    filter: drop-shadow(0 0 28px rgba(97, 220, 163, 0.6));
-  }
+}
+
+/* Variant: Percentage */
+.rb-preloader-percentage-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.rb-preloader-percentage-num {
+  font-family: 'Caacupe One', cursive, sans-serif;
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 400;
+  margin: 0;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.rb-preloader-percentage-sub {
+  font-family: 'Caacupe One', cursive, sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.rb-preloader-progressbar {
+  width: 240px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.rb-preloader-progress-fill {
+  height: 100%;
+  background: #ffffff;
+  transition: width 0.1s linear;
 }

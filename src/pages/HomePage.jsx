@@ -41,6 +41,28 @@ export default function HomePage({ sound }) {
     if (showIntro) return;
 
     const ctx = gsap.context(() => {
+      // Cinematic entrance reveal for hero section when preloader finishes
+      gsap.fromTo(
+        '#hero-greeting-heading',
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }
+      );
+      gsap.fromTo(
+        '.hero-role-wrapper',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.75, delay: 0.12, ease: 'power3.out' }
+      );
+      gsap.fromTo(
+        '.hero-pitch-statement',
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.75, delay: 0.22, ease: 'power3.out' }
+      );
+      gsap.fromTo(
+        '.social-icons-wrapper',
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.75, delay: 0.32, ease: 'power3.out' }
+      );
+
       const sections = document.querySelectorAll('.portfolio-section:not(.hero-section)');
       sections.forEach((section) => {
         gsap.fromTo(
@@ -92,7 +114,7 @@ export default function HomePage({ sound }) {
         />
       </div>
 
-      {/* Preloader: first-time entrance with seamless background and green Welcome text */}
+      {/* Preloader: first-time entrance with plain #f0191a background and white Glad you're here text */}
       {showIntro && <Preloader onComplete={handleIntroComplete} />}
 
       <section id="section-hero" className="portfolio-section hero-section">

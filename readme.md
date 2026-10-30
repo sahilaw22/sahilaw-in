@@ -36,7 +36,7 @@ My Coolofio is a personal portfolio and creative engineering showcase. It combin
 
 ## Core Features
 
-- **React Bits Pro Preloader**: Seamless entrance screen (`@reactbits-starter/preloader-tw`) with green Welcome typography, session-based first-visit display, and keyboard/click skip affordance.
+- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white Glad you're here typography, session-based first-visit display, and keyboard/click skip affordance.
 - **Scroll Stack Project Deck**: Featured work presented in a stacked card deck (`@reactbits-starter/scroll-stack-tw`) that glides and scales smoothly as the user scrolls.
 - **3D OrbitDeck Carousel**: Cylindrical card perspective ring powered by CSS 3D matrix math with pointer scrub and inertial dampening.
 - **Procedural Web Audio Engine**: Synthesized acoustic clicks and frequency pops triggered on interactive elements using the native Web Audio API with zero external media files.
