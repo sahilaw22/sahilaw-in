@@ -1,0 +1,236 @@
+/* ==========================================================================
+   ExpandableTabs Floating Pill Navigation
+   ========================================================================== */
+
+/* Outer wrapper: centers navbar horizontally across all viewports without transform conflicts */
+.expandable-tabs-wrapper {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 1.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 9999999 !important;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+/* Floating liquid glass pill capsule */
+.expandable-tabs-container {
+  pointer-events: auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 4px;
+  border-radius: 9999px;
+  background: rgba(16, 16, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  user-select: none;
+  -webkit-user-select: none;
+  box-sizing: border-box;
+  max-width: calc(100vw - 2rem);
+  overflow: hidden;
+}
+
+/* Subtle vertical separator */
+.expandable-tab-separator {
+  margin: 0 0.15rem;
+  height: 16px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+/* Individual tab button */
+.expandable-tab-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  font-family: 'Plus Jakarta Sans', var(--font-secondary), -apple-system, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-sizing: border-box;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, padding 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Idle (inactive) tab button: compact icon-only pill */
+.expandable-tab-btn.is-idle {
+  color: rgba(255, 255, 255, 0.55);
+  padding: 0 10px;
+  gap: 0;
+}
+
+.expandable-tab-btn.is-idle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.expandable-tab-btn.is-idle:active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Active (selected) tab button: perfectly fitted inside the capsule */
+.expandable-tab-btn.is-selected {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 0 14px;
+  gap: 7px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.expandable-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.expandable-tab-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.expandable-tab-btn.is-idle .expandable-tab-icon svg {
+  opacity: 0.75;
+}
+
+.expandable-tab-btn.is-selected .expandable-tab-icon svg {
+  opacity: 1;
+}
+
+.expandable-tab-title {
+  overflow: hidden;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Mobile responsive: Floating Pill at TOP of screen
+   ========================================================================== */
+@media screen and (max-width: 920px) {
+  .expandable-tabs-wrapper {
+    top: max(0.85rem, env(safe-area-inset-top, 0.85rem));
+    bottom: auto !important;
+    padding: 0 0.75rem;
+  }
+
+  .expandable-tabs-container {
+    padding: 4px;
+    gap: 4px;
+    background: rgba(14, 14, 18, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7), 
+                0 0 0 1px rgba(255, 255, 255, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .expandable-tab-separator {
+    margin: 0 2px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .expandable-tab-btn {
+    height: 34px;
+    font-size: 0.78rem;
+  }
+
+  .expandable-tab-btn.is-idle {
+    padding: 0 9px;
+  }
+
+  .expandable-tab-btn.is-idle .expandable-tab-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .expandable-tab-btn.is-selected {
+    padding: 0 13px;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .expandable-tab-btn.is-selected .expandable-tab-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .expandable-tab-btn.is-selected .expandable-tab-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+}
+
+/* Very compact phones (<= 375px) */
+@media screen and (max-width: 375px) {
+  .expandable-tabs-wrapper {
+    top: max(0.65rem, env(safe-area-inset-top, 0.65rem));
+    padding: 0 0.5rem;
+  }
+
+  .expandable-tabs-container {
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .expandable-tab-btn {
+    height: 32px;
+  }
+
+  .expandable-tab-btn.is-idle {
+    padding: 0 8px;
+  }
+
+  .expandable-tab-btn.is-idle .expandable-tab-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .expandable-tab-btn.is-selected {
+    padding: 0 11px;
+    gap: 5px;
+  }
+
+  .expandable-tab-btn.is-selected .expandable-tab-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .expandable-tab-btn.is-selected .expandable-tab-title {
+    font-size: 0.74rem;
+  }
+}
+
+/* Hide on print / PDF download */
+@media print {
+  .expandable-tabs-wrapper,
+  .expandable-tabs-container,
+  .expandable-tab-btn,
+  .expandable-tab-separator {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}

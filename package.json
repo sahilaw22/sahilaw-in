@@ -1,0 +1,26 @@
+{
+  "name": "sahil-portfolio",
+  "version": "1.0.0",
+  "description": "Sahil's personal portfolio",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "csstype": "^3.2.3",
+    "framer-motion": "^13.4.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.47.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.7.0",
+    "usehooks-ts": "^3.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
+  }
+}
