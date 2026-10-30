@@ -6,36 +6,61 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// SkillIcons for the About narrative
-const ICONS = {
-  '{{ICON_FIGMA}}': (
-    <img
-      src="/icons/skillicons/figma.svg"
-      alt="Figma"
-      title="Figma (UI/UX)"
-      className="about-skill-icon"
-      onError={(e) => { e.currentTarget.src = 'https://skillicons.dev/icons?i=figma'; }}
-    />
-  ),
-  '{{ICON_REACT}}': (
-    <img
-      src="/icons/skillicons/react.svg"
-      alt="React"
-      title="React.js"
-      className="about-skill-icon"
-      onError={(e) => { e.currentTarget.src = 'https://skillicons.dev/icons?i=react'; }}
-    />
-  ),
-  '{{ICON_FLUTTER}}': (
-    <img
-      src="/icons/skillicons/flutter.svg"
-      alt="Flutter"
-      title="Flutter"
-      className="about-skill-icon"
-      onError={(e) => { e.currentTarget.src = 'https://skillicons.dev/icons?i=flutter'; }}
-    />
-  ),
+const ALIAS_MAP = {
+  typescript: 'ts',
+  javascript: 'js',
+  python: 'py',
+  node: 'nodejs',
+  nodejs: 'nodejs',
+  tailwind: 'tailwind',
+  next: 'nextjs',
+  nextjs: 'nextjs',
+  golang: 'go',
+  cpp: 'cpp',
+  cs: 'cs',
+  cplusplus: 'cpp',
+  csharp: 'cs',
 };
+
+function getSkillIconElement(rawName) {
+  const raw = (rawName || '').toLowerCase();
+  const iconId = ALIAS_MAP[raw] || raw;
+  return (
+    <img
+      src={`https://skillicons.dev/icons?i=${iconId}`}
+      alt={raw}
+      title={raw.toUpperCase()}
+      className="about-skill-icon"
+      width={24}
+      height={24}
+      loading="lazy"
+    />
+  );
+}
+
+function tokenizeParagraph(para) {
+  if (!para) return [];
+  const iconPattern = /(\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}|https:\/\/skillicons\.dev\/icons\?i=[A-Za-z0-9_,-]+)/gi;
+  const parts = para.split(iconPattern);
+  const result = [];
+
+  for (const part of parts) {
+    if (!part) continue;
+    const match =
+      part.match(/^\{\{(?:ICON_|icon:)([A-Za-z0-9_-]+)\}\}$/i) ||
+      part.match(/^https:\/\/skillicons\.dev\/icons\?i=([A-Za-z0-9_,-]+)$/i);
+    if (match) {
+      result.push({ isIcon: true, iconName: match[1].toLowerCase() });
+    } else {
+      const words = part.split(/\s+/).filter(Boolean);
+      for (const w of words) {
+        result.push({ isIcon: false, text: w });
+      }
+    }
+  }
+
+  return result;
+}
 
 export default function TextRevealParagraph({ paragraphs }) {
   const containerRef = useRef(null);
@@ -48,9 +73,9 @@ export default function TextRevealParagraph({ paragraphs }) {
     if (!words.length) return undefined;
 
     words.forEach((w) => {
-      w.style.opacity = '0.2';
+      w.style.opacity = '0.28';
       const s = w.querySelector('.tr-word-text');
-      if (s) s.style.opacity = '0.25';
+      if (s) s.style.opacity = '0.28';
     });
 
     const st = ScrollTrigger.create({
@@ -73,11 +98,11 @@ export default function TextRevealParagraph({ paragraphs }) {
           else if (progress <= start) wordProgress = 0;
           else wordProgress = (progress - start) / duration;
 
-          const targetOpacity = 0.2 + wordProgress * 0.8;
+          const targetOpacity = 0.28 + wordProgress * 0.72;
           word.style.opacity = targetOpacity;
 
           if (wordText) {
-            wordText.style.opacity = Math.max(0.25, wordProgress);
+            wordText.style.opacity = Math.max(0.28, wordProgress);
           }
         });
       },
@@ -92,22 +117,21 @@ export default function TextRevealParagraph({ paragraphs }) {
     <div ref={containerRef} className="anime-text-container">
       <div className="anime-text">
         {paragraphs.map((para, pIdx) => {
-          const tokens = para.split(/\s+/).filter(Boolean);
+          const tokens = tokenizeParagraph(para);
           return (
             <p key={pIdx} className="tr-paragraph">
               {tokens.map((token, tIdx) => {
-                const iconElement = ICONS[token];
-                if (iconElement) {
+                if (token.isIcon) {
                   return (
-                    <span key={tIdx} className="tr-word word inline-icon-wrapper">
-                      {iconElement}
+                    <span key={tIdx} className="tr-word word inline-icon-wrapper" title={token.iconName}>
+                      {getSkillIconElement(token.iconName)}
                     </span>
                   );
                 }
 
                 return (
                   <span key={tIdx} className="tr-word word">
-                    <span className="tr-word-text">{token}</span>
+                    <span className="tr-word-text">{token.text}</span>
                   </span>
                 );
               })}

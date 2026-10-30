@@ -4,13 +4,13 @@ import { useSoundEngine } from './hooks/useSoundEngine.js';
 
 import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
-import LetterGlitch from './components/LetterGlitch.jsx';
 import HomePage from './pages/HomePage.jsx';
 import BlogPage from './pages/BlogPage.jsx';
 import PostPage from './pages/PostPage.jsx';
 import ResumePage from './pages/ResumePage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
+import AdminPage from './pages/AdminPage.jsx';
 
 // Determine which "view name" maps to each route for the bottom nav active state
 function routeToView(route) {
@@ -20,6 +20,7 @@ function routeToView(route) {
   if (route.startsWith('/projects')) return 'projects';
   if (route === '/careers' || route === '/resume') return 'careers';
   if (route === '/chat') return 'chat';
+  if (route === '/chatbot-response') return 'admin';
   return 'home';
 }
 
@@ -27,6 +28,7 @@ export default function App() {
   const { route } = useHashRouter();
   const sound = useSoundEngine();
   const activeView = routeToView(route);
+  const isAdmin = route === '/chatbot-response';
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -34,6 +36,7 @@ export default function App() {
 
   // Render the correct page based on the current hash route
   function renderPage() {
+    if (route === '/chatbot-response') return <AdminPage />;
     if (route === '/') return <HomePage sound={sound} />;
     if (route === '/blog') return <BlogPage sound={sound} />;
     if (route.startsWith('/blog/')) {
@@ -49,27 +52,11 @@ export default function App() {
 
   return (
     <>
-      {/* Fixed Matrix Code Background: Active across Hero and all bottom scroll pages */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <LetterGlitch
-          glitchColors={['#ffffff', '#61dca3']}
-          glitchAmount={0}
-          speed={0}
-          flow={0}
-          interactive={false}
-          clickEffect="none"
-          fontSize={10}
-          baseOpacity={0.12}
-          characters="0123456789ABCDEF"
-          intro={false}
-        />
-      </div>
-
       <div key={route} className="page-transition-wrapper">
         {renderPage()}
       </div>
-      <RightScrollPills play={sound?.play} currentRoute={route} />
-      <BottomNav activeView={activeView} />
+      {!isAdmin && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {!isAdmin && <BottomNav activeView={activeView} />}
     </>
   );
 }

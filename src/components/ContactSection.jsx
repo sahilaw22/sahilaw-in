@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { PORTFOLIO_EMAIL, openGmailDirect, copyToClipboard } from '../lib/emailHelper.js';
 
 export default function ContactSection({ play }) {
-  const [copied, setCopied] = useState(false);
   const [localTime, setLocalTime] = useState('');
-  const email = 'sahilwani.work@gmail.com';
+  const [copied, setCopied] = useState(false);
+  const email = PORTFOLIO_EMAIL;
 
   useEffect(() => {
     const updateTime = () => {
@@ -25,14 +26,22 @@ export default function ContactSection({ play }) {
     return () => clearInterval(interval);
   }, []);
 
-  const handleCopyEmail = (e) => {
-    e.preventDefault();
-    navigator.clipboard.writeText(email);
-    setCopied(true);
+  const handleCopyEmail = async (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    const ok = await copyToClipboard(email);
+    if (ok) {
+      setCopied(true);
+      play?.('click');
+      setTimeout(() => setCopied(false), 2400);
+    }
+  };
+
+  const handleOpenGmail = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
     play?.('click');
-    setTimeout(() => {
-      setCopied(false);
-    }, 2400);
+    openGmailDirect(email);
   };
 
   return (
@@ -80,48 +89,61 @@ export default function ContactSection({ play }) {
           </div>
         </div>
 
-        {/* Primary Interactive Ivory/Cream Email Card */}
+        {/* Primary Interactive Ivory/Cream Email Card: Copy Email | Open Gmail App / Web */}
         <div className="contact-email-capsule-wrapper">
           <div
-            onClick={handleCopyEmail}
             className={`contact-email-capsule ${copied ? 'is-copied' : ''}`}
-            role="button"
-            tabIndex={0}
-            aria-label="Copy email address"
+            role="group"
+            aria-label={`Email ${email}`}
           >
-            <div className="email-capsule-left">
-              <span className="email-at-badge">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
-                </svg>
-              </span>
-              <span className="email-capsule-address">{copied ? 'COPIED TO CLIPBOARD!' : email}</span>
-            </div>
-
-            <div className="email-capsule-divider" />
-
-            <a
-              href={`mailto:${email}`}
-              className="email-capsule-arrow"
-              onClick={(e) => {
-                e.stopPropagation();
-                play?.('click');
-              }}
-              aria-label="Send email directly"
+            {/* Left section: Click to copy */}
+            <button
+              type="button"
+              className="email-capsule-copy-btn"
+              onClick={handleCopyEmail}
+              title="Click to copy email address"
+              aria-label="Copy email address to clipboard"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <span className="email-at-badge" aria-hidden="true">
+                {copied ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" />
+                  </svg>
+                )}
+              </span>
+              <span className="email-capsule-address">
+                {copied ? 'Copied to clipboard' : email}
+              </span>
+            </button>
+
+            {/* Vertical separator */}
+            <div className="email-capsule-divider" aria-hidden="true" />
+
+            {/* Right section: Up arrow button to open Gmail directly */}
+            <button
+              type="button"
+              className="email-capsule-arrow"
+              onClick={handleOpenGmail}
+              aria-label="Open Gmail directly"
+              title="Open in Gmail"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="7" y1="17" x2="17" y2="7" />
                 <polyline points="7 7 17 7 17 17" />
               </svg>
-            </a>
+            </button>
           </div>
         </div>
 
         {/* Secondary Socials: 3D Mechanical Keycaps Row */}
         <div className="contact-keycaps-row">
           <a
-            href="https://linkedin.com/in/sahilaw"
+            href="https://www.linkedin.com/in/sahil-a-057a0231a"
             target="_blank"
             rel="noopener noreferrer"
             className="contact-keycap-btn"
@@ -136,7 +158,7 @@ export default function ContactSection({ play }) {
           </a>
 
           <a
-            href="https://threads.net"
+            href="https://www.threads.com/@sahilaw2"
             target="_blank"
             rel="noopener noreferrer"
             className="contact-keycap-btn"

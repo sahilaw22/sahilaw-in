@@ -1,7 +1,6 @@
 import React from 'react';
 import TextRevealParagraph from './TextRevealParagraph';
-import CareerTimeline from './CareerTimeline';
-import { ABOUT_PARAGRAPHS } from '../data/portfolioData.jsx';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 
 /**
  * AboutSection — Matching the header "ABOUT ME"
@@ -9,6 +8,8 @@ import { ABOUT_PARAGRAPHS } from '../data/portfolioData.jsx';
  * a minimalist 3D View Resume action, and the technical career timeline.
  */
 export default function AboutSection({ play }) {
+  const { about } = usePortfolioData();
+
   return (
     <section id="section-about" className="portfolio-section portfolio-about-section">
       <div className="section-container">
@@ -20,7 +21,7 @@ export default function AboutSection({ play }) {
         </div>
 
         {/* Animated Text Reveal Narrative */}
-        <TextRevealParagraph paragraphs={ABOUT_PARAGRAPHS} />
+        <TextRevealParagraph paragraphs={about} />
 
         {/* View Resume Button: Compact 3D White Button */}
         <div className="about-resume-wrap">
@@ -39,9 +40,6 @@ export default function AboutSection({ play }) {
             </span>
           </a>
         </div>
-
-        {/* Technical Career & Education Timeline Ruler */}
-        <CareerTimeline />
       </div>
     </section>
   );

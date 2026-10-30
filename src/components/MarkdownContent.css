@@ -1,0 +1,131 @@
+/* ==========================================================================
+   MarkdownContent Styles — Ultra-clean, authentic portfolio typography
+   Zero green button pills, clean text with white underline & bold social links
+   ========================================================================== */
+
+.markdown-content {
+  color: inherit;
+  font-size: inherit;
+  line-height: 1.62;
+  word-break: break-word;
+}
+
+.markdown-paragraph {
+  margin: 0;
+}
+
+.markdown-paragraph + .markdown-paragraph {
+  margin-top: 0.75rem;
+}
+
+.markdown-bold {
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.markdown-italic {
+  font-style: italic;
+  opacity: 0.92;
+}
+
+.markdown-code {
+  font-family: 'Disket Mono', 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* Inline Links: Text + Icon + White Underline Highlight */
+.markdown-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0 0.15rem;
+  background: transparent !important;
+  border: none !important;
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.45);
+  text-underline-offset: 3.5px;
+  text-decoration-thickness: 1px;
+  font-weight: 600;
+  font-size: 0.95em;
+  vertical-align: baseline;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.markdown-inline-link:hover {
+  color: #ffffff;
+  text-decoration-color: #ffffff;
+  text-decoration-thickness: 1.5px;
+}
+
+.markdown-inline-link svg {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: -1px;
+  color: rgba(255, 255, 255, 0.75);
+  transition: color 0.18s ease;
+}
+
+.markdown-inline-link:hover svg {
+  color: #ffffff;
+}
+
+/* Bold Social Links (GitHub, LinkedIn, Email) with icon and white underline */
+.markdown-inline-link.is-github,
+.markdown-inline-link.is-linkedin,
+.markdown-inline-link.is-email {
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.65);
+  text-underline-offset: 3.5px;
+  text-decoration-thickness: 1.2px;
+}
+
+.markdown-inline-link.is-github:hover,
+.markdown-inline-link.is-linkedin:hover,
+.markdown-inline-link.is-email:hover {
+  text-decoration-color: #ffffff;
+  color: #ffffff;
+}
+
+/* Lists & Blockquotes — Minimal Precision Styling */
+.markdown-ol,
+.markdown-ul {
+  margin: 0.55rem 0;
+  padding-left: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.markdown-ol {
+  list-style-type: decimal;
+}
+
+.markdown-ul {
+  list-style-type: disc;
+}
+
+.markdown-li {
+  margin: 0;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.markdown-blockquote {
+  margin: 0.55rem 0;
+  padding: 0.4rem 0.85rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(255, 255, 255, 0.85);
+  font-style: italic;
+  border-radius: 0 4px 4px 0;
+}

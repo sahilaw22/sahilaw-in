@@ -80,6 +80,10 @@ export default function OrbitDeck({
   // Pointer / Touch / Mouse Drag Handling
   const handlePointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return;
+    // Do not capture pointer if clicking on buttons, links, or actions
+    if (e.target.closest('button, a, .od-btn-detail, .od-visit-btn, .od-card-actions, .od-card-tech-line')) {
+      return;
+    }
     isPointerDownRef.current = true;
     hasMovedRef.current = false;
     const startX = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
@@ -98,7 +102,7 @@ export default function OrbitDeck({
     if (!isPointerDownRef.current) return;
     const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
     const delta = clientX - pointerStartRef.current;
-    if (Math.abs(delta) > 4) {
+    if (Math.abs(delta) > 14) {
       hasMovedRef.current = true;
     }
     setDragOffset(delta);
@@ -306,10 +310,15 @@ export default function OrbitDeck({
                   </div>
                 )}
 
-                <div className="od-card-actions">
+                <div
+                  className="od-card-actions"
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
                   <button
                     type="button"
                     className="od-btn-detail"
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
                       if (onSelectProject) onSelectProject(project);

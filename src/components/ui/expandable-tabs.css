@@ -125,6 +125,14 @@
   color: #ffffff;
 }
 
+/* Hide navigation pill completely while in project details view to prevent overlapping modal header / back button */
+body.project-detail-active .expandable-tabs-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* ==========================================================================
    Mobile responsive: Floating Pill at TOP of screen
    ========================================================================== */

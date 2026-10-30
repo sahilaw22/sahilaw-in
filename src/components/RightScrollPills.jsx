@@ -12,7 +12,7 @@ const PILLS = [
   },
   {
     slug: 'experience',
-    label: 'Education & Experience',
+    label: 'Experience & Education',
     targetId: 'section-journey',
     logoSrc: '/images/navigation/nav-experience.png',
     fallbackSrc: './images/navigation/nav-experience.png',
@@ -21,7 +21,7 @@ const PILLS = [
   },
   {
     slug: 'skills',
-    label: 'Projects & Skills',
+    label: 'Certifications & Achievements',
     targetId: 'section-skills',
     logoSrc: '/images/navigation/nav-skills.png',
     fallbackSrc: './images/navigation/nav-skills.png',
@@ -47,23 +47,13 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   const [offsetY, setOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Hidden by default on page load / refresh for mobile screens
-  const [isHidden, setIsHidden] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth <= 768;
-    }
-    return false;
-  });
-
   const isDraggingRef = useRef(false);
   const startYRef = useRef(0);
   const startOffsetRef = useRef(0);
   const hasMovedRef = useRef(false);
   const navRef = useRef(null);
-  const scrollStopTimerRef = useRef(null);
 
-  // Scroll detection & mobile scroll behavior:
-  // Visible while user is actively scrolling -> smoothly hides when scrolling stops
+  // Scroll detection: Keep pills active and sync active slug
   useEffect(() => {
     const isHome = currentRoute === '/' || currentRoute === '';
 
@@ -77,26 +67,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       }
     }
 
-    const isMobile = () => window.innerWidth <= 768;
-
     function handleScroll() {
-      // Mobile behavior: while actively scrolling, show the notch
-      if (isMobile()) {
-        setIsHidden(false);
-
-        if (scrollStopTimerRef.current) {
-          clearTimeout(scrollStopTimerRef.current);
-        }
-
-        // When user stops scrolling, wait 1000ms of inactivity and smoothly hide
-        scrollStopTimerRef.current = setTimeout(() => {
-          setIsHidden(true);
-        }, 1000);
-      } else {
-        // Desktop: always visible
-        setIsHidden(false);
-      }
-
       if (!isHome) return;
 
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
@@ -117,23 +88,10 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       }
     }
 
-    const handleResize = () => {
-      if (!isMobile()) {
-        setIsHidden(false);
-      } else {
-        setIsHidden(true);
-      }
-    };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleResize);
 
     return () => {
-      if (scrollStopTimerRef.current) {
-        clearTimeout(scrollStopTimerRef.current);
-      }
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
     };
   }, [currentRoute]);
 
@@ -154,10 +112,9 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   // Pointer/touch drag handling
   const handlePointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return;
-    setIsHidden(false);
-    if (scrollStopTimerRef.current) {
-      clearTimeout(scrollStopTimerRef.current);
-    }
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch (_) {}
     isDraggingRef.current = true;
     setIsDragging(true);
     startYRef.current = e.clientY;
@@ -169,7 +126,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     const onWindowMove = (e) => {
       if (!isDraggingRef.current) return;
       const dy = e.clientY - startYRef.current;
-      if (Math.abs(dy) > 5) {
+      if (Math.abs(dy) > 4) {
         hasMovedRef.current = true;
       }
       if (hasMovedRef.current) {
@@ -177,20 +134,15 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       }
     };
 
-    const onWindowUp = () => {
+    const onWindowUp = (e) => {
       if (isDraggingRef.current) {
         isDraggingRef.current = false;
         setIsDragging(false);
-
-        // On mobile, schedule hide after user stops dragging
-        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-          if (scrollStopTimerRef.current) {
-            clearTimeout(scrollStopTimerRef.current);
+        try {
+          if (e?.pointerId && navRef.current) {
+            navRef.current.releasePointerCapture?.(e.pointerId);
           }
-          scrollStopTimerRef.current = setTimeout(() => {
-            setIsHidden(true);
-          }, 1200);
-        }
+        } catch (_) {}
       }
     };
 
@@ -263,19 +215,14 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   return (
     <nav
       ref={navRef}
-      className={`portfolio-scroll-pills-nav ${isHidden ? 'is-hidden' : ''}`}
+      className="portfolio-scroll-pills-nav"
       aria-label="Portfolio quick section navigation"
       onPointerDown={handlePointerDown}
       style={{
-        transform: `translateY(calc(-50% + ${offsetY}px)) ${
-          isHidden ? 'translateX(calc(100% + 28px))' : 'translateX(0)'
-        }`,
+        transform: `translateY(calc(-50% + ${offsetY}px))`,
         transition: isDragging
           ? 'none'
-          : 'transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease',
-        opacity: isHidden ? 0 : 1,
-        pointerEvents: isHidden ? 'none' : 'auto',
-        visibility: isHidden ? 'hidden' : 'visible',
+          : 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       {/* Mobile notch drag indicator handle */}

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import LatticeLoader from '../components/LatticeLoader.jsx';
+import MarkdownContent from '../components/MarkdownContent.jsx';
+import { openGmailDirect } from '../lib/emailHelper.js';
 
 const prompts = [
   'Ask about my strongest skills',
@@ -82,48 +84,48 @@ function assistantReply(question) {
   // 2. LinkedIn specifically
   if (q.includes('linkedin')) {
     return {
-      plainText: "You can view Sahil's professional profile, experience, and recommendations on LinkedIn (https://linkedin.com/in/sahilaw).",
-      formattedText: "You can view Sahil's professional profile, experience, and recommendations on [LinkedIn](https://linkedin.com/in/sahilaw).",
+      plainText: "You can view Sahil's professional profile, experience, and recommendations on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a).",
+      formattedText: "You can view Sahil's professional profile, experience, and recommendations on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a).",
     };
   }
 
   // 3. Contact / Email query
   if (q.includes('contact') || q.includes('email') || q.includes('reach') || q.includes('message') || q.includes('mail') || q.includes('freelance') || q.includes('touch')) {
     return {
-      plainText: "You can contact Sahil directly via email at sahilwani.work@gmail.com.",
-      formattedText: "You can contact Sahil directly via email at [sahilwani.work@gmail.com](mailto:sahilwani.work@gmail.com).",
+      plainText: "You can contact Sahil directly via email at sahilaw502@gmail.com for engineering roles, freelance inquiries, or product collaborations.\n\nYou can also connect with him on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a) or check his open-source work on GitHub (https://github.com/sahilaw22).",
+      formattedText: "You can contact Sahil directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com) for engineering roles, freelance inquiries, or product collaborations.\n\nYou can also connect with him on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a) or check his open-source work on [GitHub](https://github.com/sahilaw22).",
     };
   }
 
   // 4. Quick Prompt: "about my strongest skills" / skills / tech stack
   if (q.includes('skill') || q.includes('tech') || q.includes('stack') || q.includes('language') || q.includes('framework') || q.includes('tool')) {
     return {
-      plainText: "Sahil specializes in React, TypeScript, Tailwind CSS, Web Audio API, and GSAP animations, showcased in Projects (#/projects).",
-      formattedText: "Sahil specializes in React, TypeScript, Tailwind CSS, Web Audio API, and GSAP animations, showcased in [Projects](#/projects).",
+      plainText: "Sahil's core competencies center on React 18, TypeScript, Tailwind CSS, Next.js, and mobile development with Flutter and Dart. He builds responsive web interfaces with fluid GSAP animations and Web Audio API synthesis.\n\nHe also engineers intelligent systems including LLM agent workflows and Gemini API streaming interfaces. Review his verified credentials in his Resume (#/careers) or inspect code samples in Projects (#/projects).",
+      formattedText: "Sahil's core competencies center on **React 18**, **TypeScript**, **Tailwind CSS**, **Next.js**, and mobile development with **Flutter** and **Dart**. He builds responsive web interfaces with fluid GSAP animations and Web Audio API synthesis.\n\nHe also engineers intelligent systems including LLM agent workflows and Gemini API streaming interfaces. Review his verified credentials in his [Resume](#/careers) or inspect code samples in [Projects](#/projects).",
     };
   }
 
   // 5. Quick Prompt: "how I build products" / build process
   if (q.includes('build') || q.includes('product') || q.includes('process') || q.includes('architecture') || q.includes('workflow')) {
     return {
-      plainText: "He builds products by pairing rapid browser prototyping with sound architecture and responsive design, illustrated in Projects (#/projects).",
-      formattedText: "He builds products by pairing rapid browser prototyping with sound architecture and responsive design, illustrated in [Projects](#/projects).",
+      plainText: "Sahil builds with intent and thinks in motion. He believes exceptional engineering begins with clarity, clean code structure, and tactile micro-feedback that makes digital tools feel alive.\n\nYou can see this philosophy in action throughout this site's interactive audio feedback, draggable physics elements, and inside the Projects showcase (#/projects).",
+      formattedText: "Sahil builds with intent and thinks in motion. He believes exceptional engineering begins with clarity, clean code structure, and tactile micro-feedback that makes digital tools feel alive.\n\nYou can see this philosophy in action throughout this site's interactive audio feedback, draggable physics elements, and inside the [Projects showcase](#/projects).",
     };
   }
 
   // 6. Quick Prompt: "about my projects" / projects / portfolio
   if (q.includes('project') || q.includes('portfolio') || q.includes('work') || q.includes('app')) {
     return {
-      plainText: "His highlighted work includes a 3D audio-reactive portfolio, a browser synthesizer, and Web3 components in Projects (#/projects).",
-      formattedText: "His highlighted work includes a 3D audio-reactive portfolio, a browser synthesizer, and Web3 components in [Projects](#/projects).",
+      plainText: "Sahil's highlighted work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key projects include this 3D audio-reactive portfolio, the browser-based Web Audio Synth, and the ConnectKit Theme for Web3 wallet onboarding.\n\nHe also developed Lurian AI for low-latency conversational streaming. Explore all interactive builds in Projects (#/projects) or browse the source code on GitHub (https://github.com/sahilaw22).",
+      formattedText: "Sahil's highlighted work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key projects include this 3D audio-reactive portfolio, the browser-based [Web Audio Synth](#/projects), and the [ConnectKit Theme](#/projects) for Web3 wallet onboarding.\n\nHe also developed [Lurian AI](#/chat) for low-latency conversational streaming. Explore all interactive builds in [Projects](#/projects) or browse the source code on [GitHub](https://github.com/sahilaw22).",
     };
   }
 
   // 7. Quick Prompt: "why a team should hire me" / why hire / role / job
   if (q.includes('hire') || q.includes('why') || q.includes('team') || q.includes('role') || q.includes('job') || q.includes('join') || q.includes('candidate')) {
     return {
-      plainText: "He bridges design intuition with solid engineering to build resilient, user-focused web applications, detailed in his Resume (#/careers).",
-      formattedText: "He bridges design intuition with solid engineering to build resilient, user-focused web applications, detailed in his [Resume](#/careers).",
+      plainText: "A team should hire Sahil for three concrete strengths:\n\n1. Frontend Craft & Motion: Proven mastery of React 18, TypeScript, Tailwind CSS, and Flutter, translating Figma prototypes into fluid, accessible, and high-performance interfaces.\n2. Practical AI Engineering: Direct experience integrating Gemini APIs, LLM streaming pipelines, and agent workflows into consumer-facing web surfaces.\n3. Product Ownership & Execution: A track record across engineering and growth roles at FlyRank AI and Big Block Theory, focusing on measurable user impact rather than vanity code.\n\nInspect his interactive builds in Projects (#/projects) or email him at sahilaw502@gmail.com.",
+      formattedText: "A team should hire Sahil for three concrete strengths:\n\n1. **Frontend Craft & Motion**: Proven mastery of React 18, TypeScript, Tailwind CSS, and Flutter, translating Figma prototypes into fluid, accessible, and high-performance interfaces.\n2. **Practical AI Engineering**: Direct experience integrating Gemini APIs, LLM streaming pipelines, and agent workflows into consumer-facing web surfaces.\n3. **Product Ownership & Execution**: A track record across engineering and growth roles at FlyRank AI and Big Block Theory, focusing on measurable user impact rather than vanity code.\n\nInspect his interactive builds in [Projects](#/projects) or [email him directly](mailto:sahilaw502@gmail.com).",
     };
   }
 
@@ -146,8 +148,8 @@ function assistantReply(question) {
   // 10. Greetings: "hi", "hello", "hey", etc.
   if (/^(hi|hello|hey|heyy|yo|sup|greetings|good\s*(morning|afternoon|evening))\b/i.test(q) || q === 'hi' || q === 'hello' || q === 'hey') {
     return {
-      plainText: "Hello! I am Sahil's AI assistant, ready to help you explore his work and background in Projects (#/projects).",
-      formattedText: "Hello! I am Sahil's AI assistant, ready to help you explore his work and background in [Projects](#/projects).",
+      plainText: "Hello! I am Sahil's portfolio assistant, ready to help you explore his work, skills, and background in Projects (#/projects).",
+      formattedText: "Hello! I am Sahil's portfolio assistant, ready to help you explore his work, skills, and background in [Projects](#/projects).",
     };
   }
 
@@ -162,8 +164,8 @@ function assistantReply(question) {
   // 12. Acknowledgments: "ok", "thanks", "great", etc.
   if (/^(ok|okay|got it|cool|nice|great|awesome|perfect|sounds good|thanks|thank you|thx)\b/i.test(q) || q === 'ok' || q === 'okay' || q === 'thanks') {
     return {
-      plainText: "Glad to help! You can reach Sahil directly via email at sahilwani.work@gmail.com.",
-      formattedText: "Glad to help! You can reach Sahil directly via email at [sahilwani.work@gmail.com](mailto:sahilwani.work@gmail.com).",
+      plainText: "Glad to help! You can reach Sahil directly via email at sahilaw502@gmail.com.",
+      formattedText: "Glad to help! You can reach Sahil directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com).",
     };
   }
 
@@ -196,7 +198,13 @@ function renderFormattedChatText(text) {
     }
 
     const label = match[1];
-    const url = match[2];
+    let url = match[2];
+    const isEmail = url.startsWith('mailto:') || label.includes('@');
+    let emailTarget = '';
+    if (isEmail) {
+      emailTarget = url.replace(/^mailto:/, '').split('?')[0] || 'sahilaw502@gmail.com';
+      url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(emailTarget)}`;
+    }
     const isExternal = url.startsWith('http') || url.startsWith('mailto');
 
     parts.push(
@@ -206,6 +214,12 @@ function renderFormattedChatText(text) {
         target={isExternal ? '_blank' : '_self'}
         rel={isExternal ? 'noreferrer noopener' : undefined}
         className="chat-inline-link"
+        onClick={(e) => {
+          if (isEmail) {
+            e.preventDefault();
+            openGmailDirect(emailTarget);
+          }
+        }}
       >
         <span className="chat-link-icon-wrap" aria-hidden="true">
           {getLinkIcon(label, url)}
@@ -248,6 +262,8 @@ export default function ChatPage() {
   const [isComposerFocused, setIsComposerFocused] = useState(false);
   const messagesRef = useRef(null);
   const typingTimersRef = useRef(new Set());
+  const conversationIdRef = useRef(null);
+  const sessionIdRef = useRef(`session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`);
 
   useEffect(() => {
     if (isComposerFocused) return undefined;
@@ -286,7 +302,7 @@ export default function ChatPage() {
     typingTimersRef.current.forEach((timer) => window.clearTimeout(timer));
   }, []);
 
-  function submitQuestion(questionText) {
+  async function submitQuestion(questionText) {
     const question = questionText?.trim();
     if (!question) return;
 
@@ -299,7 +315,6 @@ export default function ChatPage() {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
 
-    const replyData = assistantReply(question);
     const thinkingLabel = getThinkingLabel(question);
     const messageId = `${Date.now()}-${Math.random()}`;
     const replyId = `${messageId}-reply`;
@@ -312,38 +327,63 @@ export default function ChatPage() {
         id: replyId,
         role: 'manager',
         text: '',
-        formattedText: replyData.formattedText,
+        formattedText: '',
         isDone: false,
         label: thinkingLabel,
       },
     ]);
 
-    const reply = replyData.plainText;
-    const thinkDelay = 400;
+    let plainReply = '';
+    let formattedReply = '';
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: question,
+          sessionId: sessionIdRef.current,
+          conversationId: conversationIdRef.current,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Backend unavailable');
+      const data = await res.json();
+      if (data.conversationId) {
+        conversationIdRef.current = data.conversationId;
+      }
+      plainReply = data.answer || '';
+      if (data.links && data.links.length > 0) {
+        const linkMd = data.links.map((l) => `[${l.label}](${l.url})`).join('  ');
+        formattedReply = plainReply.includes('[') ? plainReply : `${plainReply}\n\n${linkMd}`;
+      } else {
+        formattedReply = plainReply;
+      }
+    } catch {
+      const fallbackData = assistantReply(question);
+      plainReply = fallbackData.plainText;
+      formattedReply = fallbackData.formattedText;
+    }
+
+    setMessages((current) =>
+      current.map((msg) =>
+        msg.id === replyId ? { ...msg, formattedText: formattedReply } : msg
+      )
+    );
+
+    const thinkDelay = 420;
     const startTimer = window.setTimeout(() => {
-      let charIdx = 0;
-
-      function typeReply() {
-        charIdx += 2;
-        const currentText = reply.slice(0, charIdx);
-        const isFinished = charIdx >= reply.length;
-
-        setMessages((current) => current.map((msg) => {
+      setMessages((current) =>
+        current.map((msg) => {
           if (msg.id !== replyId) return msg;
           return {
             ...msg,
-            text: currentText,
-            isDone: isFinished,
+            text: formattedReply || plainReply,
+            formattedText: formattedReply || plainReply,
+            isDone: true,
           };
-        }));
-
-        if (!isFinished) {
-          const timer = window.setTimeout(typeReply, 15);
-          typingTimersRef.current.add(timer);
-        }
-      }
-
-      typeReply();
+        })
+      );
     }, thinkDelay);
 
     typingTimersRef.current.add(startTimer);
@@ -393,11 +433,9 @@ export default function ChatPage() {
                   </div>
 
                   {message.text ? (
-                    <p className="chat-manager-text">
-                      {message.isDone
-                        ? renderFormattedChatText(message.formattedText || message.text)
-                        : message.text}
-                    </p>
+                    <div className="chat-manager-text">
+                      <MarkdownContent text={message.formattedText || message.text} maxParagraphs={2} />
+                    </div>
                   ) : null}
                 </>
               )}

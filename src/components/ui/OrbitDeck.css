@@ -239,6 +239,37 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
+/* Grid Card style for All Projects page */
+.od-grid-card {
+  position: relative !important;
+  width: 100% !important;
+  height: 385px !important;
+  border-radius: 2.25rem !important;
+  overflow: hidden !important;
+  background-color: #0e0f13 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  box-shadow: 0 24px 54px -10px rgba(0, 0, 0, 0.82),
+              0 14px 28px -14px rgba(0, 0, 0, 0.7),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18),
+              0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  cursor: pointer;
+  transition: transform 0.28s ease, box-shadow 0.28s ease !important;
+}
+
+.od-grid-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 32px 64px -8px rgba(0, 0, 0, 0.9),
+              0 18px 36px -12px rgba(0, 0, 0, 0.75),
+              inset 0 1px 0 rgba(255, 255, 255, 0.26),
+              0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+.od-grid-card:hover .od-card-bg-img {
+  transform: scale(1.05) !important;
+}
+
 /* --------------------------------------------------------------------------
    Pagination Dots (Pill)
    -------------------------------------------------------------------------- */

@@ -6,18 +6,29 @@ import { useEffect, useState } from 'react';
 //   navigate — helper to push a new hash
 export function useHashRouter() {
   function getRoute() {
-    const hash = window.location.hash || '#/';
-    return hash.replace(/^#/, '') || '/';
+    const hash = window.location.hash;
+    if (hash && hash.length > 1) {
+      return hash.replace(/^#/, '') || '/';
+    }
+    const path = window.location.pathname;
+    if (path && path !== '/') {
+      return path;
+    }
+    return hash ? hash.replace(/^#/, '') || '/' : '/';
   }
 
   const [route, setRoute] = useState(getRoute);
 
   useEffect(() => {
-    function onHashChange() {
+    function onLocationChange() {
       setRoute(getRoute());
     }
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener('hashchange', onLocationChange);
+    window.addEventListener('popstate', onLocationChange);
+    return () => {
+      window.removeEventListener('hashchange', onLocationChange);
+      window.removeEventListener('popstate', onLocationChange);
+    };
   }, []);
 
   function navigate(path) {

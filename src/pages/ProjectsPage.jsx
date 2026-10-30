@@ -234,65 +234,80 @@ export default function ProjectsPage({ showAll = false }) {
 
         <section className="projects-grid">
           {projects.map((project) => (
-            <article key={project.title} className="projects-grid-card">
-              {/* Banner with play hover overlay */}
-              <div
-                className="projects-grid-image-wrap"
-                onClick={() => setSelectedProject(project)}
-                role="button"
-                tabIndex={0}
-              >
-                <img src={project.image} alt={project.title} loading="lazy" />
-                <div className="project-card-play-overlay">
-                  <button
-                    type="button"
-                    className="project-play-circle-btn"
-                    aria-label="Play video demo"
-                    onClick={(e) => { e.stopPropagation(); setSelectedProject(project); }}
+            <article
+              key={project.id || project.title}
+              className="projects-grid-card od-grid-card"
+              onClick={() => setSelectedProject(project)}
+            >
+              {/* Full bleed card background image */}
+              <img
+                src={project.image}
+                alt={project.title}
+                className="od-card-bg-img"
+                draggable={false}
+                decoding="async"
+              />
+
+              {/* Gradient overlay for text clarity */}
+              <div className="od-card-bg-overlay" aria-hidden="true" />
+
+              {/* Card Body matching OrbitDeck */}
+              <div className="od-card-body">
+                <h2 className="od-card-title">{project.title}</h2>
+                <p className="od-card-details">{project.details}</p>
+
+                {project.tech && project.tech.length > 0 && (
+                  <div
+                    className="od-card-tech-line"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor">
-                      <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48.24-94.78-64-40A8,8,0,0,0,100,88v80a8,8,0,0,0,12.24,6.78l64-40a8,8,0,0,0,0-13.56ZM116,153.57V102.43L156.91,128Z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <div className="projects-grid-content">
-                <h2 className="project-card-title">{project.title}</h2>
-
-                <p className="projects-grid-desc">
-                  {project.details}{' '}
-                  <button
-                    type="button"
-                    className="project-show-more-text"
-                    onClick={() => setSelectedProject(project)}
-                  >
-                    ... show more
-                  </button>
-                </p>
-
-                {/* Dotted tech stack at bottom */}
-                <div className="project-card-bottom-row">
-                  <div className="project-card-tech-dotted">
                     {project.tech.map((t) => (
-                      <span key={t} className="project-tech-dotted-chip">
-                        <TechIcon name={t} size={13} />
+                      <span key={t} className="od-tech-pill">
+                        <TechIcon name={t} size={10} />
                         <span>{t}</span>
                       </span>
                     ))}
                   </div>
+                )}
 
-                  <a
-                    className="project-visit-btn"
-                    href={project.link}
-                    target={project.link.startsWith('http') ? '_blank' : undefined}
-                    rel={project.link.startsWith('http') ? 'noreferrer' : undefined}
+                <div
+                  className="od-card-actions"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="od-btn-detail"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProject(project);
+                    }}
                   >
-                    <span>Visit</span>
-                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 17L17 7M17 7H7M17 7V17" />
-                    </svg>
-                  </a>
+                    View details
+                  </button>
+
+                  {project.link && (
+                    <a
+                      className="od-visit-btn"
+                      href={project.link}
+                      target={project.link.startsWith('http') ? '_blank' : undefined}
+                      rel={project.link.startsWith('http') ? 'noreferrer' : undefined}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span>Visit</span>
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="11"
+                        height="11"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M7 17L17 7M17 7H7M17 7V17" />
+                      </svg>
+                    </a>
+                  )}
                 </div>
               </div>
             </article>

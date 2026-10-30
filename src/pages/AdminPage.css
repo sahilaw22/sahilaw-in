@@ -1,0 +1,828 @@
+/* ==========================================================================
+   Admin Dashboard & Login Styles — Refined Dark Minimalist UI
+   Matches Portfolio Aesthetic: Deep Obsidian, Disket Mono, Pure Minimalist
+   Zero animations, clean transparent black glass, responsive mobile & desktop
+   ========================================================================== */
+
+.admin-viewport {
+  min-height: 100vh;
+  background-color: #07080a;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+  color: #ededed;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   LOGIN VIEW (Minimal, Precision Black Theme, Zero Slop)
+   ========================================================================== */
+
+.admin-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  position: relative;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(10, 12, 16, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  padding: 38px 32px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.85);
+  text-align: center;
+}
+
+.admin-login-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.admin-login-title {
+  font-family: 'Disket Mono', monospace;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+}
+
+.admin-login-desc {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+}
+
+.admin-login-return-link {
+  display: inline-block;
+  margin-top: 20px;
+  font-size: 11px;
+  font-family: 'Disket Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.admin-login-return-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-field-label {
+  font-family: 'Disket Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+}
+
+.admin-error-banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   NAVIGATION & HEADER
+   ========================================================================== */
+
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: rgba(8, 9, 11, 0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-brand-title {
+  font-family: 'Disket Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.admin-brand-sub {
+  font-family: 'Disket Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 2px;
+}
+
+.admin-badge-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+  font-family: 'Disket Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.admin-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-back-btn,
+.admin-logout-btn {
+  padding: 7px 14px;
+  font-size: 12.5px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-back-btn {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.admin-back-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-logout-btn {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #ef4444;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.admin-logout-btn:hover {
+  background: #b91c1c;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   MAIN LAYOUT & SIDEBAR
+   ========================================================================== */
+
+.admin-layout {
+  display: flex;
+  flex: 1;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.admin-sidebar {
+  width: 240px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(11, 12, 16, 0.3);
+  flex-shrink: 0;
+}
+
+.admin-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.admin-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.admin-tab-btn.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+}
+
+.admin-tab-count {
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  font-size: 10px;
+  font-family: 'Disket Mono', monospace;
+  font-weight: 700;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 32px 36px 64px;
+  overflow-y: auto;
+  max-width: 1200px;
+}
+
+/* ==========================================================================
+   METRICS & CARDS
+   ========================================================================== */
+
+.admin-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.admin-metric-card {
+  background: rgba(14, 16, 20, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px;
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease;
+}
+
+.admin-metric-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.admin-metric-label {
+  font-family: 'Disket Mono', monospace;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.admin-metric-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: 'Disket Mono', monospace;
+}
+
+.admin-metric-sub {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 4px;
+}
+
+.admin-card {
+  background: rgba(14, 16, 20, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.admin-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.admin-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.admin-card-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   TABLES
+   ========================================================================== */
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.admin-table th {
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: 'Disket Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.8);
+  vertical-align: middle;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ==========================================================================
+   INPUTS & BUTTONS
+   ========================================================================== */
+
+.admin-input,
+.admin-textarea,
+.admin-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 13.5px;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.admin-input:focus,
+.admin-textarea:focus,
+.admin-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+}
+
+.admin-btn-primary {
+  background: #ffffff;
+  color: #08090b;
+}
+
+.admin-btn-primary:hover {
+  background: #f4f4f5;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
+
+.admin-btn-accent {
+  background: #ffffff;
+  color: #08090b;
+}
+
+.admin-btn-accent:hover {
+  background: #f4f4f5;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+}
+
+.admin-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.admin-btn-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.admin-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.22);
+}
+
+/* ==========================================================================
+   SANDBOX TESTER
+   ========================================================================== */
+
+.admin-sandbox-box {
+  background: rgba(10, 11, 14, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 18px;
+}
+
+.admin-sandbox-score {
+  font-family: 'Disket Mono', monospace;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-score-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.admin-score-badge.high {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.admin-score-badge.mid {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.admin-score-badge.low {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.admin-modal-card {
+  background: #0a0b0e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (antislop-layoutmobile)
+   ========================================================================== */
+
+/* ==========================================================================
+   PORTFOLIO CONTENT DYNAMIC MANAGEMENT
+   ========================================================================== */
+
+.portfolio-subtabs-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.portfolio-subtab-btn {
+  padding: 8px 16px;
+  font-family: 'Disket Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.portfolio-subtab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.portfolio-subtab-btn.is-active {
+  color: #000000;
+  background: #ffffff;
+  border-color: #ffffff;
+  font-weight: 700;
+}
+
+.portfolio-item-card {
+  background: rgba(14, 17, 23, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.portfolio-item-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.portfolio-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.portfolio-item-title-col {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.portfolio-logo-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.portfolio-logo-thumb img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.portfolio-status-save-banner {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+  font-size: 13px;
+  font-family: 'Disket Mono', monospace;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 860px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 12px 16px;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-tab-btn {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+
+  .admin-navbar {
+    padding: 12px 16px;
+  }
+
+  .admin-content {
+    padding: 20px 16px 60px;
+  }
+}
+
+/* ==========================================================================
+   Admin Portfolio ZIP Export Banner & Buttons
+   ========================================================================== */
+
+.admin-btn-export-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  color: #4ade80;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-family: 'Disket Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.admin-btn-export-top:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.22);
+  border-color: #4ade80;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.admin-btn-export-top:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-export-zip-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(20, 24, 30, 0.95), rgba(12, 14, 18, 0.95));
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.admin-export-zip-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-export-zip-badge {
+  display: inline-block;
+  font-family: 'Disket Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  color: #4ade80;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.admin-export-zip-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f3f4f6;
+  letter-spacing: -0.01em;
+}
+
+.admin-export-zip-desc {
+  margin: 0;
+  font-size: 12.5px;
+  color: #9ca3af;
+  line-height: 1.4;
+  max-width: 650px;
+}
+
+.admin-btn-export-zip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #16a34a;
+  border: 1px solid #22c55e;
+  color: #ffffff;
+  padding: 9px 18px;
+  border-radius: 7px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
+}
+
+.admin-btn-export-zip:hover:not(:disabled) {
+  background: #15803d;
+  border-color: #4ade80;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+  transform: translateY(-1px);
+}
+
+.admin-btn-export-zip:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .admin-export-zip-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .admin-btn-export-zip {
+    width: 100%;
+    justify-content: center;
+  }
+}

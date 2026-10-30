@@ -1,10 +1,10 @@
 <div align="center">
 
-# Design Engineering Portfolio
+# My Coolofio
 
-### Spatial micro-interactions, procedural Web Audio feedback, and tactile 3D interfaces.
+### Personal portfolio, design engineering experiments, and modular content management.
 
-A personal web experience engineered with React 18, GSAP 3, and native browser APIs. Built with clean technical typography, zero framework bloat, and fluid client-side hash navigation.
+Built with React 18, GSAP 3, Framer Motion, and native browser APIs. Zero router dependencies, dark liquid aesthetics, procedural audio feedback, and client-side hash navigation.
 
 <br />
 
@@ -15,14 +15,14 @@ A personal web experience engineered with React 18, GSAP 3, and native browser A
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Production_Ready-10b981?style=flat-square" alt="Status" />
   &nbsp;
-  <img src="https://img.shields.io/badge/Routing-Zero--Dependency_Hash-6366f1?style=flat-square" alt="Routing" />
+  <img src="https://img.shields.io/badge/Preloader-React_Bits_Pro-38bdf8?style=flat-square" alt="Preloader" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/Cards-Scroll_Stack_Deck-8c65f7?style=flat-square" alt="Scroll Stack" />
   &nbsp;
   <img src="https://img.shields.io/badge/Audio-Web_Audio_API-ec4899?style=flat-square" alt="Audio" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Motion-GSAP_3_%2B_Framer-f59e0b?style=flat-square" alt="Motion" />
 </p>
 
-[Overview](#overview) · [Core Interactive Systems](#core-interactive-systems) · [Architecture Pipeline](#architecture-pipeline) · [Local Development](#local-development) · [Credits](#credits)
+[Overview](#overview) · [Core Features](#core-features) · [Architecture Pipeline](#architecture-pipeline) · [Admin & Data Export](#admin--data-export) · [Local Development](#local-development)
 
 </div>
 
@@ -30,18 +30,20 @@ A personal web experience engineered with React 18, GSAP 3, and native browser A
 
 ## Overview
 
-A modern web experience blending front-end craft with interactive engineering. The interface couples physics-based micro-interactions and custom Web Audio API feedback with an editorial dark liquid theme and zero-dependency hash routing.
+My Coolofio is a personal portfolio and creative engineering showcase. It combines tactile micro-interactions, procedural Web Audio feedback, an interactive 3D OrbitDeck project carousel, and an admin management panel with one-click ZIP backup export.
 
 ---
 
-## Core Interactive Systems
+## Core Features
 
-- **3D OrbitDeck Project Showcase**: Interactive cylindrical card carousel powered by CSS 3D matrix perspective transforms with real-time pointer scrub and velocity-based inertia.
-- **Web Audio Sound Synthesizer**: Procedural audio engine generating tactile acoustic feedback (subtle clicks, section snaps, focus hums) directly via the Web Audio API without loading external media files.
-- **Vector Career Timeline**: Mathematical SVG step-graph plotting career milestones, education tracks, and internship nodes with millisecond-exact scroll anchors.
-- **Matrix Code Canvas**: Canvas-driven background rendering low-opacity hex glyph streams with fluid viewport resizing and zero CPU memory leakage.
-- **Zero-Dependency Hash Router**: Lightweight router supporting smooth view transitions and immediate direct linking across static hosts (Vercel, GitHub Pages, Netlify).
-- **Keyboard & Touch Accessibility**: Accessible navigation dock with explicit `:focus-visible` ring indicators, responsive touch targets, and mobile notch docking.
+- **React Bits Pro Preloader**: Staggered staircase entrance screen (`@reactbits-starter/preloader-tw`) with custom obsidian/emerald palette, minimal anti-slop copy, and keyboard/click skip affordance.
+- **Scroll Stack Project Deck**: Featured work presented in a stacked card deck (`@reactbits-starter/scroll-stack-tw`) that glides and scales smoothly as the user scrolls.
+- **3D OrbitDeck Carousel**: Cylindrical card perspective ring powered by CSS 3D matrix math with pointer scrub and inertial dampening.
+- **Procedural Web Audio Engine**: Synthesized acoustic clicks and frequency pops triggered on interactive elements using the native Web Audio API with zero external media files.
+- **SkillIcons & Custom Badges**: Inline technology pills rendered via `skillicons.dev` alongside custom uploaded skill icons managed in the admin dashboard.
+- **Dual Tab Recognition**: Modular Certification & Recognition sections featuring issue dates, issuing organizations, and direct credential links.
+- **Admin Dashboard & ZIP Export**: In-browser portfolio content editor with live JSON preview and full ZIP package backup bundling all assets and structured data.
+- **Zero-Dependency Hash Router**: Smooth client-side view switching compatible with all static hosting providers.
 
 ---
 
@@ -50,28 +52,38 @@ A modern web experience blending front-end craft with interactive engineering. T
 ```
                                   [ index.html ]
                                         │
-                         ┌──────────────┴──────────────┐
-                         ▼                             ▼
-              [ styles/base-layout.css ]     [ styles/base-theme.css ]
-                         │                             │
-                         └──────────────┬──────────────┘
                                         ▼
-                                  [ main.jsx ]
+                                   [ main.jsx ]
                                         │
-                                  [ App.jsx ]
+                                   [ App.jsx ]
                    (Matrix Canvas, Sound Engine, Hash Router)
                                         │
        ┌─────────────────┬──────────────┴──────────────┬─────────────────┐
        ▼                 ▼                             ▼                 ▼
-  [ HomePage ]     [ ProjectsPage ]              [ ResumePage ]     [ ChatPage ]
-  - Hero Header    - 3D OrbitDeck                - ATS Document     - Lattice Loader
-  - About Reveal   - Project Modals              - Skills Export    - Simulated Agent
-  - Experience     - Archive Directory
-  - Education
-  - Career Timeline
+  [ HomePage ]     [ ProjectsPage ]              [ ResumePage ]     [ AdminPage ]
+  - Preloader      - 3D OrbitDeck                - PDF Document     - Live Editor
+  - Hero Header    - Project Modals              - Skills Export    - Skill Manager
+  - About Section  - Archive Grid                - Experience       - ZIP Export
+  - Experience
+  - Scroll Stack
+  - Skills
+  - Certifications
+  - Contact
 ```
 
-All dynamic data and section content is decoupled from components and maintained centrally in [`src/data/portfolioData.jsx`](src/data/portfolioData.jsx).
+All data is structured modularly in [`data/`](data/) and read through [`src/data/usePortfolioData.js`](src/data/usePortfolioData.js).
+
+---
+
+## Admin & Data Export
+
+The portfolio includes an administrative workspace (`#/admin`) designed for quick updates:
+
+1. **Inline Skills Manager**: Add, edit, or remove skills with support for comma-separated entries, skillicons slugs, and custom image uploads.
+2. **One-Click ZIP Backup**: Click **Export ZIP** in the admin toolbar to download a complete, structured ZIP archive containing:
+   - Modular JSON files (`about.json`, `experiences.json`, `education.json`, `skills.json`, `meta.json`, `knowledge-base.json`)
+   - Custom uploaded logos extracted into `assets/logos/`
+   - Archive manifest with timestamp and versioning
 
 ---
 
@@ -79,7 +91,8 @@ All dynamic data and section content is decoupled from components and maintained
 
 ### Prerequisites
 
-Node.js 18 or later.
+- Node.js 18 or later
+- npm or pnpm
 
 ### Installation
 
@@ -97,28 +110,25 @@ npm install
 ### Running Locally
 
 ```bash
-# Start local development server with Hot Module Replacement
+# Start Vite development server
 npm run dev
+
+# Run backend API & question matcher test suite
+npm run test:bot
 ```
 
 ### Production Build
 
 ```bash
-# Compile and minify for production into dist/
+# Build optimized production bundle into dist/
 npm run build
 
-# Preview production build locally
+# Preview build locally
 npm run preview
 ```
 
 ---
 
-## Credits
+## License
 
-<div align="center">
-
-Designed and engineered with care by **Sahil**
-
-Special appreciation to the open-source community, **GSAP**, **React**, and **SkillIcons** for providing the building blocks for modern interactive web craft.
-
-</div>
+MIT © [Sahil](https://github.com/sahilaw22)

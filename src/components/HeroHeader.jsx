@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import RotatingText from './RotatingText';
-import { HERO_ROLES } from '../data/portfolioData.jsx';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 
 // Centered hero header with rotating role text.
 export default function HeroHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { meta } = usePortfolioData();
+  const heroRoles = meta?.hero_roles && meta.hero_roles.length > 0 ? meta.hero_roles : ['Frontend AI Engineer', 'UI/UX Designer', 'App Developer'];
 
   useEffect(() => {
     function handleScroll() {
@@ -21,13 +23,15 @@ export default function HeroHeader() {
       id="general-footer"
     >
       <header className="hero-header-content">
-        <h1 className="hero-greeting">Hi, I'm Sahil</h1>
+        <h1 className="hero-greeting" id="hero-greeting-heading">
+          Hi, I'm Sahil.
+        </h1>
 
         {/* Rotating role badge with white text and glass background */}
         <div className="hero-role-wrapper">
           <span className="hero-role-intro">I am a</span>
           <RotatingText
-            texts={HERO_ROLES}
+            texts={heroRoles}
             splitBy="words"
             staggerFrom="last"
             staggerDuration={0.03}

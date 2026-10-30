@@ -18,8 +18,8 @@ export const HERO_ROLES = [
 
 // 2. ABOUT ME NARRATIVE PARAGRAPHS
 export const ABOUT_PARAGRAPHS = [
-  'I am a 3rd-year Computer Engineering student at GCET Jammu who builds with intent and thinks in motion. Turning bold ideas into intuitive interfaces, I bridge front-end craft {{ICON_FIGMA}} and AI engineering to create software that feels as good as it works.',
-  'From engineering responsive React {{ICON_REACT}} and Flutter {{ICON_FLUTTER}} applications to deploying intelligent agents and full-stack systems, I believe great engineering begins with clarity. I focus on clean code, seamless interactions, and shipping real solutions that solve everyday problems.',
+  'I am a 3rd-year Computer Engineering student who builds with intent and thinks in motion. Turning bold ideas into intuitive interfaces, I bridge front-end craft {{ICON_FIGMA}} and AI engineering to create software that feels as good as it works.',
+  'From engineering responsive React {{ICON_REACT}}, TypeScript {{ICON_TYPESCRIPT}}, and Flutter {{ICON_FLUTTER}} applications to deploying intelligent agents and full-stack systems with Tailwind CSS {{ICON_TAILWIND}}, Next.js {{ICON_NEXTJS}}, and Python {{ICON_PYTHON}}, I believe great engineering begins with clarity. I focus on clean code, seamless interactions, and shipping real solutions that solve everyday problems.',
 ];
 
 // 3. EXPERIENCE SECTION DATA (Matching header: EXPERIENCE)
@@ -132,11 +132,12 @@ export const SKILL_CATEGORIES = [
   },
 ];
 
-// 6. CERTIFICATIONS SECTION DATA (Matching header: CERTIFICATIONS)
+// 6. CERTIFICATIONS SECTION DATA
 export const CERTIFICATIONS = [
   {
     title: 'Google Cloud Skills Profile',
     issuer: 'Google Cloud Skills Boost',
+    issueDate: 'Issued Oct 2025',
     year: '2025',
     link: 'https://www.skills.google/public_profiles/28d9b2e7-95ee-45b6-97e9-acda35018f7a',
     icon: (
@@ -148,6 +149,7 @@ export const CERTIFICATIONS = [
   {
     title: 'AI Agents Intensive Course with Google',
     issuer: 'Google & Kaggle',
+    issueDate: 'Issued Nov 2025',
     year: '2025',
     link: 'https://www.kaggle.com/certification/badges/sahilahmedwani/105',
     icon: (
@@ -157,20 +159,9 @@ export const CERTIFICATIONS = [
     ),
   },
   {
-    title: 'Hacktoberfest 2025 (Super Contributor)',
-    issuer: 'DigitalOcean & TreeNation',
-    year: '2025',
-    link: 'https://hacktoberfest.com/',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-        <path d="M12 2L4 6v12l8 4 8-4V6l-8-4zm0 2.2l6 3v9.6l-6 3-6-3V7.2l6-3z" fill="#FF7A59" />
-        <path d="M12 7l-4 4 1.4 1.4L11 10.8V17h2v-6.2l1.6 1.6L16 11l-4-4z" fill="#FF7A59" />
-      </svg>
-    ),
-  },
-  {
     title: 'IBM SkillsBuild Gen AI & Cloud Computing',
     issuer: 'IBM',
+    issueDate: 'Issued Jan 2026',
     year: '2026',
     link: 'https://skills.yourlearning.ibm.com/certificate/share/b1a4e79638ewogICJvYmplY3RUeXBlIiA6ICJBQ1RJVklUWSIsCiAgImxlYXJuZXJDTlVNIiA6ICI3OTc3NzAyUkVHIiwKICAib2JqZWN0SWQiIDogIlBMQU4tMEUwQTM5MEE2MTlGIgp98f17046926-10',
     icon: (
@@ -183,19 +174,9 @@ export const CERTIFICATIONS = [
     ),
   },
   {
-    title: 'Super Contributor Holopin Badges',
-    issuer: 'Holopin (Hacktoberfest)',
-    year: '2025',
-    link: 'https://www.holopin.io/@sahilahmedwani',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#f59e0b" />
-      </svg>
-    ),
-  },
-  {
     title: 'HP LIFE Data Science & Analytics Foundations',
     issuer: 'HP LIFE Foundation',
+    issueDate: 'Issued Aug 2025',
     year: '2025',
     link: 'https://www.life-global.org/',
     icon: (
@@ -205,23 +186,54 @@ export const CERTIFICATIONS = [
       </svg>
     ),
   },
+];
+
+// 7. HONORS & ACHIEVEMENTS SECTION DATA (Matching clean certification row design)
+export const ACHIEVEMENTS = [
   {
     title: 'Top 1000 Innovator – SBI Youth Ideathon',
     issuer: 'ThinkStartup & IIT Delhi',
-    year: '2025',
+    year: 'Oct 2025',
     link: 'https://thinkstartup.in/',
+    description: 'Selected among top 1,000 innovators across India for prototype feasibility, social impact, and technical execution.',
     icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f97316" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="7" />
         <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
       </svg>
     ),
   },
   {
+    title: 'Hacktoberfest 2025 (Super Contributor)',
+    issuer: 'DigitalOcean & TreeNation',
+    year: 'Nov 2025',
+    link: 'https://hacktoberfest.com/',
+    description: 'Recognized as a Super Contributor for merged pull requests across open-source frontend and developer tooling ecosystems.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M12 2L4 6v12l8 4 8-4V6l-8-4zm0 2.2l6 3v9.6l-6 3-6-3V7.2l6-3z" fill="#FF7A59" />
+        <path d="M12 7l-4 4 1.4 1.4L11 10.8V17h2v-6.2l1.6 1.6L16 11l-4-4z" fill="#FF7A59" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Super Contributor Holopin Badges',
+    issuer: 'Holopin (Hacktoberfest)',
+    year: 'Nov 2025',
+    link: 'https://www.holopin.io/@sahilahmedwani',
+    description: 'Earned verified multi-tier contribution badges reflecting consistent open-source software delivery and community pull requests.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#f59e0b" />
+      </svg>
+    ),
+  },
+  {
     title: 'GirlScript Summer of Code (GSSOC\'26)',
     issuer: 'GirlScript Foundation',
-    year: '2026',
+    year: 'Mar 2026',
     link: 'https://gssoc.girlscript.tech/',
+    description: 'Selected contributor participating in high-impact open-source web applications and developer tooling repositories.',
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
         <rect width="24" height="24" rx="5" fill="#f97316" />
@@ -230,12 +242,13 @@ export const CERTIFICATIONS = [
     ),
   },
   {
-    title: 'Unstop 30-Day POTD Coding Streak',
+    title: 'Unstop 30-Day POTD Problem Solving Streak',
     issuer: 'Unstop Practice',
-    year: '2025',
+    year: 'Dec 2025',
     link: 'https://unstop.com/',
+    description: 'Maintained a verified 30-day continuous algorithm and data structures streak with daily problem solving.',
     icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#38bdf8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>

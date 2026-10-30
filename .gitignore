@@ -46,3 +46,12 @@ lerna-debug.log*
 # Local audit & temporary logs
 anti-slop/
 anti-slop
+
+# SQLite lock and temporary files
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Agent and skill caches
+.agents/
+skills-lock.json

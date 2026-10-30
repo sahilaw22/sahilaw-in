@@ -1,12 +1,14 @@
 import React from 'react';
 import { TechIcon } from './TechIcons.jsx';
-import { SKILL_CATEGORIES } from '../data/portfolioData.jsx';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 
 /**
  * SkillsSection — Matching the header "SKILLS"
  * Renders categorized skills with technical badges and icons.
  */
 export default function SkillsSection() {
+  const { skills } = usePortfolioData();
+
   return (
     <section id="section-skills" className="portfolio-section portfolio-skills-section">
       <div className="section-container">
@@ -19,16 +21,30 @@ export default function SkillsSection() {
 
         {/* Clean Skills Grouping using Project Techstack Pills */}
         <div className="skills-clean-container">
-          {SKILL_CATEGORIES.map((group) => (
-            <div key={group.category} className="skills-clean-group">
+          {skills.map((group) => (
+            <div key={group.id || group.category} className="skills-clean-group">
               <h3 className="skills-group-title">{group.category}</h3>
               <div className="skills-pills-wrap">
-                {group.skills.map((skill) => (
-                  <span key={skill} className="od-tech-pill skill-pill-item">
-                    <TechIcon name={skill} size={14} />
-                    <span>{skill}</span>
-                  </span>
-                ))}
+                {group.skills.map((skillItem, sIdx) => {
+                  const skillName = typeof skillItem === 'string' ? skillItem : skillItem?.name || '';
+                  const customIcon = typeof skillItem === 'object' ? (skillItem?.logo || skillItem?.iconUrl || skillItem?.icon) : null;
+                  if (!skillName) return null;
+
+                  return (
+                    <span key={skillName + sIdx} className="od-tech-pill skill-pill-item">
+                      {customIcon ? (
+                        <img
+                          src={customIcon}
+                          alt={skillName}
+                          style={{ width: 14, height: 14, objectFit: 'contain', borderRadius: 2 }}
+                        />
+                      ) : (
+                        <TechIcon name={skillName} size={14} />
+                      )}
+                      <span>{skillName}</span>
+                    </span>
+                  );
+                })}
               </div>
             </div>
           ))}

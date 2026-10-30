@@ -1,44 +1,79 @@
-import React from 'react';
-import { CERTIFICATIONS } from '../data/portfolioData.jsx';
+import React, { useState } from 'react';
+import { CERTIFICATIONS, ACHIEVEMENTS } from '../data/portfolioData.jsx';
+import './CertificationsSection.css';
 
 /**
- * CertificationsSection — Matching the header "CERTIFICATIONS"
- * Clean anti-slop list presenting certifications with company vector logos, issuers, dates, and direct links.
+ * CertificationsSection
+ * Supports interactive tab switching between verified Certifications and Achievements
+ * with the exact same clean, minimal list design.
  */
-export default function CertificationsSection() {
+export default function CertificationsSection({ play }) {
+  const [activeTab, setActiveTab] = useState('certifications');
+
+  const handleTabSwitch = (tab) => {
+    setActiveTab(tab);
+    play?.('click');
+  };
+
+  const currentItems = activeTab === 'certifications' ? CERTIFICATIONS : ACHIEVEMENTS;
+
   return (
     <section id="section-certifications" className="portfolio-section portfolio-certifications-section">
       <div className="section-container">
-        {/* Clean Header: Single tag without duplicate titles */}
-        <div className="section-header-block">
-          <div className="contact-image-tag">
-            <span>CERTIFICATIONS</span>
+        {/* Centered Switcher Tabs (normal text, no extra uppercase header) */}
+        <div className="cert-achieve-tabs-center">
+          <div className="cert-achieve-switcher" role="tablist" aria-label="Certifications and achievements">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'certifications'}
+              className={`cert-switch-tab-btn ${activeTab === 'certifications' ? 'is-active' : ''}`}
+              onClick={() => handleTabSwitch('certifications')}
+            >
+              <span>Certifications</span>
+              <span className="cert-tab-counter">{CERTIFICATIONS.length}</span>
+            </button>
+
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'achievements'}
+              className={`cert-switch-tab-btn ${activeTab === 'achievements' ? 'is-active' : ''}`}
+              onClick={() => handleTabSwitch('achievements')}
+            >
+              <span>Achievements</span>
+              <span className="cert-tab-counter">{ACHIEVEMENTS.length}</span>
+            </button>
           </div>
         </div>
 
-        {/* Clean Certifications List */}
-        <div className="certifications-clean-list">
-          {CERTIFICATIONS.map((cert) => (
+        {/* Clean Minimal List for Both Tabs */}
+        <div className="certifications-clean-list" role="tabpanel" aria-label={activeTab}>
+          {currentItems.map((item) => (
             <a
-              key={cert.title}
-              href={cert.link}
+              key={item.title}
+              href={item.link}
               target="_blank"
               rel="noopener noreferrer"
               className="cert-clean-row"
-              title={`View ${cert.title}`}
+              title={`View ${item.title}`}
+              onClick={() => play?.('click')}
             >
               <div className="cert-row-left">
                 <div className="cert-clean-icon">
-                  {cert.icon}
+                  {item.icon}
                 </div>
                 <div className="cert-clean-text">
-                  <span className="cert-clean-title">{cert.title}</span>
-                  <span className="cert-clean-issuer">{cert.issuer}</span>
+                  <span className="cert-clean-title">{item.title}</span>
+                  <span className="cert-clean-issuer">{item.issuer}</span>
+                  {item.description && (
+                    <p className="cert-clean-desc">{item.description}</p>
+                  )}
                 </div>
               </div>
 
               <div className="cert-row-right">
-                <span className="cert-clean-year">{cert.year}</span>
+                <span className="cert-clean-year">{activeTab === 'certifications' ? (item.issueDate || item.year) : item.year}</span>
                 <svg
                   className="cert-row-arrow"
                   width="14"

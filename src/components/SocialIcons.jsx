@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { PORTFOLIO_EMAIL, openGmailDirect } from '../lib/emailHelper.js';
 
 // Social media icon links — only visible on the home page hero
 export default function SocialIcons() {
@@ -7,7 +8,7 @@ export default function SocialIcons() {
   const links = [
     {
       label: 'Threads',
-      href: 'https://threads.net',
+      href: 'https://www.threads.com/@sahilaw2',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 256 256">
           <path d="M186.42,123.65a63.81,63.81,0,0,0-11.13-6.72c-4-29.89-24-39.31-33.1-42.07-19.78-6-42.51,1.19-52.85,16.7a8,8,0,0,0,13.32,8.88c6.37-9.56,22-14.16,34.89-10.27,9.95,3,16.82,10.3,20.15,21a81.05,81.05,0,0,0-15.29-1.43c-13.92,0-26.95,3.59-36.67,10.1C94.3,127.57,88,139,88,152c0,20.58,15.86,35.52,37.71,35.52a48,48,0,0,0,34.35-14.81c6.44-6.7,14-18.36,15.61-37.1.38.26.74.53,1.1.8C186.88,144.05,192,154.68,192,168c0,19.36-20.34,48-64,48-26.73,0-45.48-8.65-57.34-26.44C60.93,175,56,154.26,56,128s4.93-47,14.66-61.56C82.52,48.65,101.27,40,128,40c32.93,0,54,13.25,64.53,40.52a8,8,0,1,0,14.93-5.75C194.68,41.56,167.2,24,128,24,96,24,72.19,35.29,57.34,57.56,45.83,74.83,40,98.52,40,128s5.83,53.17,17.34,70.44C72.19,220.71,96,232,128,232c30.07,0,48.9-11.48,59.4-21.1C200.3,199.08,208,183,208,168,208,149.66,200.54,134.32,186.42,123.65ZM148.53,161.62a31.94,31.94,0,0,1-22.82,9.9c-10.81,0-21.71-6-21.71-19.52,0-12.63,12-26.21,38.41-26.21a63.88,63.88,0,0,1,16.65.2C160,142.32,156,153.86,148.53,161.62Z" />
@@ -16,7 +17,7 @@ export default function SocialIcons() {
     },
     {
       label: 'LinkedIn',
-      href: 'https://linkedin.com/in/sahilaw',
+      href: 'https://www.linkedin.com/in/sahil-a-057a0231a',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 256 256">
           <path d="M216,24H40A16,16,0,0,0,24,40V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V40A16,16,0,0,0,216,24Zm0,192H40V40H216V216ZM96,112v64a8,8,0,0,1-16,0V112a8,8,0,0,1,16,0Zm88,28v36a8,8,0,0,1-16,0V140a20,20,0,0,0-40,0v36a8,8,0,0,1-16,0V112a8,8,0,0,1,15.79-1.78A36,36,0,0,1,184,140ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z" />
@@ -34,7 +35,7 @@ export default function SocialIcons() {
     },
     {
       label: 'Email',
-      href: 'mailto:sahilwani.work@gmail.com',
+      href: `mailto:${PORTFOLIO_EMAIL}`,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" viewBox="0 0 256 256">
           <path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z" />
@@ -48,7 +49,18 @@ export default function SocialIcons() {
       <ul className="styles_links__5qJaS">
         {links.map((link) => (
           <li key={link.label}>
-            <a href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label}>
+            <a
+              href={link.href}
+              target={link.label === 'Email' ? undefined : '_blank'}
+              rel="noopener noreferrer"
+              aria-label={link.label}
+              onClick={(e) => {
+                if (link.label === 'Email') {
+                  e.preventDefault();
+                  openGmailDirect(PORTFOLIO_EMAIL);
+                }
+              }}
+            >
               {link.icon}
             </a>
           </li>
