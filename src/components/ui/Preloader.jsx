@@ -2,17 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Preloader.css';
 
-// Preloader: React Bits Pro (@reactbits-starter/preloader-tw)
-// Centered pixel "Loading" text with reddish staircase transition
+// Preloader: seamless background, refined green Welcome text, and smooth reveal
 export default function Preloader({
-  stairCount = 10,
+  text = 'Welcome',
+  stairCount = 8,
   stairsRevealFrom = 'left',
   stairsRevealDirection = 'up',
-  duration = 1600,
+  duration = 1700,
   position = 'fixed',
   zIndex = 99999,
-  bgColor = '#0a0305',
-  stairColor = 'linear-gradient(180deg, #991b1b 0%, #dc2626 50%, #7f1d1d 100%)',
+  bgColor = '#060709',
+  textColor = '#61dca3',
   active,
   onComplete,
 }) {
@@ -69,7 +69,7 @@ export default function Preloader({
 
   // Compute stair stagger delay
   const getStairDelay = (index) => {
-    const stepDuration = 0.04;
+    const stepDuration = 0.045;
     if (stairsRevealFrom === 'right') {
       return (stairCount - 1 - index) * stepDuration;
     }
@@ -92,20 +92,23 @@ export default function Preloader({
             position,
             zIndex,
             backgroundColor: bgColor,
-            '--preloader-stair-bg': stairColor,
+            '--preloader-bg': bgColor,
+            '--preloader-stair-bg': bgColor,
+            '--preloader-text-color': textColor,
           }}
           onClick={handleDismiss}
           role="dialog"
           aria-label="Loading preview"
         >
-          {/* Reddish Stairs Transition Columns */}
+          {/* Seamless Transition Columns: zero borders, zero grid lines, zero shadows */}
           <div className="rb-preloader-stairs-wrap">
             {Array.from({ length: stairCount }).map((_, i) => (
               <motion.div
                 key={`stair-${i}`}
                 className="rb-preloader-stair-col"
                 style={{
-                  width: `${100 / stairCount}%`,
+                  width: `calc(100% / ${stairCount} + 0.5px)`,
+                  backgroundColor: bgColor,
                 }}
                 initial={{ y: '0%' }}
                 exit={{
@@ -120,19 +123,20 @@ export default function Preloader({
             ))}
           </div>
 
-          {/* Centered Pixel Typography: Only "Loading", nothing else */}
+          {/* Centered Green Welcome Typography */}
           <motion.div
-            className="rb-preloader-pixel-center"
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="rb-preloader-welcome-wrap"
+            initial={{ opacity: 0, y: 14, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{
               opacity: 0,
-              scale: 1.05,
-              transition: { duration: 0.26, ease: 'easeOut' },
+              y: -12,
+              filter: 'blur(6px)',
+              transition: { duration: 0.32, ease: 'easeOut' },
             }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="rb-preloader-pixel-text">Loading</h1>
+            <h1 className="rb-preloader-welcome-text">{text}</h1>
           </motion.div>
         </motion.div>
       )}

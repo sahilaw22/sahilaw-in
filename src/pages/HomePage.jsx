@@ -92,7 +92,7 @@ export default function HomePage({ sound }) {
         />
       </div>
 
-      {/* React Bits Pro Preloader: First-time entrance only with centered pixel Loading and reddish transition */}
+      {/* Preloader: first-time entrance with seamless background and green Welcome text */}
       {showIntro && <Preloader onComplete={handleIntroComplete} />}
 
       <section id="section-hero" className="portfolio-section hero-section">

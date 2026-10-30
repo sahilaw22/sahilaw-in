@@ -1,6 +1,4 @@
-/* Preloader: centered pixel typography with reddish staircase transitions */
-
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap');
+/* Preloader: seamless solid background, refined green Welcome typography, and smooth reveal */
 
 .rb-preloader-root {
   inset: 0;
@@ -12,10 +10,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  background-color: var(--preloader-bg, #060709);
+  color: #61dca3;
 }
 
-/* Reddish Stairs Transition */
+/* Seamless staircase reveal without grid lines or column borders */
 .rb-preloader-stairs-wrap {
   position: absolute;
   inset: 0;
@@ -24,18 +23,23 @@
   height: 100%;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 
 .rb-preloader-stair-col {
   height: 100%;
   position: relative;
   will-change: transform;
-  background: var(--preloader-stair-bg, linear-gradient(180deg, #991b1b 0%, #dc2626 50%, #7f1d1d 100%));
-  box-shadow: 0 0 20px rgba(220, 38, 38, 0.35);
+  background-color: var(--preloader-stair-bg, #060709);
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* Centered Pixel Text: Only "Loading", nothing else */
-.rb-preloader-pixel-center {
+/* Center Welcome typography */
+.rb-preloader-welcome-wrap {
   position: relative;
   z-index: 5;
   display: flex;
@@ -46,30 +50,27 @@
   pointer-events: none;
 }
 
-.rb-preloader-pixel-text {
-  font-family: 'Press Start 2P', 'Silkscreen', monospace;
-  font-size: clamp(1.2rem, 3.6vw, 2.2rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #ffffff;
+.rb-preloader-welcome-text {
+  font-family: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--preloader-text-color, #61dca3);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.1;
   text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.9),
-    0 0 22px rgba(239, 68, 68, 0.85),
-    0 0 40px rgba(225, 29, 72, 0.6);
-  animation: rbPixelPulse 1.4s ease-in-out infinite;
+    0 0 24px rgba(97, 220, 163, 0.42),
+    0 0 52px rgba(97, 220, 163, 0.2);
+  animation: rbWelcomeGlow 2.2s ease-in-out infinite alternate;
 }
 
-@keyframes rbPixelPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.7));
+@keyframes rbWelcomeGlow {
+  0% {
+    opacity: 0.88;
+    filter: drop-shadow(0 0 16px rgba(97, 220, 163, 0.35));
   }
-  50% {
-    opacity: 0.65;
-    transform: scale(0.98);
-    filter: drop-shadow(0 0 6px rgba(220, 38, 38, 0.4));
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 28px rgba(97, 220, 163, 0.6));
   }
 }
