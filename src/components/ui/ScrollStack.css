@@ -5,41 +5,37 @@
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
+  overflow: visible !important;
 }
 
 /* Each card pins stickily at top with progressive deck offset matching the reference diagram */
 .scroll-stack-item {
-  position: sticky;
-  top: calc(12vh + var(--stack-idx, 0) * 26px);
-  z-index: calc(10 + var(--stack-idx, 0));
+  position: sticky !important;
+  top: calc(12vh + var(--stack-idx, 0) * 26px) !important;
+  z-index: calc(10 + var(--stack-idx, 0)) !important;
   width: min(460px, calc(100vw - 2.5rem));
-  margin-bottom: 36vh;
-  display: flex;
-  justify-content: center;
-  transform-origin: top center;
-  will-change: transform;
-  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: 0 auto 40vh auto !important;
+  display: block;
+  overflow: visible !important;
 }
 
 .scroll-stack-item:last-child {
-  margin-bottom: 5rem;
+  margin-bottom: 5.5rem !important;
 }
 
 @media (max-width: 768px) {
   .scroll-stack-item {
-    top: calc(9vh + var(--stack-idx, 0) * 20px);
+    top: calc(9vh + var(--stack-idx, 0) * 20px) !important;
     width: min(440px, calc(100vw - 2rem));
-    margin-bottom: 28vh;
+    margin-bottom: 30vh !important;
   }
 }
 
 @media (max-width: 480px) {
   .scroll-stack-item {
-    top: calc(8vh + var(--stack-idx, 0) * 18px);
+    top: calc(8vh + var(--stack-idx, 0) * 18px) !important;
     width: calc(100vw - 1.5rem);
-    margin-bottom: 24vh;
+    margin-bottom: 26vh !important;
   }
 }

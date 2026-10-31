@@ -43,7 +43,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   const [activeSlug, setActiveSlug] = useState('about');
   const [hoveredSlug, setHoveredSlug] = useState(null);
 
-  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 4s idle
+  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 3s idle
   const [isMobileVisible, setIsMobileVisible] = useState(false);
   const mobileHideTimerRef = useRef(null);
 
@@ -72,7 +72,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     function handleScroll() {
-      // Reveal notch on mobile when user scrolls; hide after 4 seconds of inactivity
+      // Reveal notch on mobile when user scrolls; hide after 3 seconds of inactivity
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
         setIsMobileVisible(true);
         if (mobileHideTimerRef.current) {
@@ -82,7 +82,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           if (!isDraggingRef.current) {
             setIsMobileVisible(false);
           }
-        }, 4000);
+        }, 3000);
       }
 
       if (!isHome) return;
@@ -164,14 +164,14 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           }
         } catch (_) {}
 
-        // Schedule hide after 4 seconds of idle time following drag
+        // Schedule hide after 3 seconds of idle time following drag
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
           if (mobileHideTimerRef.current) {
             clearTimeout(mobileHideTimerRef.current);
           }
           mobileHideTimerRef.current = setTimeout(() => {
             setIsMobileVisible(false);
-          }, 4000);
+          }, 3000);
         }
       }
     };

@@ -64,8 +64,9 @@ export function ScrollStack({
         }
 
         const scale = Math.max(minScale, 1 - coverProgress * scaleStep);
-        card.style.transform = `scale(${scale.toFixed(4)})`;
-        card.style.transformOrigin = 'top center';
+        const innerCard = card.querySelector('.scroll-stack-card') || card;
+        innerCard.style.transform = `scale(${scale.toFixed(4)})`;
+        innerCard.style.transformOrigin = 'top center';
       });
 
       ticking = false;
