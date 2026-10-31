@@ -54,6 +54,21 @@ export default function FeaturedProjectsSection({ play }) {
             </div>
           </div>
         }
+        footer={
+          <div className="projects-more-section">
+            <a
+              href="#/projects/all"
+              className="projects-more-button"
+              onClick={() => play?.('click')}
+              aria-label="Explore all projects"
+            >
+              <span>Explore all projects</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        }
       >
         {FEATURED_PROJECTS.map((project, idx) => (
           <ScrollStackItem

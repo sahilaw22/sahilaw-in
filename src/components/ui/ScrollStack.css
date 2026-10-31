@@ -12,6 +12,15 @@
   overflow: visible !important;
 }
 
+.scroll-stack-pinned-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.75rem;
+  z-index: 20;
+}
+
 .scroll-stack-pinned-header {
   width: 100%;
   display: flex;

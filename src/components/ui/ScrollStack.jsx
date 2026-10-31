@@ -22,7 +22,7 @@ if (typeof window !== 'undefined') {
  * Once all cards are stacked, the pin releases and the entire deck moves
  * upward together into the next section.
  */
-export function ScrollStack({ children, header, className = '' }) {
+export function ScrollStack({ children, header, footer, className = '' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -36,54 +36,63 @@ export function ScrollStack({ children, header, className = '' }) {
     const cards = items.map((item) => item.querySelector('.scroll-stack-card') || item);
     const total = items.length;
 
-    const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 768;
     const stepDistance = isMobile ? 20 : 26;
     const scaleFactor = 0.035;
 
     // Initial setup:
-    // Card 0 sits active at top
-    // Cards 1..N sit below the stage
+    // Card 0 (Sahil Recreation) is active at y = 0, scale = 1, opacity = 1
+    // Cards 1..N (Lurian AI, Web Audio Synth, ConnectKit) are tucked offscreen below with opacity 0
+    // so the bottom cards never show or move prematurely
     cards.forEach((card, i) => {
-      gsap.set(items[i], { zIndex: 10 + i });
-      if (i > 0) {
-        gsap.set(items[i], {
-          yPercent: 125,
-          opacity: 1,
-        });
-      }
+      gsap.set(items[i], {
+        zIndex: 10 + i,
+        y: 0,
+        yPercent: i === 0 ? 0 : 180,
+        opacity: i === 0 ? 1 : 0,
+      });
+      gsap.set(card, {
+        scale: 1,
+        transformOrigin: 'top center',
+      });
     });
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: isMobile ? 'top 40px' : 'top 64px',
-          end: () => `+=${(total - 1) * (window.innerHeight * 0.72)}`,
+          start: isMobile ? 'top 48px' : 'top 56px',
+          end: () => `+=${(total - 1) * (window.innerHeight * 0.75)}`,
           pin: true,
           pinSpacing: true,
-          scrub: 0.65,
+          scrub: 0.8,
           anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });
 
-      // Animate each subsequent card gliding into place
+      // Animate each card sequentially:
+      // Card 1 (Lurian AI) moves FIRST into place over Card 0
+      // Then Card 2 moves over Card 1
+      // Then Card 3 moves over Card 2
       for (let i = 1; i < total; i++) {
         const targetY = i * stepDistance;
+        const stepLabel = `step-${i}`;
 
-        // Card i slides up into stack position
+        // 1. Current card i fades in and glides up smoothly into stack position
         tl.to(
           items[i],
           {
             yPercent: 0,
             y: targetY,
+            opacity: 1,
             ease: 'power1.out',
             duration: 1,
           },
-          `step-${i}`
+          stepLabel
         );
 
-        // Scale down all earlier cards in the stack
+        // 2. Scale down all earlier cards underneath
         for (let prev = 0; prev < i; prev++) {
           const depth = i - prev;
           const targetScale = Math.max(0.88, 1 - depth * scaleFactor);
@@ -96,7 +105,7 @@ export function ScrollStack({ children, header, className = '' }) {
               ease: 'power1.out',
               duration: 1,
             },
-            `step-${i}`
+            stepLabel
           );
         }
       }
@@ -117,6 +126,7 @@ export function ScrollStack({ children, header, className = '' }) {
     <div ref={containerRef} className={`scroll-stack-wrapper ${className}`}>
       {header && <div className="scroll-stack-pinned-header">{header}</div>}
       <div className="scroll-stack-stage">{children}</div>
+      {footer && <div className="scroll-stack-pinned-footer">{footer}</div>}
     </div>
   );
 }
