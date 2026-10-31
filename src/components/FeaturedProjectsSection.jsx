@@ -52,15 +52,8 @@ export default function FeaturedProjectsSection({ play }) {
         </div>
       </div>
 
-      {/* React Bits Scroll Stack Component with variant="deck" */}
-      <ScrollStack
-        variant="deck"
-        itemDistance={85}
-        itemScale={0.045}
-        itemStackDistance={20}
-        baseScale={0.84}
-        blurAmount={2.2}
-      >
+      {/* Cascading Card Stack matching reference diagram */}
+      <ScrollStack>
         {FEATURED_PROJECTS.map((project, idx) => (
           <ScrollStackItem
             key={project.id}
@@ -112,7 +105,7 @@ export default function FeaturedProjectsSection({ play }) {
                       play?.('click');
                     }}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <line x1="7" y1="17" x2="17" y2="7" />
                       <polyline points="7 7 17 7 17 17" />
                     </svg>

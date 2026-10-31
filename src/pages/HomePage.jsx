@@ -64,7 +64,7 @@ export default function HomePage({ sound }) {
       );
 
       const sections = document.querySelectorAll(
-        '.portfolio-section:not(.hero-section):not(.portfolio-about-section)'
+        '.portfolio-section:not(.hero-section):not(.portfolio-about-section):not(.portfolio-featured-projects-section)'
       );
       sections.forEach((section) => {
         gsap.fromTo(

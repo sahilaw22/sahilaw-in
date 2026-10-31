@@ -1,4 +1,4 @@
-/* ScrollStack layout: deck variant */
+/* Cascading Card Stack Scroll Container */
 
 .scroll-stack-container {
   position: relative;
@@ -10,36 +10,36 @@
   align-items: center;
 }
 
-/* Each card pins stickily at top with progressive deck offset */
+/* Each card pins stickily at top with progressive deck offset matching the reference diagram */
 .scroll-stack-item {
   position: sticky;
-  top: calc(15vh + var(--stack-idx, 0) * 16px);
-  width: 420px;
-  max-width: 100%;
-  margin-bottom: 24vh;
+  top: calc(12vh + var(--stack-idx, 0) * 26px);
+  z-index: calc(10 + var(--stack-idx, 0));
+  width: min(460px, calc(100vw - 2.5rem));
+  margin-bottom: 36vh;
   display: flex;
   justify-content: center;
   transform-origin: top center;
-  will-change: transform, opacity, filter;
-  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.12s ease-out, filter 0.12s ease-out;
+  will-change: transform;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-stack-item:last-child {
-  margin-bottom: 3rem;
+  margin-bottom: 5rem;
 }
 
 @media (max-width: 768px) {
   .scroll-stack-item {
-    top: calc(11vh + var(--stack-idx, 0) * 12px);
-    width: min(420px, calc(100vw - 2.5rem));
-    margin-bottom: 18vh;
+    top: calc(9vh + var(--stack-idx, 0) * 20px);
+    width: min(440px, calc(100vw - 2rem));
+    margin-bottom: 28vh;
   }
 }
 
 @media (max-width: 480px) {
   .scroll-stack-item {
-    width: calc(100vw - 2rem);
-    margin-bottom: 16vh;
+    top: calc(8vh + var(--stack-idx, 0) * 18px);
+    width: calc(100vw - 1.5rem);
+    margin-bottom: 24vh;
   }
 }
-
