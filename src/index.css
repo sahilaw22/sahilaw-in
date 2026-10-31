@@ -18,12 +18,17 @@
 }
 
 /*  */
-html,
+html {
+  min-height: 100vh;
+  overflow-x: clip !important;
+  overflow-y: auto !important;
+}
+
 body,
 body.styles_main__XsB95 {
   height: auto !important;
   min-height: 100vh !important;
-  overflow-y: auto !important;
+  overflow: visible !important;
   overflow-x: clip !important;
   scrollbar-width: none;
 }

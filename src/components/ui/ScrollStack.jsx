@@ -1,100 +1,126 @@
 import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ScrollStack.css';
 
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
 /**
- * ScrollStack Component - Cascading Deck
+ * ScrollStack Component - GSAP Pinned Cascading Deck
  *
- * Implements stacking card animation matching the top-tab reference diagram:
- * Each card sticks at a progressive top offset:
- * Card 0 sticks at baseTop (e.g. 12vh)
- * Card 1 sticks at baseTop + 1 * step (e.g. 12vh + 26px)
- * Card 2 sticks at baseTop + 2 * step (e.g. 12vh + 52px)
- * Card 3 sticks at baseTop + 3 * step (e.g. 12vh + 78px)
- *
- * As cards stack over earlier cards, earlier cards gently scale down (0.965, 0.930, 0.895)
- * with transform-origin: top center, so their top tabs stay visible while their shoulders
- * taper in, perfectly creating the stepped card deck appearance.
- *
- * Once all cards are stacked, the entire deck naturally unpins and moves upward together
- * into the next section as you continue scrolling.
+ * Implements stacking card animation matching the user's reference diagram:
+ * When the section reaches reading position, it pins in place.
+ * As the user scrolls:
+ * - Card 0 is in place.
+ * - Card 1 glides up and docks over Card 0 (step offset 26px).
+ * - Card 2 glides up and docks over Card 1.
+ * - Card 3 glides up and docks over Card 2.
+ * - Each card underneath scales down (0.965, 0.930, 0.895) with top-center origin,
+ *   keeping the top tab and shoulders visible in a cascading deck.
+ * Once all cards are stacked, the pin releases and the entire deck moves
+ * upward together into the next section.
  */
-export function ScrollStack({
-  children,
-  className = '',
-  scaleStep = 0.035,
-  minScale = 0.88,
-}) {
+export function ScrollStack({ children, className = '' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) return undefined;
 
-    // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const cards = Array.from(container.querySelectorAll('.scroll-stack-item'));
-    if (!cards.length) return;
+    const items = Array.from(container.querySelectorAll('.scroll-stack-item'));
+    if (!items.length) return undefined;
 
-    let ticking = false;
+    const cards = items.map((item) => item.querySelector('.scroll-stack-card') || item);
+    const total = items.length;
 
-    const updateStack = () => {
-      const windowHeight = window.innerHeight;
-      const windowWidth = window.innerWidth;
-      const isMobile = windowWidth <= 768;
-      const baseTop = windowHeight * (isMobile ? 0.09 : 0.12);
-      const stepDistance = isMobile ? 20 : 26;
-      const approachDistance = windowHeight * 0.35;
+    if (prefersReducedMotion) {
+      items.forEach((item) => {
+        item.style.position = 'relative';
+        item.style.marginBottom = '2rem';
+      });
+      return undefined;
+    }
 
-      cards.forEach((card, index) => {
-        let coverProgress = 0;
+    const isMobile = window.innerWidth <= 768;
+    const stepDistance = isMobile ? 20 : 26;
+    const scaleFactor = 0.035;
 
-        for (let j = index + 1; j < cards.length; j++) {
-          const nextCard = cards[j];
-          const nextRect = nextCard.getBoundingClientRect();
-          const nextTargetTop = baseTop + j * stepDistance;
-          const dist = nextRect.top - nextTargetTop;
+    // Initial setup:
+    // Card 0 sits active at top
+    // Cards 1..N sit below the stage
+    cards.forEach((card, i) => {
+      gsap.set(items[i], { zIndex: 10 + i });
+      if (i > 0) {
+        gsap.set(items[i], {
+          yPercent: 130,
+          opacity: 1,
+        });
+      }
+    });
 
-          if (dist <= 0) {
-            coverProgress += 1;
-          } else if (dist < approachDistance) {
-            coverProgress += (approachDistance - dist) / approachDistance;
-          }
-        }
-
-        const scale = Math.max(minScale, 1 - coverProgress * scaleStep);
-        const innerCard = card.querySelector('.scroll-stack-card') || card;
-        innerCard.style.transform = `scale(${scale.toFixed(4)})`;
-        innerCard.style.transformOrigin = 'top center';
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: 'top 14%',
+          end: () => `+=${(total - 1) * (window.innerHeight * 0.72)}`,
+          pin: true,
+          pinSpacing: true,
+          scrub: 0.65,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
       });
 
-      ticking = false;
-    };
+      // Animate each subsequent card gliding into place
+      for (let i = 1; i < total; i++) {
+        const targetY = i * stepDistance;
 
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(updateStack);
-        ticking = true;
+        // Card i slides up into stack position
+        tl.to(
+          items[i],
+          {
+            yPercent: 0,
+            y: targetY,
+            ease: 'power1.out',
+            duration: 1,
+          },
+          `step-${i}`
+        );
+
+        // Scale down all earlier cards in the stack
+        for (let prev = 0; prev < i; prev++) {
+          const depth = i - prev;
+          const targetScale = Math.max(0.88, 1 - depth * scaleFactor);
+
+          tl.to(
+            cards[prev],
+            {
+              scale: targetScale,
+              transformOrigin: 'top center',
+              ease: 'power1.out',
+              duration: 1,
+            },
+            `step-${i}`
+          );
+        }
       }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    updateStack();
+    }, container);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      ctx.revert();
     };
-  }, [scaleStep, minScale]);
+  }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className={`scroll-stack-container ${className}`}
-    >
-      {children}
+    <div ref={containerRef} className={`scroll-stack-wrapper ${className}`}>
+      <div className="scroll-stack-stage">{children}</div>
     </div>
   );
 }

@@ -159,6 +159,13 @@
   transform: translate(3px, -3px) scale(1.18);
 }
 
+.projects-more-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2.75rem;
+}
+
 @media (max-width: 480px) {
   .scroll-stack-card {
     height: 20.5rem;
