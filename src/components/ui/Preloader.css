@@ -12,6 +12,18 @@
   justify-content: center;
   background-color: transparent !important;
   color: #ffffff;
+  z-index: 99999999 !important;
+}
+
+/* Hide navigation dock and scroll pills completely on both mobile and desktop while preloader is active */
+body.preloader-active .expandable-tabs-wrapper,
+body.preloader-active .portfolio-scroll-pills-nav,
+body[data-preloader-active="true"] .expandable-tabs-wrapper,
+body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Staggered staircase reveal without grid lines or column borders */

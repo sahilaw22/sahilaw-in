@@ -35,24 +35,23 @@ function tokenizeParagraph(para) {
   let cleaned = para.replace(/craft\s+\{\{(?:ICON_|icon:)?figma\}\}/gi, 'craft in Figma');
   cleaned = cleaned.replace(/\{\{(?:ICON_|icon:)?[A-Za-z0-9_-]+\}\}/gi, '');
 
-  // Detect tech keywords and cleanly attach icon token with any trailing punctuation
+  // Detect tech keywords and place icon token before the tech name
   const techRegex = /\b(Tailwind(?:\s+CSS)?|Next\.?js|TypeScript|Flutter|React|Figma|Python)\b([.,!?;:]*)/gi;
   const preprocessed = cleaned.replace(techRegex, (match, techName, punct) => {
     const key = techName.toLowerCase();
     const iconKey = TECH_ICON_MAP[key] || key;
-    return `${techName} :::ICON:${iconKey}:${punct || ''}:::`;
+    return `:::ICON:${iconKey}::: ${techName}${punct || ''}`;
   });
 
   const words = preprocessed.split(/\s+/).filter(Boolean);
   const tokens = [];
 
   for (const word of words) {
-    const iconMatch = word.match(/^:::ICON:([a-z0-9_-]+):([.,!?;:]*):::$/i);
+    const iconMatch = word.match(/^:::ICON:([a-z0-9_-]+):::$/i);
     if (iconMatch) {
       tokens.push({
         isIcon: true,
         iconName: iconMatch[1].toLowerCase(),
-        trailingPunct: iconMatch[2] || '',
       });
     } else {
       tokens.push({ isIcon: false, text: word });
@@ -133,9 +132,6 @@ export default function TextRevealParagraph({ paragraphs }) {
                         height={24}
                         loading="lazy"
                       />
-                      {token.trailingPunct ? (
-                        <span className="tr-word-text inline-icon-punct">{token.trailingPunct}</span>
-                      ) : null}
                     </span>
                   );
                 }

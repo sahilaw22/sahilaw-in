@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import GlassDistortionSVG from '../components/GlassDistortionSVG.jsx';
@@ -19,7 +19,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Home page: full scrolling portfolio with 4-pill quick navigation
-export default function HomePage({ sound }) {
+export default function HomePage({ sound, onIntroComplete }) {
   // Preloader only appears when opening portfolio for the first time in the session; normal reloads bypass it
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -30,38 +30,50 @@ export default function HomePage({ sound }) {
     }
   });
 
+  const hadPreloaderRef = useRef(showIntro);
+
   const handleIntroComplete = () => {
     try {
       sessionStorage.setItem('portfolio_opened_before', 'true');
     } catch {}
     setShowIntro(false);
+    onIntroComplete?.();
   };
 
   useEffect(() => {
     if (showIntro) return;
 
     const ctx = gsap.context(() => {
-      // Cinematic entrance reveal for hero section when preloader finishes
-      gsap.fromTo(
-        '#hero-greeting-heading',
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }
-      );
-      gsap.fromTo(
-        '.hero-role-wrapper',
-        { opacity: 0, y: 18 },
-        { opacity: 1, y: 0, duration: 0.75, delay: 0.12, ease: 'power3.out' }
-      );
-      gsap.fromTo(
-        '.hero-pitch-statement',
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.75, delay: 0.22, ease: 'power3.out' }
-      );
-      gsap.fromTo(
-        '.social-icons-wrapper',
-        { opacity: 0, y: 14 },
-        { opacity: 1, y: 0, duration: 0.75, delay: 0.32, ease: 'power3.out' }
-      );
+      // If preloader happened, do not show the reload page animation
+      if (!hadPreloaderRef.current) {
+        // Normal reload without preloader: run hero entrance reveal
+        gsap.fromTo(
+          '#hero-greeting-heading',
+          { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }
+        );
+        gsap.fromTo(
+          '.hero-role-wrapper',
+          { opacity: 0, y: 18 },
+          { opacity: 1, y: 0, duration: 0.75, delay: 0.12, ease: 'power3.out' }
+        );
+        gsap.fromTo(
+          '.hero-pitch-statement',
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.75, delay: 0.22, ease: 'power3.out' }
+        );
+        gsap.fromTo(
+          '#social-icons-wrapper, .social-icons-wrapper',
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.75, delay: 0.32, ease: 'power3.out' }
+        );
+      } else {
+        // When preloader happens, hero elements are immediately ready with zero delayed reload animation
+        gsap.set(
+          ['#hero-greeting-heading', '.hero-role-wrapper', '.hero-pitch-statement', '#social-icons-wrapper', '.social-icons-wrapper'],
+          { opacity: 1, y: 0, clearProps: 'all' }
+        );
+      }
 
       const sections = document.querySelectorAll(
         '.portfolio-section:not(.hero-section):not(.portfolio-about-section):not(.portfolio-featured-projects-section)'

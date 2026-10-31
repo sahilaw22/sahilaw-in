@@ -627,6 +627,17 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   pointer-events: none !important;
 }
 
+/* When preloader is active, completely hide floating navbar and side notch across desktop & mobile */
+body.preloader-active .expandable-tabs-wrapper,
+body.preloader-active .portfolio-scroll-pills-nav,
+body[data-preloader-active="true"] .expandable-tabs-wrapper,
+body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 
 
 /* Top Back Button outside card (no border, transparent, minimal) */

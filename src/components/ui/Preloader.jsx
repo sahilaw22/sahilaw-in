@@ -14,7 +14,7 @@ export default function Preloader({
   stairsRevealDirection = 'up',
   duration = 1800,
   position = 'fixed',
-  zIndex = 99999,
+  zIndex = 99999999,
   bgColor = '#f0191a',
   percentagePosition = 'center',
   showPercentageSign = true,
@@ -76,16 +76,19 @@ export default function Preloader({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isControlled]);
 
-  // Lock body scroll while active
+  // Lock body scroll and mark preloader active on body across entire lifetime including exit animation
   useEffect(() => {
-    if (isActive) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isActive]);
+    document.body.classList.add('preloader-active');
+    document.body.setAttribute('data-preloader-active', 'true');
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.classList.remove('preloader-active');
+      document.body.removeAttribute('data-preloader-active');
+    };
+  }, []);
 
   const handleAnimationComplete = () => {
     if (!completedRef.current) {

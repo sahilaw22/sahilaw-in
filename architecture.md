@@ -6,7 +6,7 @@ An exhaustive architectural reference and technical guide for the Sahil Ahmed Wa
 
 ## 1. Executive Summary & Tech Stack
 
-This portfolio is an anti-slop, high-performance web experience blending front-end craft with interactive engineering. It features zero unnecessary dependencies, centralized data modeling, semantic asset directories, and a 1:1 match between on-screen section headers and component files.
+This portfolio is a crafted, high-performance web experience blending front-end craft with interactive engineering. It features zero unnecessary dependencies, centralized data modeling, semantic asset directories, and a 1:1 match between on-screen section headers and component files.
 
 - **Framework**: React 18 (Vite 5.4.21)
 - **Styling**: Vanilla CSS (`src/index.css`) with unified technical grid architecture, complemented by foundational base styles (`public/styles/base-layout.css` and `public/styles/base-theme.css`)
@@ -67,12 +67,14 @@ Avara/
     │   ├── ContactSection.jsx     # [CONTACT] interactive email & social links
     │   ├── EducationSection.jsx   # [EDUCATION] connected spine with logos
     │   ├── ExperienceSection.jsx  # [EXPERIENCE] connected spine with company logos
+    │   ├── FeaturedProjectsSection.jsx # [FEATURED PROJECTS] pinned cascading stack
+    │   ├── FeaturedProjectsSection.css # Stacked card styling and pinned slot
     │   ├── GlassDistortionSVG.jsx # SVG filter definitions for glass refraction
     │   ├── HeroHeader.jsx         # Hero rotating title badge with status-red glow
-    │   ├── IntroSequence.jsx      # First-visit opening greeting animation
     │   ├── LatticeLoader.jsx      # Matrix grid orbital loader for chat console
     │   ├── LetterGlitch.jsx       # Matrix hex-code background canvas
     │   ├── LetterGlitch.css       # Canvas styling for background
+    │   ├── Preloader.jsx          # Re-export of React Bits Pro entrance preloader
     │   ├── RightScrollPills.jsx   # Right-side vertical section jump pills
     │   ├── RotatingText.jsx       # Spring-physics role text rotation
     │   ├── RotatingText.css       # Rotating text transitions
@@ -84,6 +86,10 @@ Avara/
     │   └── ui/                    # Specialized interactive UI widgets
     │       ├── expandable-tabs.jsx # Micro-animated navigation capsule
     │       ├── expandable-tabs.css # Navigation styles
+    │       ├── Preloader.jsx      # React Bits Pro 10-stair entrance reveal
+    │       ├── Preloader.css      # Preloader styles & navbar suppression
+    │       ├── ScrollStack.jsx    # GSAP ScrollTrigger pinned stacked deck
+    │       ├── ScrollStack.css    # Pinned card stack positioning
     │       ├── OrbitDeck.jsx      # 3D interactive spinning project carousel
     │       └── OrbitDeck.css      # 3D transforms & perspective layout
     │
@@ -136,12 +142,13 @@ Every major section in the main portfolio directly corresponds to the visual tag
 | Visual Header Tag | Component Location | Data Location | Description |
 | :--- | :--- | :--- | :--- |
 | **HERO** | `src/components/HeroHeader.jsx`<br>`src/components/SocialIcons.jsx` | `portfolioData.jsx` (`HERO_ROLES`) | Intro greeting, pitch, rotating status-red badge (`#ff4444`), and social links. |
-| **ABOUT ME** | `src/components/AboutSection.jsx` | `portfolioData.jsx` (`ABOUT_PARAGRAPHS`) | Word-by-word opacity reveal with Figma, React, Flutter SkillIcons and 3D Resume button. |
+| **ABOUT ME** | `src/components/AboutSection.jsx` | `portfolioData.jsx` (`ABOUT_PARAGRAPHS`) | Word-by-word opacity reveal with Figma, React, Flutter SkillIcons placed before tech names and 3D Resume button. |
 | **(TIMELINE)** | `src/components/CareerTimeline.jsx` | Sub-component of About | Vector ruler from 2021 to 2026, PCM track, break baseline, internship nodes, and `NOW` status. |
 | **EXPERIENCE** | `src/components/ExperienceSection.jsx` | `portfolioData.jsx` (`EXPERIENCES`) | Company nodes (Big Block Theory, FlyRank AI, Perplexity) connected by vertical spine. |
+| **FEATURED PROJECTS** | `src/components/FeaturedProjectsSection.jsx`<br>`src/components/ui/ScrollStack.jsx` | `portfolioData.jsx` (`PROJECTS`) | Pinned cascading stacked card deck with solid cards, pinned header/footer, and smooth scroll transitions. |
 | **EDUCATION** | `src/components/EducationSection.jsx` | `portfolioData.jsx` (`EDUCATION_ITEMS`) | B.Tech CSE (GCET Jammu) and PCM (SP Smart School) connected with institutional nodes. |
 | **SKILLS** | `src/components/SkillsSection.jsx` | `portfolioData.jsx` (`SKILL_CATEGORIES`) | Categorized skill groups (Frontend, AI, Backend, Tools) rendered with `TechIcon` pills. |
-| **CERTIFICATIONS** | `src/components/CertificationsSection.jsx` | `portfolioData.jsx` (`CERTIFICATIONS`) | Clean anti-slop rows with brand vectors, issuers, year badges, and direct credential links. |
+| **CERTIFICATIONS** | `src/components/CertificationsSection.jsx` | `portfolioData.jsx` (`CERTIFICATIONS`) | Clean technical rows with brand vectors, issuers, year badges, and direct credential links. |
 | **CONTACT** | `src/components/ContactSection.jsx` | `src/components/ContactSection.jsx` | Content-hugging email action button, availability metadata, and direct social links. |
 
 ---

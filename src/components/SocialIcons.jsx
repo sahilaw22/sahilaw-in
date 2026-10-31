@@ -45,7 +45,7 @@ export default function SocialIcons() {
   ];
 
   return (
-    <div id="social-icons-wrapper" ref={containerRef}>
+    <div id="social-icons-wrapper" className="social-icons-wrapper" ref={containerRef}>
       <ul className="styles_links__5qJaS">
         {links.map((link) => (
           <li key={link.label}>

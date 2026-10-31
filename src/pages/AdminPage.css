@@ -561,13 +561,7 @@
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8);
 }
 
-/* ==========================================================================
-   MOBILE RESPONSIVENESS (antislop-layoutmobile)
-   ========================================================================== */
-
-/* ==========================================================================
-   PORTFOLIO CONTENT DYNAMIC MANAGEMENT
-   ========================================================================== */
+/* Mobile responsiveness and portfolio content tabs */
 
 .portfolio-subtabs-bar {
   display: flex;

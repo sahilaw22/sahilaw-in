@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useHashRouter } from './hooks/useHashRouter.js';
 import { useSoundEngine } from './hooks/useSoundEngine.js';
 
@@ -30,6 +30,20 @@ export default function App() {
   const activeView = routeToView(route);
   const isAdmin = route === '/chatbot-response';
 
+  const [isPreloaderActive, setIsPreloaderActive] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const isHome = window.location.hash === '' || window.location.hash === '#/' || window.location.hash === '#';
+      return isHome && !sessionStorage.getItem('portfolio_opened_before');
+    } catch {
+      return false;
+    }
+  });
+
+  const handlePreloaderComplete = () => {
+    setIsPreloaderActive(false);
+  };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [route]);
@@ -37,7 +51,7 @@ export default function App() {
   // Render the correct page based on the current hash route
   function renderPage() {
     if (route === '/chatbot-response') return <AdminPage />;
-    if (route === '/') return <HomePage sound={sound} />;
+    if (route === '/') return <HomePage sound={sound} onIntroComplete={handlePreloaderComplete} />;
     if (route === '/blog') return <BlogPage sound={sound} />;
     if (route.startsWith('/blog/')) {
       const slug = route.replace('/blog/', '');
@@ -47,7 +61,7 @@ export default function App() {
     if (route === '/chat') return <ChatPage />;
     if (route === '/projects') return <ProjectsPage />;
     if (route === '/projects/all') return <ProjectsPage showAll />;
-    return <HomePage sound={sound} />;
+    return <HomePage sound={sound} onIntroComplete={handlePreloaderComplete} />;
   }
 
   return (
@@ -55,8 +69,8 @@ export default function App() {
       <div key={route} className="page-transition-wrapper">
         {renderPage()}
       </div>
-      {!isAdmin && <RightScrollPills play={sound?.play} currentRoute={route} />}
-      {!isAdmin && <BottomNav activeView={activeView} />}
+      {!isAdmin && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {!isAdmin && !isPreloaderActive && <BottomNav activeView={activeView} />}
     </>
   );
 }

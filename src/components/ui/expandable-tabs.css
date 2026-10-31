@@ -131,6 +131,15 @@ body.project-detail-active .expandable-tabs-wrapper {
   pointer-events: none !important;
 }
 
+/* Hide navigation pill completely while preloader is active */
+body.preloader-active .expandable-tabs-wrapper,
+body[data-preloader-active="true"] .expandable-tabs-wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* Mobile view: top docked floating pill */
 @media screen and (max-width: 920px) {
   .expandable-tabs-wrapper {

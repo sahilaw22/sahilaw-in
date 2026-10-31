@@ -36,11 +36,11 @@ My Coolofio is a personal portfolio and creative engineering showcase. It combin
 
 ## Core Features
 
-- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white Glad you're here typography, session-based first-visit display, and keyboard/click skip affordance.
+- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white Glad you're here typography, session-based first-visit display, complete navbar suppression across mobile and desktop, and keyboard/click skip affordance.
 - **Scroll Stack Project Deck**: Featured work presented in a stacked card deck (`@reactbits-starter/scroll-stack-tw`) that glides and scales smoothly as the user scrolls.
 - **3D OrbitDeck Carousel**: Cylindrical card perspective ring powered by CSS 3D matrix math with pointer scrub and inertial dampening.
 - **Procedural Web Audio Engine**: Synthesized acoustic clicks and frequency pops triggered on interactive elements using the native Web Audio API with zero external media files.
-- **SkillIcons & Custom Badges**: Inline technology pills rendered via `skillicons.dev` alongside custom uploaded skill icons managed in the admin dashboard.
+- **SkillIcons & Custom Badges**: Inline technology pills rendered via `skillicons.dev` placed directly before tech names alongside custom uploaded skill icons managed in the admin dashboard.
 - **Dual Tab Recognition**: Modular Certification & Recognition sections featuring issue dates, issuing organizations, and direct credential links.
 - **Admin Dashboard & ZIP Export**: In-browser portfolio content editor with live JSON preview and full ZIP package backup bundling all assets and structured data.
 - **Zero-Dependency Hash Router**: Smooth client-side view switching compatible with all static hosting providers.
