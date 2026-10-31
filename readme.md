@@ -1,28 +1,17 @@
 <div align="center">
 
-# My Coolofio
+# Design Engineering Portfolio
+Personal portfolio, design engineering experiments, and modular content management.
 
-### Personal portfolio, design engineering experiments, and modular content management.
-
-Built with React 18, GSAP 3, Framer Motion, and native browser APIs. Zero router dependencies, dark liquid aesthetics, procedural audio feedback, and client-side hash navigation.
-
-<br />
+**Visit:** [sahilaw.in](https://sahilaw.in)
 
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=react,vite,js,ts,tailwind,figma,flutter" alt="Tech Stack Badges" />
+  <img src="https://custom-icon-badges.demolab.com/badge/React-20232A?logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://custom-icon-badges.demolab.com/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://custom-icon-badges.demolab.com/badge/TypeScript-007ACC?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://custom-icon-badges.demolab.com/badge/Tailwind_CSS-38BDF8?logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://custom-icon-badges.demolab.com/badge/Figma-F24E1E?logo=figma&logoColor=white" alt="Figma" />
 </p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Production_Ready-10b981?style=flat-square" alt="Status" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Preloader-React_Bits_Pro-38bdf8?style=flat-square" alt="Preloader" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Cards-Scroll_Stack_Deck-8c65f7?style=flat-square" alt="Scroll Stack" />
-  &nbsp;
-  <img src="https://img.shields.io/badge/Audio-Web_Audio_API-ec4899?style=flat-square" alt="Audio" />
-</p>
-
-[Overview](#overview) · [Core Features](#core-features) · [Architecture Pipeline](#architecture-pipeline) · [Admin & Data Export](#admin--data-export) · [Local Development](#local-development)
 
 </div>
 
