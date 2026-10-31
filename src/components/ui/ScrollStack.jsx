@@ -22,14 +22,15 @@ if (typeof window !== 'undefined') {
  * Once all cards are stacked, the pin releases and the entire deck moves
  * upward together into the next section.
  */
-export function ScrollStack({ children, className = '' }) {
+export function ScrollStack({ children, header, className = '' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return undefined;
 
-    const items = Array.from(container.querySelectorAll('.scroll-stack-item'));
+    const stage = container.querySelector('.scroll-stack-stage');
+    const items = Array.from((stage || container).querySelectorAll('.scroll-stack-item'));
     if (!items.length) return undefined;
 
     const cards = items.map((item) => item.querySelector('.scroll-stack-card') || item);
@@ -56,7 +57,7 @@ export function ScrollStack({ children, className = '' }) {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: 'top 14%',
+          start: isMobile ? 'top 40px' : 'top 64px',
           end: () => `+=${(total - 1) * (window.innerHeight * 0.72)}`,
           pin: true,
           pinSpacing: true,
@@ -114,6 +115,7 @@ export function ScrollStack({ children, className = '' }) {
 
   return (
     <div ref={containerRef} className={`scroll-stack-wrapper ${className}`}>
+      {header && <div className="scroll-stack-pinned-header">{header}</div>}
       <div className="scroll-stack-stage">{children}</div>
     </div>
   );

@@ -14,6 +14,15 @@ const FEATURED_PROJECTS = [
     website: 'https://github.com/sahilaw22',
   },
   {
+    id: 4,
+    title: 'Lurian AI',
+    details: 'Real-time conversational companion featuring streaming responses, suggested query prompts, and context grounding.',
+    tech: ['React', 'AI Engine', 'TypeScript', 'Node.js', 'Figma'],
+    image: '/projects/lurian-ai.png',
+    link: '#/chat',
+    website: '#/chat',
+  },
+  {
     id: 2,
     title: 'Web Audio Synth',
     details: 'Browser audio workstation exploring oscillator synthesis, filter resonance, and real-time canvas visualizer.',
@@ -31,29 +40,21 @@ const FEATURED_PROJECTS = [
     link: '#/projects',
     website: 'https://github.com/sahilaw22',
   },
-  {
-    id: 4,
-    title: 'Lurian AI',
-    details: 'Real-time conversational companion featuring streaming responses, suggested query prompts, and context grounding.',
-    tech: ['React', 'AI Engine', 'TypeScript', 'Node.js', 'Figma'],
-    image: '/projects/lurian-ai.png',
-    link: '#/chat',
-    website: '#/chat',
-  },
 ];
 
 export default function FeaturedProjectsSection({ play }) {
   return (
     <section id="section-featured-projects" className="portfolio-section portfolio-featured-projects-section">
-      {/* Center-aligned Featured Work Header Tag */}
-      <div className="featured-work-center-header">
-        <div className="contact-image-tag">
-          <span>FEATURED WORK</span>
-        </div>
-      </div>
-
-      {/* Cascading Card Stack matching reference diagram */}
-      <ScrollStack>
+      {/* Cascading Card Stack matching reference diagram with pinned header */}
+      <ScrollStack
+        header={
+          <div className="featured-work-center-header">
+            <div className="contact-image-tag">
+              <span>FEATURED WORK</span>
+            </div>
+          </div>
+        }
+      >
         {FEATURED_PROJECTS.map((project, idx) => (
           <ScrollStackItem
             key={project.id}

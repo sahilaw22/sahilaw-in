@@ -6,9 +6,19 @@
   max-width: 980px;
   margin: 0 auto;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   overflow: visible !important;
+}
+
+.scroll-stack-pinned-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  z-index: 20;
 }
 
 .scroll-stack-stage {
@@ -34,6 +44,9 @@
 }
 
 @media (max-width: 768px) {
+  .scroll-stack-pinned-header {
+    margin-bottom: 1.5rem;
+  }
   .scroll-stack-stage {
     width: min(440px, calc(100vw - 2rem));
     height: 26rem;
@@ -44,6 +57,9 @@
 }
 
 @media (max-width: 480px) {
+  .scroll-stack-pinned-header {
+    margin-bottom: 1.25rem;
+  }
   .scroll-stack-stage {
     width: calc(100vw - 1.5rem);
     height: 25rem;

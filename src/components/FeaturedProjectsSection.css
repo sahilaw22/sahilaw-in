@@ -3,7 +3,7 @@
 .portfolio-featured-projects-section {
   position: relative;
   width: 100%;
-  padding: 4.5rem 1.25rem 5.5rem;
+  padding: 3.5rem 1.25rem 5rem;
   background: transparent;
   color: #ededed;
   z-index: 2;
@@ -17,7 +17,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 3.25rem;
+  margin-bottom: 0;
   text-align: center;
 }
 
