@@ -48,8 +48,8 @@ export function ScrollStack({ children, header, footer, className = '' }) {
       gsap.set(items[i], {
         zIndex: 10 + i,
         y: 0,
-        yPercent: i === 0 ? 0 : 180,
-        opacity: i === 0 ? 1 : 0,
+        yPercent: i === 0 ? 0 : 250,
+        opacity: 1,
       });
       gsap.set(card, {
         scale: 1,
