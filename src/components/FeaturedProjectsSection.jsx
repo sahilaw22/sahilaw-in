@@ -59,10 +59,21 @@ export default function FeaturedProjectsSection({ play }) {
             key={project.id}
             index={idx}
           >
-            <a
-              href={project.link}
+            <div
               className="scroll-stack-card"
-              onClick={() => play?.('click')}
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                play?.('click');
+                window.location.hash = project.link;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  play?.('click');
+                  window.location.hash = project.link;
+                }
+              }}
               aria-label={`View ${project.title}`}
             >
               {/* Image banner with gradient overlay */}
@@ -112,7 +123,7 @@ export default function FeaturedProjectsSection({ play }) {
                   </a>
                 </div>
               </div>
-            </a>
+            </div>
           </ScrollStackItem>
         ))}
       </ScrollStack>

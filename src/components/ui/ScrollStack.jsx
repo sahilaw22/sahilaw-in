@@ -15,8 +15,8 @@ if (typeof window !== 'undefined') {
  * As the user scrolls:
  * - Card 0 is in place.
  * - Card 1 glides up and docks over Card 0 (step offset 26px).
- * - Card 2 glides up and docks over Card 1.
- * - Card 3 glides up and docks over Card 2.
+ * - Card 2 glides up and docks over Card 1 (step offset 52px).
+ * - Card 3 glides up and docks over Card 2 (step offset 78px).
  * - Each card underneath scales down (0.965, 0.930, 0.895) with top-center origin,
  *   keeping the top tab and shoulders visible in a cascading deck.
  * Once all cards are stacked, the pin releases and the entire deck moves
@@ -29,23 +29,11 @@ export function ScrollStack({ children, className = '' }) {
     const container = containerRef.current;
     if (!container) return undefined;
 
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     const items = Array.from(container.querySelectorAll('.scroll-stack-item'));
     if (!items.length) return undefined;
 
     const cards = items.map((item) => item.querySelector('.scroll-stack-card') || item);
     const total = items.length;
-
-    if (prefersReducedMotion) {
-      items.forEach((item) => {
-        item.style.position = 'relative';
-        item.style.marginBottom = '2rem';
-      });
-      return undefined;
-    }
 
     const isMobile = window.innerWidth <= 768;
     const stepDistance = isMobile ? 20 : 26;
@@ -58,7 +46,7 @@ export function ScrollStack({ children, className = '' }) {
       gsap.set(items[i], { zIndex: 10 + i });
       if (i > 0) {
         gsap.set(items[i], {
-          yPercent: 130,
+          yPercent: 125,
           opacity: 1,
         });
       }
@@ -113,7 +101,13 @@ export function ScrollStack({ children, className = '' }) {
       }
     }, container);
 
+    // Refresh ScrollTrigger after slight delay to ensure all assets are laid out
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 250);
+
     return () => {
+      clearTimeout(timer);
       ctx.revert();
     };
   }, []);
