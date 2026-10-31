@@ -6,60 +6,60 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const ALIAS_MAP = {
+const TECH_ICON_MAP = {
+  figma: 'figma',
+  react: 'react',
   typescript: 'ts',
-  javascript: 'js',
-  python: 'py',
-  node: 'nodejs',
-  nodejs: 'nodejs',
+  flutter: 'flutter',
   tailwind: 'tailwind',
+  tailwindcss: 'tailwind',
+  'tailwind css': 'tailwind',
   next: 'nextjs',
   nextjs: 'nextjs',
+  'next.js': 'nextjs',
+  python: 'py',
+  js: 'js',
+  javascript: 'js',
+  node: 'nodejs',
+  nodejs: 'nodejs',
+  go: 'go',
   golang: 'go',
   cpp: 'cpp',
   cs: 'cs',
-  cplusplus: 'cpp',
-  csharp: 'cs',
 };
-
-function getSkillIconElement(rawName) {
-  const raw = (rawName || '').toLowerCase();
-  const iconId = ALIAS_MAP[raw] || raw;
-  return (
-    <img
-      src={`https://skillicons.dev/icons?i=${iconId}`}
-      alt={raw}
-      title={raw.toUpperCase()}
-      className="about-skill-icon"
-      width={24}
-      height={24}
-      loading="lazy"
-    />
-  );
-}
 
 function tokenizeParagraph(para) {
   if (!para) return [];
-  const iconPattern = /(\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}|https:\/\/skillicons\.dev\/icons\?i=[A-Za-z0-9_,-]+)/gi;
-  const parts = para.split(iconPattern);
-  const result = [];
 
-  for (const part of parts) {
-    if (!part) continue;
-    const match =
-      part.match(/^\{\{(?:ICON_|icon:)([A-Za-z0-9_-]+)\}\}$/i) ||
-      part.match(/^https:\/\/skillicons\.dev\/icons\?i=([A-Za-z0-9_,-]+)$/i);
-    if (match) {
-      result.push({ isIcon: true, iconName: match[1].toLowerCase() });
+  // Strip any legacy explicit {{ICON_...}} tags so no uppercase letters leak into the DOM
+  let cleaned = para.replace(/craft\s+\{\{(?:ICON_|icon:)?figma\}\}/gi, 'craft in Figma');
+  cleaned = cleaned.replace(/\{\{(?:ICON_|icon:)?[A-Za-z0-9_-]+\}\}/gi, '');
+
+  // Detect tech keywords and cleanly attach icon token with any trailing punctuation
+  const techRegex = /\b(Tailwind(?:\s+CSS)?|Next\.?js|TypeScript|Flutter|React|Figma|Python)\b([.,!?;:]*)/gi;
+  const preprocessed = cleaned.replace(techRegex, (match, techName, punct) => {
+    const key = techName.toLowerCase();
+    const iconKey = TECH_ICON_MAP[key] || key;
+    return `${techName} :::ICON:${iconKey}:${punct || ''}:::`;
+  });
+
+  const words = preprocessed.split(/\s+/).filter(Boolean);
+  const tokens = [];
+
+  for (const word of words) {
+    const iconMatch = word.match(/^:::ICON:([a-z0-9_-]+):([.,!?;:]*):::$/i);
+    if (iconMatch) {
+      tokens.push({
+        isIcon: true,
+        iconName: iconMatch[1].toLowerCase(),
+        trailingPunct: iconMatch[2] || '',
+      });
     } else {
-      const words = part.split(/\s+/).filter(Boolean);
-      for (const w of words) {
-        result.push({ isIcon: false, text: w });
-      }
+      tokens.push({ isIcon: false, text: word });
     }
   }
 
-  return result;
+  return tokens;
 }
 
 export default function TextRevealParagraph({ paragraphs }) {
@@ -123,8 +123,19 @@ export default function TextRevealParagraph({ paragraphs }) {
               {tokens.map((token, tIdx) => {
                 if (token.isIcon) {
                   return (
-                    <span key={tIdx} className="tr-word word inline-icon-wrapper" title={token.iconName}>
-                      {getSkillIconElement(token.iconName)}
+                    <span key={tIdx} className="tr-word word inline-icon-wrapper">
+                      <img
+                        src={`https://skillicons.dev/icons?i=${token.iconName}`}
+                        alt=""
+                        aria-hidden="true"
+                        className="about-skill-icon"
+                        width={24}
+                        height={24}
+                        loading="lazy"
+                      />
+                      {token.trailingPunct ? (
+                        <span className="tr-word-text inline-icon-punct">{token.trailingPunct}</span>
+                      ) : null}
                     </span>
                   );
                 }

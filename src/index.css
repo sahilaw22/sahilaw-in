@@ -3856,10 +3856,9 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 }
 
 #section-hero {
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  overflow: hidden;
+  min-height: calc(100vh - 4.5rem);
+  padding: 5.5rem 1.5rem 3.5rem;
+  overflow: visible;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -4423,6 +4422,7 @@ body.project-detail-active .portfolio-scroll-pills-nav {
 .portfolio-about-section {
   min-height: auto !important;
   background: transparent !important;
+  padding-top: 1.5rem !important;
 }
 
 .portfolio-about-section .section-container {
@@ -4539,6 +4539,12 @@ body.project-detail-active .portfolio-scroll-pills-nav {
   transform: translateY(-3px) scale(1.18);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
   filter: brightness(1.1);
+}
+
+.inline-icon-punct {
+  display: inline-block;
+  margin-left: 0.08rem;
+  color: #ffffff;
 }
 
 /* Minimal 3D View Resume Button */

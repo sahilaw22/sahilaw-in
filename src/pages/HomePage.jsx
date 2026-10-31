@@ -63,19 +63,21 @@ export default function HomePage({ sound }) {
         { opacity: 1, y: 0, duration: 0.75, delay: 0.32, ease: 'power3.out' }
       );
 
-      const sections = document.querySelectorAll('.portfolio-section:not(.hero-section)');
+      const sections = document.querySelectorAll(
+        '.portfolio-section:not(.hero-section):not(.portfolio-about-section)'
+      );
       sections.forEach((section) => {
         gsap.fromTo(
           section,
-          { opacity: 0, y: 32 },
+          { opacity: 0, y: 24 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
+            duration: 0.7,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: section,
-              start: 'top 86%',
+              start: 'top 92%',
               toggleActions: 'play none none none',
             },
           }

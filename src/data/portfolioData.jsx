@@ -18,8 +18,8 @@ export const HERO_ROLES = [
 
 // 2. ABOUT ME NARRATIVE PARAGRAPHS
 export const ABOUT_PARAGRAPHS = [
-  'I am a 3rd-year Computer Engineering student who builds with intent and thinks in motion. Turning bold ideas into intuitive interfaces, I bridge front-end craft {{ICON_FIGMA}} and AI engineering to create software that feels as good as it works.',
-  'From engineering responsive React {{ICON_REACT}}, TypeScript {{ICON_TYPESCRIPT}}, and Flutter {{ICON_FLUTTER}} applications to deploying intelligent agents and full-stack systems with Tailwind CSS {{ICON_TAILWIND}}, Next.js {{ICON_NEXTJS}}, and Python {{ICON_PYTHON}}, I believe great engineering begins with clarity. I focus on clean code, seamless interactions, and shipping real solutions that solve everyday problems.',
+  'I am a computer engineering student focusing on frontend development, UI design, and practical AI interfaces. I design interfaces in Figma and build them into responsive web and mobile applications using React, TypeScript, and Flutter.',
+  'My recent work centers on low-latency streaming interfaces, browser-based audio tools, and design systems with Next.js, Tailwind CSS, and Python. I care about high-contrast typography, keyboard navigation, and shipping reliable code that runs smoothly.',
 ];
 
 // 3. EXPERIENCE SECTION DATA (Matching header: EXPERIENCE)

@@ -7,7 +7,7 @@ import {
   SKILL_CATEGORIES,
 } from './portfolioData.jsx';
 
-const STORAGE_KEY = 'portfolio_content_cache_v6';
+const STORAGE_KEY = 'portfolio_content_cache_v8';
 
 function cleanAboutParagraphs(paragraphs) {
   if (!Array.isArray(paragraphs)) return paragraphs;
