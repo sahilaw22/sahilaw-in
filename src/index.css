@@ -42,17 +42,17 @@ body::-webkit-scrollbar {
   width: 100%;
 }
 
-/*  */
+/* Custom Back Button (Clean Static Arrow, No Background, No Hover Shift) */
 .custom-back-btn {
   position: absolute;
   top: 3.5rem;
   left: 3rem;
   z-index: 10;
-  color: rgba(255, 255, 255, 0.5);
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.25rem;
   font-size: 0.85rem;
   font-family: var(--font-secondary);
   cursor: pointer;
@@ -60,14 +60,20 @@ body::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   gap: 0;
-  transition: color 0.25s var(--ease-snappy), background 0.25s var(--ease-snappy);
+  transition: color 0.2s ease;
 }
 .custom-back-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
-.custom-back-btn svg { transition: transform 0.3s var(--ease-snappy); }
-.custom-back-btn:hover svg { transform: translateX(-4px); }
+.custom-back-btn svg {
+  transition: none;
+}
+.custom-back-btn:hover svg {
+  transform: none !important;
+}
 
 /*  */
 .subpage-container {

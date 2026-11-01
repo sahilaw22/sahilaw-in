@@ -22,7 +22,8 @@ export default function ExperiencePage() {
 
         <div className="experience-page-meta-row">
           <span className="experience-count-badge">
-            All Experiences ({experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'})
+            <span className="experience-count-label">All Experiences</span>
+            <span className="experience-count-number">({experiences.length} {experiences.length === 1 ? 'experience' : 'experiences'})</span>
           </span>
         </div>
       </header>
@@ -35,6 +36,7 @@ export default function ExperiencePage() {
               experience={exp}
               alwaysOpen={true}
               defaultOpen={true}
+              isLast={idx === experiences.length - 1}
             />
           ))}
         </div>

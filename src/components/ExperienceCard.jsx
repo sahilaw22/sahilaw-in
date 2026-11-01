@@ -98,8 +98,8 @@ export function ExperienceCard({
         }
       }}
     >
-      {/* Featured Spine Connecting Line between logo boxes */}
-      {isFeatured && !isLast && (
+      {/* Spine Connecting Line between logo boxes */}
+      {!isLast && (
         <div className="sleek-exp-connecting-line" aria-hidden="true" />
       )}
 
