@@ -40,7 +40,12 @@ export function ExperienceCard({
   const dateRange = [
     experience.startDate || experience.period?.split('-')[0]?.trim() || '',
     experience.isCurrent ? 'Present' : (experience.endDate || experience.period?.split('-')[1]?.trim() || ''),
-  ].filter(Boolean).join(' — ');
+  ].filter(Boolean).join(' - ');
+
+  let locationText = experience.location || '';
+  if (locationText.toLowerCase() === 'remote') {
+    locationText = '(Remote)';
+  }
 
   return (
     <article
@@ -167,8 +172,8 @@ export function ExperienceCard({
         {/* Right: Date & Location */}
         <div className="sleek-exp-right-col">
           <p className="sleek-exp-date-text">{dateRange}</p>
-          {experience.location && (
-            <p className="sleek-exp-location-text">{experience.location}</p>
+          {locationText && (
+            <p className="sleek-exp-location-text">{locationText}</p>
           )}
         </div>
 
@@ -177,10 +182,10 @@ export function ExperienceCard({
       {/* Expanded Accordion Body */}
       <div className={`sleek-exp-accordion ${isExpanded ? 'is-open' : ''}`}>
         <div className="sleek-exp-accordion-inner">
-          {/* Skills & Stack */}
+          {/* Skills */}
           {skillsList && skillsList.length > 0 && (
             <div className="sleek-exp-tech-section">
-              <h4 className="sleek-exp-tech-heading">Skills & Stack</h4>
+              <h4 className="sleek-exp-tech-heading">Skills</h4>
               <div className="sleek-exp-tech-list">
                 {skillsList.map((tech, idx) => {
                   const name = typeof tech === 'string' ? tech : tech.name;

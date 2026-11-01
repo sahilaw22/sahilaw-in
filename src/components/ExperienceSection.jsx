@@ -36,7 +36,7 @@ export default function ExperienceSection() {
           {/* View all experience button linking to full experience page */}
           <div className="sleek-exp-footer-cta">
             <a href="#/experience" className="sleek-exp-view-all-btn">
-              <span>View all experience</span>
+              <span>Show all work experiences</span>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
