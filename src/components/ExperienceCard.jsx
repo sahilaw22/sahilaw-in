@@ -139,7 +139,7 @@ export function ExperienceCard({
           {/* Info */}
           <div className="sleek-exp-details-col">
 
-            {/* Company name + collapse chevron + social links + Working badge */}
+            {/* Company name + collapse chevron + Working badge + social links */}
             <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
 
@@ -155,6 +155,14 @@ export function ExperienceCard({
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
+              )}
+
+              {/* Working badge — right beside collapse button */}
+              {experience.isCurrent && (
+                <div className="sleek-exp-working-badge">
+                  <span className="sleek-exp-pulse-dot" />
+                  <span>Working</span>
+                </div>
               )}
 
               <div className="sleek-exp-social-links" onClick={(e) => e.stopPropagation()}>
@@ -188,14 +196,6 @@ export function ExperienceCard({
                   </a>
                 )}
               </div>
-
-              {/* Working badge inline */}
-              {experience.isCurrent && (
-                <div className="sleek-exp-working-badge">
-                  <span className="sleek-exp-pulse-dot" />
-                  <span>Working</span>
-                </div>
-              )}
             </div>
 
             {/* Role — white */}
