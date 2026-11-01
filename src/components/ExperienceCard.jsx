@@ -202,10 +202,10 @@ export function ExperienceCard({
       {/* Expanded Accordion Body */}
       <div className={`sleek-exp-accordion ${isExpanded ? 'is-open' : ''}`}>
         <div className="sleek-exp-accordion-inner">
-          {/* Technologies & Tools */}
+          {/* Skills & Stack */}
           {skillsList && skillsList.length > 0 && (
             <div className="sleek-exp-tech-section">
-              <h4 className="sleek-exp-tech-heading">Technologies &amp; Tools</h4>
+              <h4 className="sleek-exp-tech-heading">Skills & Stack</h4>
               <div className="sleek-exp-tech-list">
                 {skillsList.map((tech, idx) => {
                   const name = typeof tech === 'string' ? tech : tech.name;

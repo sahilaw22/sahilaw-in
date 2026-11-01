@@ -48,25 +48,23 @@ body::-webkit-scrollbar {
   top: 3.5rem;
   left: 3rem;
   z-index: 10;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 0.6rem 1.2rem;
-  border-radius: 2rem;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 50%;
   font-size: 0.85rem;
   font-family: var(--font-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s var(--ease-snappy);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  justify-content: center;
+  gap: 0;
+  transition: color 0.25s var(--ease-snappy), background 0.25s var(--ease-snappy);
 }
 .custom-back-btn:hover {
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.07);
 }
 .custom-back-btn svg { transition: transform 0.3s var(--ease-snappy); }
 .custom-back-btn:hover svg { transform: translateX(-4px); }
@@ -5112,7 +5110,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 
 @media (max-width: 768px) {
   .portfolio-contact-section {
-    padding: 3.5rem 1.25rem 1.25rem !important;
+    padding: 3.5rem 1.25rem 7rem !important;
     min-height: auto !important;
   }
   .portfolio-contact-section .contact-image-container {
@@ -5209,16 +5207,15 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 
 /* Primary Interactive Ivory / Cream Email Card (Rectangular Shape like Reference Image) */
 .contact-email-capsule-wrapper {
-  width: 100%;
   display: flex;
   justify-content: flex-start;
   margin-bottom: 1.85rem;
 }
 
 .contact-email-capsule {
-  width: 100% !important;
-  max-width: 520px !important;
-  display: flex !important;
+  width: auto !important;
+  max-width: none !important;
+  display: inline-flex !important;
   align-items: stretch !important;
   justify-content: flex-start;
   gap: 0 !important;
@@ -5264,7 +5261,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
   outline: none;
   overflow: hidden;
   transition: background 0.15s ease, opacity 0.2s ease;
-  flex: 1;
+  flex: 0 0 auto;
 }
 
 .email-capsule-copy-btn:hover {
@@ -5413,7 +5410,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 
 @media (max-width: 768px) {
   .contact-image-colophon {
-    margin-bottom: 4.5rem !important;
+    margin-bottom: 1rem !important;
   }
 }
 

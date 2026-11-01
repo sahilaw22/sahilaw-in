@@ -235,7 +235,7 @@
 .sleek-exp-position-text {
   margin: 0;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.5);
   line-height: 1.4;
 }
 
@@ -257,16 +257,16 @@
 
 .sleek-exp-date-text {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.55);
   white-space: nowrap;
 }
 
 .sleek-exp-location-text {
   margin: 0;
-  font-size: 0.82rem;
-  color: #737373;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.32);
   white-space: nowrap;
 }
 
@@ -301,9 +301,11 @@
 
 .sleek-exp-tech-heading {
   margin: 0.5rem 0 0.25rem;
-  font-size: 0.95rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #e5e5e5;
+  color: rgba(255, 255, 255, 0.38);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .sleek-exp-tech-list {
