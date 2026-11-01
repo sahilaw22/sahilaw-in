@@ -105,35 +105,36 @@ export function ExperienceCard({
 
       {/* Main card header */}
       <div className="sleek-exp-main-row">
-        <div className="sleek-exp-left-col">
-          {/* Company logo */}
-          <div className="sleek-exp-logo-wrap">
-            {experience.image ? (
-              <img
-                src={experience.image}
-                alt={experience.company || 'Company logo'}
-                className="sleek-exp-logo-img"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  if (e.currentTarget.nextSibling) {
-                    e.currentTarget.nextSibling.style.display = 'flex';
-                  }
-                }}
-              />
-            ) : null}
-            <div
-              className="sleek-exp-logo-fallback"
-              style={{ display: experience.image ? 'none' : 'flex' }}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="20" height="14" x="2" y="7" rx="2" />
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-              </svg>
-            </div>
+        {/* Company logo */}
+        <div className="sleek-exp-logo-wrap">
+          {experience.image ? (
+            <img
+              src={experience.image}
+              alt={experience.company || 'Company logo'}
+              className="sleek-exp-logo-img"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.nextSibling) {
+                  e.currentTarget.nextSibling.style.display = 'flex';
+                }
+              }}
+            />
+          ) : null}
+          <div
+            className="sleek-exp-logo-fallback"
+            style={{ display: experience.image ? 'none' : 'flex' }}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="14" x="2" y="7" rx="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
           </div>
+        </div>
 
-          <div className="sleek-exp-details-col">
+        {/* Details: Row 1 (Company + Date) and Row 2 (Role + Location) */}
+        <div className="sleek-exp-details-col">
+          <div className="sleek-exp-top-row">
             <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
 
@@ -192,18 +193,17 @@ export function ExperienceCard({
               </div>
             </div>
 
+            <span className="sleek-exp-date-text">{dateRange}</span>
+          </div>
+
+          <div className="sleek-exp-bottom-row">
             <p className="sleek-exp-position-text">
               {experience.position || experience.role}
             </p>
+            {locationText && (
+              <span className="sleek-exp-location-text">{locationText}</span>
+            )}
           </div>
-        </div>
-
-        {/* Date and location */}
-        <div className="sleek-exp-right-col">
-          <span className="sleek-exp-date-text">{dateRange}</span>
-          {locationText && (
-            <span className="sleek-exp-location-text">{locationText}</span>
-          )}
         </div>
       </div>
 

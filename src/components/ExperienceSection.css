@@ -63,18 +63,8 @@
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-/* Left Column: Logo + Info */
-.sleek-exp-left-col {
-  display: flex;
-  align-items: flex-start;
   gap: 0.85rem;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 /* Logo Box */
@@ -118,11 +108,29 @@
   min-width: 0;
 }
 
+.sleek-exp-top-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+}
+
 .sleek-exp-title-row {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.45rem;
+  min-width: 0;
+}
+
+.sleek-exp-bottom-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
   width: 100%;
 }
 
@@ -237,39 +245,34 @@
 
 /* Timeline block styles — removed (timeline now lives in right-col only) */
 
-/* Right Column: Date & Location */
-.sleek-exp-right-col {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-  align-items: flex-end;
-  gap: 0;
-  flex-shrink: 0;
-  padding-left: 0;
-}
-
 .sleek-exp-date-text {
-  display: block;
+  display: inline-block;
   margin: 0;
   padding: 0;
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(0.75rem, 2.3vw, 0.88rem);
+  font-size: clamp(0.85rem, 2.5vw, 0.98rem);
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.65);
-  line-height: 1.15;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.25;
   white-space: nowrap;
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .sleek-exp-location-text {
-  display: block;
+  display: inline-block;
   margin: 0;
   padding: 0;
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(0.68rem, 2vw, 0.78rem);
+  font-size: clamp(0.72rem, 2.1vw, 0.82rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.48);
-  line-height: 1.15;
+  line-height: 1.25;
   white-space: nowrap;
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 /* Expanded Accordion */

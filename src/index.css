@@ -4162,18 +4162,20 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
     transition: none !important;
   }
 
-  /* Hidden by default on mobile, slides off-screen */
+  /* Mobile notch docked at right edge and always interactive */
   .portfolio-scroll-pills-nav.is-mobile-hidden {
-    transform: translateY(calc(-50% + var(--notch-offset-y, 0px))) translateX(120%) !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+    transform: translateY(calc(-50% + var(--notch-offset-y, 0px))) translateX(0) !important;
+    opacity: 0.94 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
   }
 
-  /* When scrolling on mobile, slides into view */
+  /* When scrolling on mobile, full brightness */
   .portfolio-scroll-pills-nav.is-mobile-visible {
     transform: translateY(calc(-50% + var(--notch-offset-y, 0px))) translateX(0) !important;
     opacity: 1 !important;
     pointer-events: auto !important;
+    visibility: visible !important;
   }
 
   .portfolio-scroll-pills-nav.is-hidden {
@@ -4471,7 +4473,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 }
 
 .portfolio-about-section .section-header-block {
-  margin-bottom: 0.65rem !important;
+  margin-bottom: 1.85rem !important;
 }
 
 .portfolio-about-section .contact-image-tag {

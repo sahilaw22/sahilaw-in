@@ -139,6 +139,10 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
 
   // Pointer/touch drag handling
   const handlePointerDown = (e) => {
+    // If user clicked or tapped an interactive button, let the button handle it directly
+    if (e.target && e.target.closest('button')) {
+      return;
+    }
     if (e.button !== undefined && e.button !== 0) return;
     try {
       e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -154,7 +158,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     const onWindowMove = (e) => {
       if (!isDraggingRef.current) return;
       const dy = e.clientY - startYRef.current;
-      if (Math.abs(dy) > 2) {
+      if (Math.abs(dy) > 5) {
         hasMovedRef.current = true;
       }
       if (hasMovedRef.current) {
@@ -171,16 +175,6 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
             navRef.current.releasePointerCapture?.(e.pointerId);
           }
         } catch (_) {}
-
-        // Schedule hide after 2 seconds of idle time following drag
-        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-          if (mobileHideTimerRef.current) {
-            clearTimeout(mobileHideTimerRef.current);
-          }
-          mobileHideTimerRef.current = setTimeout(() => {
-            setIsMobileVisible(false);
-          }, 2000);
-        }
       }
     };
 
@@ -195,8 +189,27 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     };
   }, [clampOffset]);
 
+  const scrollToTarget = (target) => {
+    if (target === 0) {
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { duration: 1.1 });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    const selector = typeof target === 'string' ? target : null;
+    const el = selector ? document.querySelector(selector) : target;
+
+    if (window.lenis && el) {
+      window.lenis.scrollTo(el, { duration: 1.1, offset: 0 });
+    } else if (el && el.scrollIntoView) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handlePillClick = (pill) => {
-    // If the touch was a slide/drag, do not trigger navigation
     if (hasMovedRef.current) {
       hasMovedRef.current = false;
       return;
@@ -215,10 +228,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     if (!isHome) {
       window.location.hash = '#/';
       setTimeout(() => {
-        const el = document.getElementById(pill.targetId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
+        scrollToTarget(`#${pill.targetId}`);
       }, 150);
       return;
     }
@@ -226,28 +236,19 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     // If clicking Pill 1 and user is in the About section, smoothly scroll back to top (Hero)
     if (pill.slug === 'about') {
       const aboutEl = document.getElementById('section-about');
-      const heroEl = document.getElementById('section-hero');
       if (aboutEl) {
         const scrollY = window.scrollY;
         const aboutTop = aboutEl.offsetTop;
         const aboutBottom = aboutTop + aboutEl.offsetHeight;
 
-        if (scrollY >= aboutTop - 100 && scrollY < aboutBottom) {
-          if (heroEl) {
-            heroEl.scrollIntoView({ behavior: 'smooth' });
-            return;
-          } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-          }
+        if (scrollY >= aboutTop - 120 && scrollY < aboutBottom) {
+          scrollToTarget(0);
+          return;
         }
       }
     }
 
-    const el = document.getElementById(pill.targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+    scrollToTarget(`#${pill.targetId}`);
   };
 
   return (
@@ -300,7 +301,10 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
               {/* 3D Brand Pill Button */}
               <button
                 type="button"
-                onClick={() => handlePillClick(pill)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePillClick(pill);
+                }}
                 className={`portfolio-scroll-pill-btn ${isActive ? 'is-active' : ''}`}
                 aria-label={`Scroll to ${pill.label}`}
                 style={{
