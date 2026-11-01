@@ -17,6 +17,8 @@ export default function HeroHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const greetingName = meta?.name ? (meta.name.includes(' ') ? meta.name.split(' ')[0] : meta.name) : 'Sahil';
+
   return (
     <div
       className={isScrolled ? 'hero-header-scrolled' : ''}
@@ -24,7 +26,7 @@ export default function HeroHeader() {
     >
       <header className="hero-header-content">
         <h1 className="hero-greeting" id="hero-greeting-heading">
-          Hi, I'm Sahil.
+          Hi, I'm {greetingName}.
         </h1>
 
         {/* Rotating role badge with white text and glass background */}

@@ -215,3 +215,4 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
     </article>
   );
 }
+

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -26,21 +27,39 @@ const TECH_ICON_MAP = {
   golang: 'go',
   cpp: 'cpp',
   cs: 'cs',
+  git: 'git',
+  docker: 'docker',
+  vite: 'vite',
+  html: 'html',
+  css: 'css',
+  firebase: 'firebase',
+  supabase: 'supabase',
 };
 
-function tokenizeParagraph(para) {
+function tokenizeParagraph(para, customIconsMap = {}) {
   if (!para) return [];
 
-  // Strip any legacy explicit {{ICON_...}} tags so no uppercase letters leak into the DOM
-  let cleaned = para.replace(/craft\s+\{\{(?:ICON_|icon:)?figma\}\}/gi, 'craft in Figma');
-  cleaned = cleaned.replace(/\{\{(?:ICON_|icon:)?[A-Za-z0-9_-]+\}\}/gi, '');
+  // Convert explicit {{ICON_...}} or {{icon:...}} to uniform tokens
+  let preprocessed = para.replace(/\{\{(?:ICON_|icon:)([A-Za-z0-9_-]+)\}\}/gi, (match, iconName) => {
+    return `:::ICON:${iconName.toLowerCase()}:::`;
+  });
 
-  // Detect tech keywords and place icon token before the tech name
+  // Detect tech keywords and place icon token before the tech name if not already preceded by an icon
   const techRegex = /\b(Tailwind(?:\s+CSS)?|Next\.?js|TypeScript|Flutter|React|Figma|Python)\b([.,!?;:]*)/gi;
-  const preprocessed = cleaned.replace(techRegex, (match, techName, punct) => {
+  preprocessed = preprocessed.replace(techRegex, (match, techName, punct) => {
     const key = techName.toLowerCase();
     const iconKey = TECH_ICON_MAP[key] || key;
     return `:::ICON:${iconKey}::: ${techName}${punct || ''}`;
+  });
+
+  // Also support custom uploaded icons mentioned in text by name
+  Object.keys(customIconsMap).forEach((customName) => {
+    if (!customName || customName.length < 2) return;
+    const escaped = customName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const customRegex = new RegExp(`(?<!:::ICON:[^:]*:::\\s*)\\b(${escaped})\\b([.,!?;:]*)`, 'gi');
+    preprocessed = preprocessed.replace(customRegex, (match, word, punct) => {
+      return `:::ICON:${customName.toLowerCase()}::: ${word}${punct || ''}`;
+    });
   });
 
   const words = preprocessed.split(/\s+/).filter(Boolean);
@@ -63,6 +82,26 @@ function tokenizeParagraph(para) {
 
 export default function TextRevealParagraph({ paragraphs }) {
   const containerRef = useRef(null);
+  const { custom_icons } = usePortfolioData();
+
+  // Create lookup dictionary for custom icons by lowercase name and token
+  const customIconsMap = React.useMemo(() => {
+    const map = {};
+    if (Array.isArray(custom_icons)) {
+      custom_icons.forEach((ic) => {
+        if (!ic) return;
+        const imgUrl = ic.image || ic.logo || ic.url;
+        if (ic.name && imgUrl) {
+          map[ic.name.toLowerCase().trim()] = imgUrl;
+        }
+        if (ic.token && imgUrl) {
+          const cleanToken = ic.token.replace(/[{}]/g, '').replace(/^(?:ICON_|icon:)/i, '').toLowerCase().trim();
+          map[cleanToken] = imgUrl;
+        }
+      });
+    }
+    return map;
+  }, [custom_icons]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -116,21 +155,27 @@ export default function TextRevealParagraph({ paragraphs }) {
     <div ref={containerRef} className="anime-text-container">
       <div className="anime-text">
         {paragraphs.map((para, pIdx) => {
-          const tokens = tokenizeParagraph(para);
+          const tokens = tokenizeParagraph(para, customIconsMap);
           return (
             <p key={pIdx} className="tr-paragraph">
               {tokens.map((token, tIdx) => {
                 if (token.isIcon) {
+                  const customSrc = customIconsMap[token.iconName];
+                  const resolvedIconName = TECH_ICON_MAP[token.iconName] || token.iconName;
+
                   return (
                     <span key={tIdx} className="tr-word word inline-icon-wrapper">
                       <img
-                        src={`https://skillicons.dev/icons?i=${token.iconName}`}
+                        src={customSrc || `https://skillicons.dev/icons?i=${resolvedIconName}`}
                         alt=""
                         aria-hidden="true"
                         className="about-skill-icon"
                         width={24}
                         height={24}
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     </span>
                   );

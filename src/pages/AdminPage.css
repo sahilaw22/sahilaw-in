@@ -816,3 +816,252 @@
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   Admin Image Upload & Preview Controls
+   ========================================================================== */
+
+.admin-image-upload-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.admin-image-upload-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-btn-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f3f4f6;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.admin-btn-upload:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+}
+
+.admin-upload-clear-btn {
+  padding: 8px 12px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.admin-upload-preview-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+.admin-upload-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.admin-upload-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.admin-upload-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-upload-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.admin-upload-sub {
+  font-size: 10.5px;
+  color: #9ca3af;
+  font-family: 'Disket Mono', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
+/* ==========================================================================
+   Admin Subfilters & Action Headers
+   ========================================================================== */
+
+.portfolio-section-action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-subfilter-pill {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-family: 'Disket Mono', monospace;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.admin-subfilter-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.admin-subfilter-pill.is-active {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Mobile Optimization & Responsive Layout
+   ========================================================================== */
+
+@media (max-width: 860px) {
+  .admin-navbar {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .admin-brand-title {
+    font-size: 11.5px !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .admin-nav-actions {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .portfolio-subtabs-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+
+  .portfolio-subtabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .portfolio-subtab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 38px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-brand-sub {
+    display: none !important;
+  }
+
+  .admin-content {
+    padding: 14px 12px 60px;
+  }
+
+  .admin-card {
+    padding: 16px 14px !important;
+  }
+
+  .portfolio-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .portfolio-item-header > div:last-child {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .portfolio-section-action-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .admin-modal-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    padding: 16px 14px !important;
+    border-radius: 12px;
+  }
+
+  .admin-modal-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .admin-image-upload-inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-btn-upload {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-upload-sub {
+    max-width: 200px;
+  }
+}

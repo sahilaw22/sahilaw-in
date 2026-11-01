@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 import GlassDistortionSVG from '../components/GlassDistortionSVG.jsx';
 import LetterGlitch from '../components/LetterGlitch.jsx';
 import HeroHeader from '../components/HeroHeader.jsx';
@@ -20,6 +21,7 @@ if (typeof window !== 'undefined') {
 
 // Home page: full scrolling portfolio with 4-pill quick navigation
 export default function HomePage({ sound, onIntroComplete }) {
+  const { meta } = usePortfolioData();
   // Preloader only appears when opening portfolio for the first time in the session; normal reloads bypass it
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -136,7 +138,7 @@ export default function HomePage({ sound, onIntroComplete }) {
           <HeroHeader />
 
           <p className="hero-pitch-statement">
-            Design Engineer & Creative Developer focused on modern web experiences and AI-powered interfaces.
+            {meta?.pitch || 'Design Engineer & Creative Developer focused on modern web experiences and AI-powered interfaces.'}
           </p>
 
           <SocialIcons />

@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import MarkdownContent from '../components/MarkdownContent.jsx';
 import AnswerTextEditor from '../components/AnswerTextEditor.jsx';
 import { TechIcon } from '../components/TechIcons.jsx';
+import { CERTIFICATIONS, ACHIEVEMENTS } from '../data/portfolioData.jsx';
 import './AdminPage.css';
 
 const QUICK_ABOUT_ICONS = [
@@ -24,7 +25,152 @@ const QUICK_ABOUT_ICONS = [
   { label: 'Supabase', token: '{{ICON_SUPABASE}}', id: 'supabase' },
 ];
 
-function renderAboutParagraphPreview(text) {
+
+function compressImage(file, maxDimension = 360, quality = 0.88) {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file provided'));
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, width);
+        canvas.height = Math.max(1, height);
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+        const isPng = file.type === 'image/png';
+        const mimeType = isPng ? 'image/png' : 'image/webp';
+        try {
+          const dataUrl = canvas.toDataURL(mimeType, quality);
+          resolve(dataUrl);
+        } catch {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        }
+      };
+      img.onerror = () => reject(new Error('Failed to load image file'));
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function AdminImageUploadField({
+  label,
+  value,
+  onChange,
+  placeholder = 'Paste image URL or browse image...',
+  idPrefix = 'img-field',
+  helperText = '',
+}) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const inputId = `${idPrefix}-file`;
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsProcessing(true);
+    try {
+      const dataUrl = await compressImage(file, 400, 0.9);
+      onChange(dataUrl);
+    } catch (err) {
+      alert('Failed to process image: ' + err.message);
+    } finally {
+      setIsProcessing(false);
+      e.target.value = '';
+    }
+  };
+
+  const isDataUrl = typeof value === 'string' && value.startsWith('data:image/');
+  const isHttpUrl = typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/'));
+
+  return (
+    <div className="admin-image-upload-control">
+      {label && <label className="admin-field-label">{label}</label>}
+      <div className="admin-image-upload-inputs">
+        <input
+          type="text"
+          className="admin-input"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          style={{ flex: 1 }}
+        />
+        <label htmlFor={inputId} className="admin-btn admin-btn-secondary admin-btn-upload">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>{isProcessing ? 'Optimizing...' : 'Upload Image'}</span>
+          <input
+            id={inputId}
+            type="file"
+            accept="image/*,.svg"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            disabled={isProcessing}
+          />
+        </label>
+        {value ? (
+          <button
+            type="button"
+            className="admin-btn admin-btn-danger admin-upload-clear-btn"
+            onClick={() => onChange('')}
+            title="Remove image"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
+
+      {helperText && <span className="admin-field-helper">{helperText}</span>}
+
+      {(isDataUrl || isHttpUrl) && (
+        <div className="admin-upload-preview-box">
+          <div className="admin-upload-thumb">
+            <img
+              src={value}
+              alt="Logo Preview"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+          <div className="admin-upload-meta">
+            <span className="admin-upload-status">
+              {isDataUrl ? 'Custom Compressed Image' : 'External Image Link'}
+            </span>
+            <span className="admin-upload-sub">
+              {isDataUrl ? `${Math.round(value.length / 1024)} KB stored locally` : value.slice(0, 42) + '...'}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function renderAboutParagraphPreview(text, customIcons = []) {
   if (!text) return null;
   const parts = text.split(/(\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}|https:\/\/skillicons\.dev\/icons\?i=[A-Za-z0-9_,-]+)/gi);
   return parts.map((part, pIdx) => {
@@ -33,6 +179,23 @@ function renderAboutParagraphPreview(text) {
       part.match(/^https:\/\/skillicons\.dev\/icons\?i=([A-Za-z0-9_,-]+)$/i);
     if (match) {
       const raw = match[1].toLowerCase();
+      const customMatch = (customIcons || []).find(
+        (c) => (c.name || '').toLowerCase() === raw || (c.token || '').toLowerCase().includes(raw)
+      );
+      if (customMatch && customMatch.image) {
+        return (
+          <span key={pIdx} style={{ display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px' }}>
+            <img
+              src={customMatch.image}
+              alt={customMatch.name}
+              title={customMatch.name}
+              width={22}
+              height={22}
+              style={{ borderRadius: '5px', verticalAlign: 'middle', objectFit: 'contain', boxShadow: '0 2px 6px rgba(0,0,0,0.5)' }}
+            />
+          </span>
+        );
+      }
       const aliasMap = {
         typescript: 'ts',
         javascript: 'js',
@@ -75,7 +238,19 @@ export default function AdminPage() {
     experiences: [],
     education: [],
     skills: [],
-    meta: { hero_roles: [] },
+    certifications: [],
+    achievements: [],
+    custom_icons: [],
+    meta: {
+      hero_roles: [],
+      name: 'Sahil Wani',
+      pitch: '',
+      email: 'sahilaw502@gmail.com',
+      github: 'https://github.com/sahil-wani',
+      linkedin: 'https://linkedin.com/in/sahil-wani',
+      threads: 'https://threads.net/@sahilwani',
+      x: 'https://x.com/sahilwani',
+    },
   });
   const [contentSubtab, setContentSubtab] = useState('experiences');
   const [contentSaveMsg, setContentSaveMsg] = useState('');
@@ -88,11 +263,18 @@ export default function AdminPage() {
     company: '',
     role: '',
     period: '',
+    startDate: '',
+    endDate: '',
     location: '',
     isCurrent: false,
     desc: '',
     skills: '',
     logo: '',
+    image: '',
+    website: '',
+    github: '',
+    linkedin: '',
+    x: '',
   });
 
   // Education modal/editing state
@@ -107,13 +289,42 @@ export default function AdminPage() {
     desc: '',
     courses: '',
     logo: '',
+    image: '',
+  });
+
+  // Certifications & Achievements modal/editing state
+  const [showCertModal, setShowCertModal] = useState(false);
+  const [editingCertIndex, setEditingCertIndex] = useState(null);
+  const [certModalType, setCertModalType] = useState('certification');
+  const [certFilterTab, setCertFilterTab] = useState('all');
+  const [certForm, setCertForm] = useState({
+    id: '',
+    title: '',
+    issuer: '',
+    year: '',
+    issueDate: '',
+    link: '',
+    description: '',
+    image: '',
   });
 
   // Skills & narrative state
   const [editingSkillsList, setEditingSkillsList] = useState([]);
   const [editingAboutList, setEditingAboutList] = useState([]);
   const [metaRolesText, setMetaRolesText] = useState('');
-  const [metaEmailText, setMetaEmailText] = useState('');
+  const [metaEmailText, setMetaEmailText] = useState('sahilaw502@gmail.com');
+  const [metaNameText, setMetaNameText] = useState('Sahil Wani');
+  const [metaPitchText, setMetaPitchText] = useState(
+    'Hey, I am Sahil Wani, a 20yo guy building things for the web. Crafting sleek digital experiences, experimenting with code, design, and ideas that feel right.'
+  );
+  const [metaGithubText, setMetaGithubText] = useState('https://github.com/sahil-wani');
+  const [metaLinkedinText, setMetaLinkedinText] = useState('https://linkedin.com/in/sahil-wani');
+  const [metaThreadsText, setMetaThreadsText] = useState('https://threads.net/@sahilwani');
+  const [metaXText, setMetaXText] = useState('https://x.com/sahilwani');
+
+  // Custom icon creator state
+  const [newCustomIconName, setNewCustomIconName] = useState('');
+  const [newCustomIconImg, setNewCustomIconImg] = useState('');
 
   // Custom skill logo upload modal state
   const [customSkillModal, setCustomSkillModal] = useState({
@@ -248,6 +459,12 @@ export default function AdminPage() {
           if (d.content.meta) {
             setMetaRolesText(Array.isArray(d.content.meta.hero_roles) ? d.content.meta.hero_roles.join(', ') : '');
             setMetaEmailText(d.content.meta.email || 'sahilaw502@gmail.com');
+            if (d.content.meta.name) setMetaNameText(d.content.meta.name);
+            if (d.content.meta.pitch) setMetaPitchText(d.content.meta.pitch);
+            if (d.content.meta.github) setMetaGithubText(d.content.meta.github);
+            if (d.content.meta.linkedin) setMetaLinkedinText(d.content.meta.linkedin);
+            if (d.content.meta.threads) setMetaThreadsText(d.content.meta.threads);
+            if (d.content.meta.x || d.content.meta.twitter) setMetaXText(d.content.meta.x || d.content.meta.twitter);
           }
         }
       })
@@ -510,6 +727,9 @@ export default function AdminPage() {
       dataFolder.file('education.json', JSON.stringify(portfolioContent.education || [], null, 2));
       dataFolder.file('skills.json', JSON.stringify(portfolioContent.skills || [], null, 2));
       dataFolder.file('meta.json', JSON.stringify(portfolioContent.meta || {}, null, 2));
+      dataFolder.file('certifications.json', JSON.stringify(portfolioContent.certifications || CERTIFICATIONS, null, 2));
+      dataFolder.file('achievements.json', JSON.stringify(portfolioContent.achievements || ACHIEVEMENTS, null, 2));
+      dataFolder.file('custom-icons.json', JSON.stringify(portfolioContent.custom_icons || [], null, 2));
       dataFolder.file('knowledge-base.json', JSON.stringify(knowledge || [], null, 2));
 
       // 3. Extract and save uploaded custom logos into assets/logos/
@@ -593,27 +813,42 @@ export default function AdminPage() {
       company: '',
       role: '',
       period: 'JUL 2026 - PRESENT',
+      startDate: 'JUL 2026',
+      endDate: 'PRESENT',
       location: 'India',
       isCurrent: true,
       desc: '',
       skills: '',
       logo: '',
+      image: '',
+      website: '',
+      github: '',
+      linkedin: '',
+      x: '',
     });
     setShowExpModal(true);
   }
 
   function handleOpenEditExp(exp, index) {
     setEditingExpIndex(index);
+    const logoVal = typeof exp.image === 'string' && exp.image ? exp.image : (typeof exp.logo === 'string' ? exp.logo : '');
     setExpForm({
       id: exp.id || `exp-${Date.now()}`,
       company: exp.company || '',
-      role: exp.role || '',
+      role: exp.role || exp.position || '',
       period: exp.period || '',
+      startDate: exp.startDate || (exp.period ? exp.period.split('-')[0].trim() : ''),
+      endDate: exp.endDate || (exp.period ? exp.period.split('-')[1]?.trim() : ''),
       location: exp.location || '',
       isCurrent: !!exp.isCurrent,
-      desc: exp.desc || '',
+      desc: Array.isArray(exp.description) ? exp.description.join('\n') : (exp.desc || ''),
       skills: Array.isArray(exp.skills) ? exp.skills.join(', ') : (exp.skills || ''),
-      logo: typeof exp.logo === 'string' ? exp.logo : '',
+      logo: logoVal,
+      image: logoVal,
+      website: exp.website || '',
+      github: exp.github || '',
+      linkedin: exp.linkedin || '',
+      x: exp.x || '',
     });
     setShowExpModal(true);
   }
@@ -625,16 +860,33 @@ export default function AdminPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const descBullets = expForm.desc
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const logoImg = (expForm.image || expForm.logo || '').trim();
+    const periodStr = expForm.period.trim() || `${expForm.startDate} - ${expForm.isCurrent ? 'Present' : expForm.endDate}`;
+
     const updatedItem = {
       id: expForm.id || `exp-${Date.now()}`,
       company: expForm.company.trim(),
       role: expForm.role.trim(),
-      period: expForm.period.trim(),
+      position: expForm.role.trim(),
+      period: periodStr,
+      startDate: expForm.startDate.trim(),
+      endDate: expForm.isCurrent ? 'Present' : expForm.endDate.trim(),
       location: expForm.location.trim(),
       isCurrent: expForm.isCurrent,
       desc: expForm.desc.trim(),
+      description: descBullets.length > 0 ? descBullets : [expForm.desc.trim()],
       skills: skillsArray,
-      logo: expForm.logo.trim(),
+      logo: logoImg,
+      image: logoImg,
+      website: expForm.website.trim(),
+      github: expForm.github.trim(),
+      linkedin: expForm.linkedin.trim(),
+      x: expForm.x.trim(),
     };
 
     let updatedExperiences = [...(portfolioContent.experiences || [])];
@@ -666,21 +918,24 @@ export default function AdminPage() {
       desc: '',
       courses: '',
       logo: '',
+      image: '',
     });
     setShowEduModal(true);
   }
 
   function handleOpenEditEdu(edu, index) {
     setEditingEduIndex(index);
+    const logoVal = typeof edu.image === 'string' && edu.image ? edu.image : (typeof edu.logo === 'string' ? edu.logo : '');
     setEduForm({
       id: edu.id || `edu-${Date.now()}`,
       degree: edu.degree || '',
       institution: edu.institution || '',
       period: edu.period || '',
       isCurrent: !!edu.isCurrent,
-      desc: edu.desc || '',
+      desc: edu.desc || (Array.isArray(edu.description) ? edu.description.join('\n') : edu.description || ''),
       courses: Array.isArray(edu.courses) ? edu.courses.join(', ') : (edu.courses || ''),
-      logo: typeof edu.logo === 'string' ? edu.logo : '',
+      logo: logoVal,
+      image: logoVal,
     });
     setShowEduModal(true);
   }
@@ -692,6 +947,8 @@ export default function AdminPage() {
       .map((c) => c.trim())
       .filter(Boolean);
 
+    const logoImg = (eduForm.image || eduForm.logo || '').trim();
+
     const updatedItem = {
       id: eduForm.id || `edu-${Date.now()}`,
       degree: eduForm.degree.trim(),
@@ -699,8 +956,10 @@ export default function AdminPage() {
       period: eduForm.period.trim(),
       isCurrent: eduForm.isCurrent,
       desc: eduForm.desc.trim(),
+      description: eduForm.desc.trim(),
       courses: coursesArray,
-      logo: eduForm.logo.trim(),
+      logo: logoImg,
+      image: logoImg,
     };
 
     let updatedEducation = [...(portfolioContent.education || [])];
@@ -719,6 +978,119 @@ export default function AdminPage() {
     if (!window.confirm('Are you sure you want to delete this education entry?')) return;
     const updated = (portfolioContent.education || []).filter((_, idx) => idx !== index);
     handleSavePortfolioSection('education', updated);
+  }
+
+  // --- Certifications & Achievements Handlers ---
+  function handleOpenAddCert(type = 'certification') {
+    setCertModalType(type);
+    setEditingCertIndex(null);
+    const curYear = new Date().getFullYear().toString();
+    setCertForm({
+      id: `${type}-${Date.now()}`,
+      title: '',
+      issuer: '',
+      year: curYear,
+      issueDate: `Issued ${new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`,
+      link: '',
+      description: '',
+      image: '',
+    });
+    setShowCertModal(true);
+  }
+
+  function handleOpenEditCert(item, index, type = 'certification') {
+    setCertModalType(type);
+    setEditingCertIndex(index);
+    const logoVal = item.image || item.logo || '';
+    setCertForm({
+      id: item.id || `${type}-${Date.now()}`,
+      title: item.title || '',
+      issuer: item.issuer || '',
+      year: item.year || (item.issueDate ? item.issueDate.replace(/^Issued\s+/i, '') : ''),
+      issueDate: item.issueDate || `Issued ${item.year || ''}`,
+      link: item.link || '',
+      description: item.description || '',
+      image: typeof logoVal === 'string' ? logoVal : '',
+    });
+    setShowCertModal(true);
+  }
+
+  function handleSaveCert(e) {
+    e.preventDefault();
+    const isCert = certModalType === 'certification';
+    const sectionName = isCert ? 'certifications' : 'achievements';
+    const fallbackList = isCert ? CERTIFICATIONS : ACHIEVEMENTS;
+    const existingList = Array.isArray(portfolioContent[sectionName]) && portfolioContent[sectionName].length > 0
+      ? portfolioContent[sectionName]
+      : fallbackList;
+
+    const logoImg = certForm.image.trim();
+    const updatedItem = {
+      id: certForm.id || `${certModalType}-${Date.now()}`,
+      title: certForm.title.trim(),
+      issuer: certForm.issuer.trim(),
+      year: certForm.year.trim(),
+      issueDate: certForm.issueDate.trim() || `Issued ${certForm.year.trim()}`,
+      link: certForm.link.trim(),
+      description: certForm.description.trim(),
+      image: logoImg,
+      logo: logoImg,
+    };
+
+    let updatedList = [...existingList];
+    if (editingCertIndex !== null && editingCertIndex >= 0) {
+      updatedList[editingCertIndex] = updatedItem;
+    } else {
+      updatedList.unshift(updatedItem);
+    }
+
+    handleSavePortfolioSection(sectionName, updatedList).then(() => {
+      setShowCertModal(false);
+    });
+  }
+
+  function handleDeleteCert(index, type = 'certification') {
+    const isCert = type === 'certification';
+    const label = isCert ? 'certification' : 'achievement';
+    if (!window.confirm(`Are you sure you want to delete this ${label}?`)) return;
+
+    const sectionName = isCert ? 'certifications' : 'achievements';
+    const fallbackList = isCert ? CERTIFICATIONS : ACHIEVEMENTS;
+    const existingList = Array.isArray(portfolioContent[sectionName]) && portfolioContent[sectionName].length > 0
+      ? portfolioContent[sectionName]
+      : fallbackList;
+
+    const updated = existingList.filter((_, idx) => idx !== index);
+    handleSavePortfolioSection(sectionName, updated);
+  }
+
+  // --- Custom Icon Handlers ---
+  function handleAddCustomIcon(e) {
+    e.preventDefault();
+    const name = newCustomIconName.trim();
+    if (!name || !newCustomIconImg) {
+      alert('Please provide both an icon name and upload an image.');
+      return;
+    }
+    const token = `{{ICON_${name.toUpperCase().replace(/[^A-Z0-9_]/g, '_')}}}`;
+    const newIcon = {
+      id: `custom-icon-${Date.now()}`,
+      name,
+      token,
+      image: newCustomIconImg,
+      logo: newCustomIconImg,
+    };
+    const updatedCustomIcons = [...(portfolioContent.custom_icons || []), newIcon];
+    handleSavePortfolioSection('custom_icons', updatedCustomIcons).then(() => {
+      setNewCustomIconName('');
+      setNewCustomIconImg('');
+    });
+  }
+
+  function handleDeleteCustomIcon(iconId) {
+    if (!window.confirm('Delete this custom icon?')) return;
+    const updated = (portfolioContent.custom_icons || []).filter((ic) => ic.id !== iconId);
+    handleSavePortfolioSection('custom_icons', updated);
   }
 
   function handleSaveAllSkills(e) {
@@ -866,7 +1238,14 @@ export default function AdminPage() {
     const updatedMeta = {
       ...(portfolioContent.meta || {}),
       hero_roles: rolesArray,
+      name: metaNameText.trim() || 'Sahil Wani',
+      pitch: metaPitchText.trim(),
       email: metaEmailText.trim() || 'sahilaw502@gmail.com',
+      github: metaGithubText.trim() || 'https://github.com/sahil-wani',
+      linkedin: metaLinkedinText.trim() || 'https://linkedin.com/in/sahil-wani',
+      threads: metaThreadsText.trim() || 'https://threads.net/@sahilwani',
+      x: metaXText.trim() || 'https://x.com/sahilwani',
+      twitter: metaXText.trim() || 'https://x.com/sahilwani',
     };
     handleSavePortfolioSection('meta', updatedMeta);
   }
@@ -1222,6 +1601,16 @@ export default function AdminPage() {
                 </button>
                 <button
                   type="button"
+                  className={`portfolio-subtab-btn ${contentSubtab === 'certifications' ? 'is-active' : ''}`}
+                  onClick={() => setContentSubtab('certifications')}
+                >
+                  Certifications & Honors ({
+                    (Array.isArray(portfolioContent.certifications) && portfolioContent.certifications.length > 0 ? portfolioContent.certifications.length : CERTIFICATIONS.length) +
+                    (Array.isArray(portfolioContent.achievements) && portfolioContent.achievements.length > 0 ? portfolioContent.achievements.length : ACHIEVEMENTS.length)
+                  })
+                </button>
+                <button
+                  type="button"
                   className={`portfolio-subtab-btn ${contentSubtab === 'skills' ? 'is-active' : ''}`}
                   onClick={() => setContentSubtab('skills')}
                 >
@@ -1239,7 +1628,7 @@ export default function AdminPage() {
                   className={`portfolio-subtab-btn ${contentSubtab === 'meta' ? 'is-active' : ''}`}
                   onClick={() => setContentSubtab('meta')}
                 >
-                  Roles & Metadata
+                  Profile & Links
                 </button>
               </div>
 
@@ -1397,6 +1786,222 @@ export default function AdminPage() {
                 </div>
               )}
 
+              {/* SUBTAB: CERTIFICATIONS & ACHIEVEMENTS */}
+              {contentSubtab === 'certifications' && (() => {
+                const certList = Array.isArray(portfolioContent.certifications) && portfolioContent.certifications.length > 0
+                  ? portfolioContent.certifications
+                  : CERTIFICATIONS;
+                const achieveList = Array.isArray(portfolioContent.achievements) && portfolioContent.achievements.length > 0
+                  ? portfolioContent.achievements
+                  : ACHIEVEMENTS;
+
+                return (
+                  <div>
+                    <div className="portfolio-section-action-header">
+                      <div>
+                        <div style={{ fontSize: '14px', color: '#9ca3af' }}>
+                          Verified credentials, certifications, hackathon wins, and honors.
+                        </div>
+                        {/* Filter pills */}
+                        <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                          <button
+                            type="button"
+                            className={`admin-subfilter-pill ${certFilterTab === 'all' ? 'is-active' : ''}`}
+                            onClick={() => setCertFilterTab('all')}
+                          >
+                            All ({certList.length + achieveList.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`admin-subfilter-pill ${certFilterTab === 'certifications' ? 'is-active' : ''}`}
+                            onClick={() => setCertFilterTab('certifications')}
+                          >
+                            Certifications ({certList.length})
+                          </button>
+                          <button
+                            type="button"
+                            className={`admin-subfilter-pill ${certFilterTab === 'achievements' ? 'is-active' : ''}`}
+                            onClick={() => setCertFilterTab('achievements')}
+                          >
+                            Achievements ({achieveList.length})
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-accent"
+                          onClick={() => handleOpenAddCert('certification')}
+                        >
+                          + Add Certification
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-secondary"
+                          onClick={() => handleOpenAddCert('achievement')}
+                        >
+                          + Add Achievement
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="portfolio-items-list" style={{ marginTop: '16px' }}>
+                      {/* Certifications List */}
+                      {(certFilterTab === 'all' || certFilterTab === 'certifications') && (
+                        <div>
+                          <div style={{ fontSize: '12px', fontFamily: "'Disket Mono', monospace", color: '#4ade80', letterSpacing: '0.08em', marginBottom: '8px', textTransform: 'uppercase' }}>
+                            Certifications ({certList.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                            {certList.map((c, idx) => {
+                              const logoSrc = c.image || c.logo;
+                              return (
+                                <div key={c.id || idx} className="portfolio-item-card">
+                                  <div className="portfolio-item-header">
+                                    <div className="portfolio-item-title-col">
+                                      <div className="portfolio-logo-thumb">
+                                        {typeof logoSrc === 'string' && logoSrc ? (
+                                          <img src={logoSrc} alt={c.title} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                        ) : (
+                                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#22c55e" strokeWidth="2">
+                                            <circle cx="12" cy="8" r="7" />
+                                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff' }}>
+                                          {c.title}
+                                        </div>
+                                        <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
+                                          {c.issuer} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{c.issueDate || c.year}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                      {c.link && (
+                                        <a
+                                          href={c.link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="admin-btn admin-btn-secondary"
+                                          style={{ padding: '6px 10px', fontSize: '11px' }}
+                                        >
+                                          View Link ↗
+                                        </a>
+                                      )}
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                                        onClick={() => handleOpenEditCert(c, idx, 'certification')}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-danger"
+                                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                                        onClick={() => handleDeleteCert(idx, 'certification')}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {c.description && (
+                                    <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: 'rgba(255, 255, 255, 0.75)', lineHeight: '1.5' }}>
+                                      {c.description}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Achievements List */}
+                      {(certFilterTab === 'all' || certFilterTab === 'achievements') && (
+                        <div>
+                          <div style={{ fontSize: '12px', fontFamily: "'Disket Mono', monospace", color: '#fbbf24', letterSpacing: '0.08em', marginBottom: '8px', textTransform: 'uppercase' }}>
+                            Achievements & Honors ({achieveList.length})
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {achieveList.map((a, idx) => {
+                              const logoSrc = a.image || a.logo;
+                              return (
+                                <div key={a.id || idx} className="portfolio-item-card">
+                                  <div className="portfolio-item-header">
+                                    <div className="portfolio-item-title-col">
+                                      <div className="portfolio-logo-thumb">
+                                        {typeof logoSrc === 'string' && logoSrc ? (
+                                          <img src={logoSrc} alt={a.title} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                        ) : (
+                                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f59e0b" strokeWidth="2">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff' }}>
+                                          {a.title}
+                                        </div>
+                                        <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
+                                          {a.issuer} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{a.year}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                      {a.link && (
+                                        <a
+                                          href={a.link}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="admin-btn admin-btn-secondary"
+                                          style={{ padding: '6px 10px', fontSize: '11px' }}
+                                        >
+                                          View Link ↗
+                                        </a>
+                                      )}
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                                        onClick={() => handleOpenEditCert(a, idx, 'achievement')}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-danger"
+                                        style={{ padding: '6px 12px', fontSize: '12px' }}
+                                        onClick={() => handleDeleteCert(idx, 'achievement')}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {a.description && (
+                                    <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: 'rgba(255, 255, 255, 0.75)', lineHeight: '1.5' }}>
+                                      {a.description}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* SUBTAB 3: SKILLS */}
               {contentSubtab === 'skills' && (
                 <form onSubmit={handleSaveAllSkills}>
@@ -1551,7 +2156,7 @@ export default function AdminPage() {
               {/* SUBTAB 4: ABOUT NARRATIVE */}
               {contentSubtab === 'about' && (
                 <form onSubmit={handleSaveAllAbout}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                     <div style={{ fontSize: '14px', color: '#9ca3af' }}>
                       Paragraphs displayed in the animated text-reveal narrative of the About Me section.
                     </div>
@@ -1563,6 +2168,85 @@ export default function AdminPage() {
                         Save About Narrative
                       </button>
                     </div>
+                  </div>
+
+                  {/* Custom Icon Uploader Card */}
+                  <div className="admin-card" style={{ padding: '18px 20px', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#ffffff', marginBottom: '4px' }}>
+                      Custom Icons & Badges Uploader
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 12px 0' }}>
+                      Upload custom technology, brand, or internship logos to insert directly into your About narrative.
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) 2fr auto', gap: '10px', alignItems: 'flex-start' }} className="admin-modal-grid">
+                      <div>
+                        <label className="admin-field-label">Icon Name / Tool</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={newCustomIconName}
+                          onChange={(e) => setNewCustomIconName(e.target.value)}
+                          placeholder="e.g. LangChain, Solana, AWS"
+                        />
+                      </div>
+                      <div>
+                        <AdminImageUploadField
+                          label="Icon Image (PNG, SVG, WebP)"
+                          value={newCustomIconImg}
+                          onChange={setNewCustomIconImg}
+                          placeholder="Upload image or paste URL..."
+                          idPrefix="custom-about-icon"
+                        />
+                      </div>
+                      <div style={{ alignSelf: 'center', paddingTop: '18px' }}>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-accent"
+                          onClick={handleAddCustomIcon}
+                        >
+                          + Save Icon
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Display existing custom icons */}
+                    {Array.isArray(portfolioContent.custom_icons) && portfolioContent.custom_icons.length > 0 && (
+                      <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                        <span style={{ fontSize: '11px', fontFamily: "'Disket Mono', monospace", color: 'rgba(255, 255, 255, 0.45)', display: 'block', marginBottom: '8px' }}>
+                          SAVED CUSTOM ICONS ({portfolioContent.custom_icons.length}):
+                        </span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {portfolioContent.custom_icons.map((ic) => (
+                            <span
+                              key={ic.id || ic.name}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(255, 255, 255, 0.06)',
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                              }}
+                            >
+                              <img src={ic.image || ic.logo} alt={ic.name} style={{ width: 16, height: 16, objectFit: 'contain', borderRadius: 2 }} />
+                              <span style={{ fontWeight: '600' }}>{ic.name}</span>
+                              <span style={{ fontSize: '10px', color: '#9ca3af', fontFamily: "'Disket Mono', monospace" }}>{ic.token}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCustomIcon(ic.id)}
+                                style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 0.4)', cursor: 'pointer', marginLeft: 4 }}
+                                title={`Delete ${ic.name}`}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -1628,6 +2312,41 @@ export default function AdminPage() {
                             ))}
                           </div>
 
+                          {/* User custom icons palette */}
+                          {Array.isArray(portfolioContent.custom_icons) && portfolioContent.custom_icons.length > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                              {portfolioContent.custom_icons.map((ic) => (
+                                <button
+                                  key={ic.id || ic.name}
+                                  type="button"
+                                  className="admin-btn admin-btn-secondary"
+                                  style={{
+                                    padding: '3px 8px',
+                                    fontSize: '11.5px',
+                                    borderRadius: '5px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    background: 'rgba(34, 197, 94, 0.08)',
+                                    borderColor: 'rgba(34, 197, 94, 0.25)',
+                                    color: '#4ade80',
+                                  }}
+                                  onClick={() => insertIconIntoParagraph(idx, ic.token || `{{ICON_${ic.name}}}`)}
+                                  title={`Insert ${ic.name} icon`}
+                                >
+                                  <img
+                                    src={ic.image || ic.logo}
+                                    alt={ic.name}
+                                    width={14}
+                                    height={14}
+                                    style={{ borderRadius: '3px', objectFit: 'contain' }}
+                                  />
+                                  <span>{ic.name}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Custom SkillIcon Inserter from skillicons.dev */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <input
@@ -1683,7 +2402,7 @@ export default function AdminPage() {
                           <div style={{ fontSize: '10px', fontFamily: "'Disket Mono', monospace", color: 'rgba(255, 255, 255, 0.35)', marginBottom: '6px' }}>
                             LIVE PREVIEW (WITH SKILLICONS.DEV):
                           </div>
-                          {renderAboutParagraphPreview(para)}
+                          {renderAboutParagraphPreview(para, portfolioContent.custom_icons)}
                         </div>
                       </div>
                     ))}
@@ -1691,12 +2410,41 @@ export default function AdminPage() {
                 </form>
               )}
 
-              {/* SUBTAB 5: METADATA & ROLES */}
+              {/* SUBTAB 5: PROFILE, METADATA & LINKS */}
               {contentSubtab === 'meta' && (
                 <form onSubmit={handleSaveMetaRoles}>
-                  <div className="admin-card" style={{ maxWidth: '640px', padding: '24px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '16px' }}>
-                      Site Metadata & Rotating Roles
+                  <div className="admin-card" style={{ maxWidth: '720px', padding: '24px' }}>
+                    <div style={{ fontSize: '17px', fontWeight: '800', marginBottom: '4px' }}>
+                      Profile Identity & Verified Links
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0 0 20px 0' }}>
+                      Update your name, bio pitch, hero badge titles, and all verified social handles.
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }} className="admin-modal-grid">
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">Full Name</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={metaNameText}
+                          onChange={(e) => setMetaNameText(e.target.value)}
+                          placeholder="Sahil Wani"
+                          required
+                        />
+                      </div>
+
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">Primary Verified Email</label>
+                        <input
+                          type="email"
+                          className="admin-input"
+                          value={metaEmailText}
+                          onChange={(e) => setMetaEmailText(e.target.value)}
+                          placeholder="sahilaw502@gmail.com"
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div className="admin-field-group" style={{ marginBottom: '16px' }}>
@@ -1709,25 +2457,77 @@ export default function AdminPage() {
                         placeholder="Frontend AI Engineer, UI/UX Designer, App Developer"
                         required
                       />
-                      <span style={{ fontSize: '11.5px', color: '#9ca3af' }}>
-                        These titles rotate automatically on the home page hero badge.
+                      <span className="admin-field-helper">
+                        These titles rotate with 3D animation inside the hero pill badge on the home page.
                       </span>
                     </div>
 
                     <div className="admin-field-group" style={{ marginBottom: '16px' }}>
-                      <label className="admin-field-label">Primary Verified Email</label>
-                      <input
-                        type="email"
-                        className="admin-input"
-                        value={metaEmailText}
-                        onChange={(e) => setMetaEmailText(e.target.value)}
-                        placeholder="sahilaw502@gmail.com"
-                        required
+                      <label className="admin-field-label">Hero Headline Pitch Statement</label>
+                      <textarea
+                        className="admin-textarea"
+                        rows={3}
+                        value={metaPitchText}
+                        onChange={(e) => setMetaPitchText(e.target.value)}
+                        placeholder="Hey, I am Sahil Wani, a 20yo guy building things for the web..."
                       />
+                      <span className="admin-field-helper">
+                        The primary introductory narrative displayed directly beneath your name on the home page.
+                      </span>
                     </div>
 
-                    <button type="submit" className="admin-btn admin-btn-accent" style={{ marginTop: '8px' }}>
-                      Save Metadata to Live Site
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#ffffff', margin: '20px 0 12px 0', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
+                      Verified Social & Platform Links
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }} className="admin-modal-grid">
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">GitHub Profile URL</label>
+                        <input
+                          type="url"
+                          className="admin-input"
+                          value={metaGithubText}
+                          onChange={(e) => setMetaGithubText(e.target.value)}
+                          placeholder="https://github.com/sahil-wani"
+                        />
+                      </div>
+
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">LinkedIn Profile URL</label>
+                        <input
+                          type="url"
+                          className="admin-input"
+                          value={metaLinkedinText}
+                          onChange={(e) => setMetaLinkedinText(e.target.value)}
+                          placeholder="https://linkedin.com/in/sahil-wani"
+                        />
+                      </div>
+
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">Threads Profile URL</label>
+                        <input
+                          type="url"
+                          className="admin-input"
+                          value={metaThreadsText}
+                          onChange={(e) => setMetaThreadsText(e.target.value)}
+                          placeholder="https://threads.net/@sahilwani"
+                        />
+                      </div>
+
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">X / Twitter Profile URL</label>
+                        <input
+                          type="url"
+                          className="admin-input"
+                          value={metaXText}
+                          onChange={(e) => setMetaXText(e.target.value)}
+                          placeholder="https://x.com/sahilwani"
+                        />
+                      </div>
+                    </div>
+
+                    <button type="submit" className="admin-btn admin-btn-accent" style={{ marginTop: '12px' }}>
+                      Save Profile & Links to Live Site
                     </button>
                   </div>
                 </form>
@@ -2481,9 +3281,9 @@ export default function AdminPage() {
             </div>
 
             <form onSubmit={handleSaveExp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
-                  <label className="admin-field-label">Company Name</label>
+                  <label className="admin-field-label">Company / Organization</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -2494,7 +3294,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="admin-field-label">Role Title</label>
+                  <label className="admin-field-label">Role / Position</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -2506,16 +3306,26 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
-                  <label className="admin-field-label">Period</label>
+                  <label className="admin-field-label">Start Date</label>
                   <input
                     type="text"
                     className="admin-input"
-                    value={expForm.period}
-                    onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
-                    placeholder="e.g. JUL 2026 - PRESENT"
-                    required
+                    value={expForm.startDate}
+                    onChange={(e) => setExpForm({ ...expForm, startDate: e.target.value })}
+                    placeholder="e.g. JUL 2026"
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">End Date</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={expForm.endDate}
+                    onChange={(e) => setExpForm({ ...expForm, endDate: e.target.value })}
+                    placeholder="e.g. PRESENT"
+                    disabled={expForm.isCurrent}
                   />
                 </div>
                 <div>
@@ -2537,26 +3347,62 @@ export default function AdminPage() {
                     checked={expForm.isCurrent}
                     onChange={(e) => setExpForm({ ...expForm, isCurrent: e.target.checked })}
                   />
-                  <span>Currently Active Role (displays NOW badge)</span>
+                  <span>Currently Active Role (displays NOW / Working badge)</span>
                 </label>
               </div>
 
-              <div>
-                <label className="admin-field-label">Company Logo (Image URL or Link)</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <AdminImageUploadField
+                label="Company / Internship Logo"
+                value={expForm.image || expForm.logo}
+                onChange={(val) => setExpForm({ ...expForm, logo: val, image: val })}
+                placeholder="Paste logo URL or upload image file..."
+                idPrefix="exp-logo"
+                helperText="Upload company/internship logo from device or enter image URL."
+              />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Website URL</label>
                   <input
-                    type="text"
+                    type="url"
                     className="admin-input"
-                    value={expForm.logo}
-                    onChange={(e) => setExpForm({ ...expForm, logo: e.target.value })}
-                    placeholder="https://... or /images/company.png"
-                    style={{ flex: 1 }}
+                    value={expForm.website}
+                    onChange={(e) => setExpForm({ ...expForm, website: e.target.value })}
+                    placeholder="https://company.com"
                   />
-                  {expForm.logo && (
-                    <div className="portfolio-logo-thumb">
-                      <img src={expForm.logo} alt="Preview" onError={(e) => { e.target.style.display = 'none'; }} />
-                    </div>
-                  )}
+                </div>
+                <div>
+                  <label className="admin-field-label">LinkedIn URL</label>
+                  <input
+                    type="url"
+                    className="admin-input"
+                    value={expForm.linkedin}
+                    onChange={(e) => setExpForm({ ...expForm, linkedin: e.target.value })}
+                    placeholder="https://linkedin.com/company/..."
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">GitHub URL</label>
+                  <input
+                    type="url"
+                    className="admin-input"
+                    value={expForm.github}
+                    onChange={(e) => setExpForm({ ...expForm, github: e.target.value })}
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">X / Twitter URL</label>
+                  <input
+                    type="url"
+                    className="admin-input"
+                    value={expForm.x}
+                    onChange={(e) => setExpForm({ ...expForm, x: e.target.value })}
+                    placeholder="https://x.com/..."
+                  />
                 </div>
               </div>
 
@@ -2572,13 +3418,13 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label className="admin-field-label">Description & Contributions</label>
+                <label className="admin-field-label">Description & Contributions (1 bullet per line)</label>
                 <textarea
                   className="admin-textarea"
                   rows={4}
                   value={expForm.desc}
                   onChange={(e) => setExpForm({ ...expForm, desc: e.target.value })}
-                  placeholder="Detail your engineering contributions, key features, and impact..."
+                  placeholder="Detail your engineering contributions, key features, and impact (one point per line)..."
                   required
                 />
               </div>
@@ -2605,9 +3451,9 @@ export default function AdminPage() {
             </div>
 
             <form onSubmit={handleSaveEdu} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
-                  <label className="admin-field-label">Degree / Program</label>
+                  <label className="admin-field-label">Degree / Program / Schooling</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -2618,7 +3464,7 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="admin-field-label">Institution / College Name</label>
+                  <label className="admin-field-label">Institution / College / School Name</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -2630,7 +3476,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
                   <label className="admin-field-label">Period</label>
                   <input
@@ -2654,27 +3500,17 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="admin-field-label">College Logo (Image URL or Link)</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={eduForm.logo}
-                    onChange={(e) => setEduForm({ ...eduForm, logo: e.target.value })}
-                    placeholder="https://... or /images/college.png"
-                    style={{ flex: 1 }}
-                  />
-                  {eduForm.logo && (
-                    <div className="portfolio-logo-thumb">
-                      <img src={eduForm.logo} alt="Preview" onError={(e) => { e.target.style.display = 'none'; }} />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <AdminImageUploadField
+                label="College / School / Institution Logo"
+                value={eduForm.image || eduForm.logo}
+                onChange={(val) => setEduForm({ ...eduForm, logo: val, image: val })}
+                placeholder="Paste logo URL or upload image file..."
+                idPrefix="edu-logo"
+                helperText="Upload college or school logo from device or enter image URL."
+              />
 
               <div>
-                <label className="admin-field-label">Key Coursework (Comma-Separated)</label>
+                <label className="admin-field-label">Key Coursework / Subjects (Comma-Separated)</label>
                 <input
                   type="text"
                   className="admin-input"
@@ -2702,6 +3538,130 @@ export default function AdminPage() {
                 </button>
                 <button type="submit" className="admin-btn admin-btn-primary">
                   Save Education
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD / EDIT CERTIFICATION OR ACHIEVEMENT */}
+      {showCertModal && (
+        <div className="admin-modal-backdrop" onClick={() => setShowCertModal(false)}>
+          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>
+              {editingCertIndex !== null ? `Edit ${certModalType === 'certification' ? 'Certification' : 'Achievement'}` : `Add New ${certModalType === 'certification' ? 'Certification' : 'Achievement'}`}
+            </div>
+
+            <form onSubmit={handleSaveCert} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label className="admin-field-label">Entry Type</label>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className={`admin-subfilter-pill ${certModalType === 'certification' ? 'is-active' : ''}`}
+                    onClick={() => setCertModalType('certification')}
+                    style={{ flex: 1, textAlign: 'center', height: '36px' }}
+                  >
+                    Certification
+                  </button>
+                  <button
+                    type="button"
+                    className={`admin-subfilter-pill ${certModalType === 'achievement' ? 'is-active' : ''}`}
+                    onClick={() => setCertModalType('achievement')}
+                    style={{ flex: 1, textAlign: 'center', height: '36px' }}
+                  >
+                    Achievement
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Title / Name</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={certForm.title}
+                    onChange={(e) => setCertForm({ ...certForm, title: e.target.value })}
+                    placeholder={certModalType === 'certification' ? 'e.g. AI Agents Intensive with Google' : 'e.g. Top 1000 Innovator – Youth Ideathon'}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">Issuer / Organization</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={certForm.issuer}
+                    onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })}
+                    placeholder="e.g. Google, IBM, IIT Delhi, Kaggle"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Year / Date Label</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={certForm.year}
+                    onChange={(e) => setCertForm({ ...certForm, year: e.target.value })}
+                    placeholder="e.g. 2025 or Oct 2025"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">Issue Date (Optional)</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={certForm.issueDate}
+                    onChange={(e) => setCertForm({ ...certForm, issueDate: e.target.value })}
+                    placeholder="e.g. Issued Nov 2025"
+                  />
+                </div>
+              </div>
+
+              <AdminImageUploadField
+                label="Certificate / Badge Logo"
+                value={certForm.image}
+                onChange={(val) => setCertForm({ ...certForm, image: val })}
+                placeholder="Upload badge/logo image or paste URL..."
+                idPrefix="cert-logo"
+                helperText="Upload certificate image/badge from device or enter URL."
+              />
+
+              <div>
+                <label className="admin-field-label">Credential / Verification Link</label>
+                <input
+                  type="url"
+                  className="admin-input"
+                  value={certForm.link}
+                  onChange={(e) => setCertForm({ ...certForm, link: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div>
+                <label className="admin-field-label">Description / Summary (Optional)</label>
+                <textarea
+                  className="admin-textarea"
+                  rows={3}
+                  value={certForm.description}
+                  onChange={(e) => setCertForm({ ...certForm, description: e.target.value })}
+                  placeholder="Summary of skills verified, project impact, or criteria..."
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setShowCertModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary">
+                  Save {certModalType === 'certification' ? 'Certification' : 'Achievement'}
                 </button>
               </div>
             </form>

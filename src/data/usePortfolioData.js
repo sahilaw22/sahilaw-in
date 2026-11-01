@@ -5,9 +5,11 @@ import {
   EXPERIENCES,
   EDUCATION_ITEMS,
   SKILL_CATEGORIES,
+  CERTIFICATIONS,
+  ACHIEVEMENTS,
 } from './portfolioData.jsx';
 
-const STORAGE_KEY = 'portfolio_content_cache_v8';
+const STORAGE_KEY = 'portfolio_content_cache_v9';
 
 function cleanAboutParagraphs(paragraphs) {
   if (!Array.isArray(paragraphs)) return paragraphs;
@@ -42,6 +44,9 @@ function getInitialState() {
       experiences: EXPERIENCES,
       education: EDUCATION_ITEMS,
       skills: cleanSkillCategories(SKILL_CATEGORIES),
+      certifications: CERTIFICATIONS,
+      achievements: ACHIEVEMENTS,
+      custom_icons: [],
       meta: { hero_roles: HERO_ROLES },
     };
   }
@@ -55,6 +60,9 @@ function getInitialState() {
         experiences: parsed.experiences || EXPERIENCES,
         education: parsed.education || EDUCATION_ITEMS,
         skills: cleanSkillCategories(parsed.skills || SKILL_CATEGORIES),
+        certifications: parsed.certifications || CERTIFICATIONS,
+        achievements: parsed.achievements || ACHIEVEMENTS,
+        custom_icons: parsed.custom_icons || [],
         meta: parsed.meta || { hero_roles: HERO_ROLES },
       };
     }
@@ -67,6 +75,9 @@ function getInitialState() {
     experiences: EXPERIENCES,
     education: EDUCATION_ITEMS,
     skills: cleanSkillCategories(SKILL_CATEGORIES),
+    certifications: CERTIFICATIONS,
+    achievements: ACHIEVEMENTS,
+    custom_icons: [],
     meta: { hero_roles: HERO_ROLES },
   };
 }
@@ -85,6 +96,9 @@ export function usePortfolioData() {
           experiences: json.content.experiences || EXPERIENCES,
           education: json.content.education || EDUCATION_ITEMS,
           skills: cleanSkillCategories(json.content.skills || SKILL_CATEGORIES),
+          certifications: json.content.certifications || CERTIFICATIONS,
+          achievements: json.content.achievements || ACHIEVEMENTS,
+          custom_icons: json.content.custom_icons || [],
           meta: json.content.meta || { hero_roles: HERO_ROLES },
         };
         setData(fresh);
@@ -130,6 +144,9 @@ export function usePortfolioData() {
     experiences: data.experiences || EXPERIENCES,
     education: data.education || EDUCATION_ITEMS,
     skills: data.skills || SKILL_CATEGORIES,
+    certifications: data.certifications || CERTIFICATIONS,
+    achievements: data.achievements || ACHIEVEMENTS,
+    custom_icons: data.custom_icons || [],
     meta: data.meta || { hero_roles: HERO_ROLES },
     refresh: fetchContent,
   };
