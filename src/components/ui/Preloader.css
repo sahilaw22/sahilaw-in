@@ -1,9 +1,18 @@
 /* Preloader: plain solid #f0191a background, white "Glad you're here" with Caacupe One hero font */
 
 .rb-preloader-root {
+  position: fixed !important;
   inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  min-height: -webkit-fill-available;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -87,7 +96,9 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 1.5rem;
+  padding: 0 1.25rem;
+  margin: 0;
+  box-sizing: border-box;
   pointer-events: none;
 }
 
@@ -108,8 +119,16 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 }
 
 @media (max-width: 768px) {
+  .rb-preloader-text-wrap {
+    padding: 0 1rem;
+    margin: 0;
+  }
+
   .rb-preloader-heading {
-    font-size: clamp(3rem, 10vw, 4.2rem) !important;
+    font-size: clamp(2.3rem, 8.2vw, 3.4rem) !important;
+    line-height: 1.15;
+    text-align: center;
+    margin: 0;
   }
 }
 

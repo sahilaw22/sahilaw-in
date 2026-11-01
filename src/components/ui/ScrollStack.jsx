@@ -57,11 +57,20 @@ export function ScrollStack({ children, header, footer, className = '' }) {
       });
     });
 
+    const footerEl = container.querySelector('.scroll-stack-pinned-footer');
+    if (footerEl) {
+      gsap.set(footerEl, {
+        opacity: 0,
+        y: 20,
+        pointerEvents: 'none',
+      });
+    }
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: isMobile ? 'top 48px' : 'top 56px',
+          start: isMobile ? 'top 92px' : 'top 56px',
           end: () => `+=${(total - 1) * (window.innerHeight * 0.75)}`,
           pin: true,
           pinSpacing: true,
@@ -102,6 +111,21 @@ export function ScrollStack({ children, header, footer, className = '' }) {
             {
               scale: targetScale,
               transformOrigin: 'top center',
+              ease: 'power1.out',
+              duration: 1,
+            },
+            stepLabel
+          );
+        }
+
+        // 3. When reaching the last project card, reveal the explore button with it
+        if (i === total - 1 && footerEl) {
+          tl.to(
+            footerEl,
+            {
+              opacity: 1,
+              y: 0,
+              pointerEvents: 'auto',
               ease: 'power1.out',
               duration: 1,
             },

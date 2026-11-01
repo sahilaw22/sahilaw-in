@@ -12,6 +12,13 @@
   overflow: visible !important;
 }
 
+@media (max-width: 920px) {
+  .portfolio-featured-projects-section {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 5.5rem) !important;
+    padding-bottom: 3.5rem !important;
+  }
+}
+
 /* Center-aligned Featured Work Header */
 .featured-work-center-header {
   display: flex;

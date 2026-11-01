@@ -54,9 +54,8 @@ export default function ContactSection({ play }) {
 
         {/* Main Headline */}
         <h2 className="contact-image-title">
-          LET'S MAKE SOMETHING
-          <br />
-          FEEL RIGHT
+          <span className="contact-title-line-1">LET'S MAKE SOMETHING</span>
+          <span className="contact-title-line-2">FEEL RIGHT</span>
         </h2>
 
         {/* Status Meta Items */}
@@ -106,7 +105,7 @@ export default function ContactSection({ play }) {
             >
               <span className="email-at-badge" aria-hidden="true">
                 {copied ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 ) : (
