@@ -61,8 +61,7 @@ export function ScrollStack({ children, header, footer, className = '' }) {
     if (footerEl) {
       gsap.set(footerEl, {
         opacity: 0,
-        yPercent: 250,
-        y: 0,
+        y: 35,
         pointerEvents: 'none',
       });
     }
@@ -71,12 +70,12 @@ export function ScrollStack({ children, header, footer, className = '' }) {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: isMobile ? 'top 92px' : 'top 56px',
+          start: isMobile ? 'top 86px' : 'top 52px',
           end: () => `+=${(total - 1) * (window.innerHeight * 0.75)}`,
           pin: true,
           pinSpacing: true,
-          scrub: 0.8,
-          anticipatePin: 1,
+          scrub: 0.65,
+          anticipatePin: 0,
           invalidateOnRefresh: true,
         },
       });
@@ -119,17 +118,16 @@ export function ScrollStack({ children, header, footer, className = '' }) {
           );
         }
 
-        // 3. When reaching the last project card, move the explore button in sync with the last card
+        // 3. When reaching the last project card, reveal the explore button directly below the last card without overlap
         if (i === total - 1 && footerEl) {
           tl.to(
             footerEl,
             {
-              yPercent: 0,
               y: 0,
               opacity: 1,
               pointerEvents: 'auto',
-              ease: 'power1.out',
-              duration: 1,
+              ease: 'power2.out',
+              duration: 0.9,
             },
             stepLabel
           );

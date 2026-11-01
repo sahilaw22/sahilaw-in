@@ -21,12 +21,14 @@ export default function ExperienceSection() {
         </div>
 
         <div className="sleek-exp-container">
-          <div className="sleek-exp-cards-wrapper">
+          <div className="sleek-exp-cards-wrapper sleek-exp-featured-deck">
             {featuredList.map((item, idx) => (
               <ExperienceCard
                 key={item.company || idx}
                 experience={item}
                 defaultOpen={idx === 0}
+                isFeatured={true}
+                isLast={idx === featuredList.length - 1}
               />
             ))}
           </div>

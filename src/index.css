@@ -4150,7 +4150,12 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
     touch-action: none;
     user-select: none;
     cursor: grab;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
+  }
+
+  /* When dragging notch by finger on mobile, make movement 100% instant without transition lag */
+  .portfolio-scroll-pills-nav.is-dragging {
+    transition: none !important;
   }
 
   /* Hidden by default on mobile, slides off-screen */
@@ -5085,7 +5090,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
     linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
   background-size: 38px 38px;
   background-position: center center;
-  padding: 4.5rem 1.75rem 1.75rem !important;
+  padding: 5rem 1.75rem 8.5rem !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;

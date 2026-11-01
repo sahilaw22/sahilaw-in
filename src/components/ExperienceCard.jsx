@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
 import './ExperienceSection.css';
 
-export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = false }) {
+const parseDescription = (text) => {
+  if (typeof text !== 'string') return '';
+  return text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+};
+
+export function ExperienceCard({
+  experience,
+  alwaysOpen = false,
+  defaultOpen = false,
+  isFeatured = false,
+  isLast = false,
+}) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const isExpanded = alwaysOpen || isOpen;
 
@@ -24,11 +35,11 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
     ? [experience.desc]
     : [];
 
-  const skillsList = experience.skills || (experience.technologies ? experience.technologies.map(t => typeof t === 'string' ? t : t.name) : []);
+  const skillsList = experience.technologies || experience.skills || [];
 
   return (
     <article
-      className={`sleek-exp-card ${isExpanded ? 'is-expanded' : ''}`}
+      className={`sleek-exp-card ${isExpanded ? 'is-expanded' : ''} ${isFeatured ? 'is-featured' : ''}`}
       onClick={handleCardClick}
       tabIndex={0}
       role="button"
@@ -40,15 +51,21 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
         }
       }}
     >
-      {/* Top Header Row */}
-      <div className="sleek-exp-header">
-        <div className="sleek-exp-header-left">
+      {/* Featured Spine Connecting Line between logo boxes */}
+      {isFeatured && !isLast && (
+        <div className="sleek-exp-connecting-line" aria-hidden="true" />
+      )}
+
+      {/* Main Row: Logo + Info + Date */}
+      <div className="sleek-exp-main-row">
+        {/* Left Side: Logo & Info */}
+        <div className="sleek-exp-left-col">
           {/* Company Logo Box */}
           <div className="sleek-exp-logo-wrap">
             {experience.image ? (
               <img
                 src={experience.image}
-                alt={experience.company}
+                alt={experience.company || 'Company logo'}
                 className="sleek-exp-logo-img"
                 loading="lazy"
                 onError={(e) => {
@@ -63,19 +80,19 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
               className="sleek-exp-logo-fallback"
               style={{ display: experience.image ? 'none' : 'flex' }}
             >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect width="20" height="14" x="2" y="7" rx="2" />
                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
               </svg>
             </div>
           </div>
 
-          {/* Title & Metadata */}
-          <div className="sleek-exp-info-col">
-            <div className="sleek-exp-company-row">
+          {/* Info Details */}
+          <div className="sleek-exp-details-col">
+            <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
 
-              {/* Social / External Links */}
+              {/* Social Links */}
               <div className="sleek-exp-social-links" onClick={(e) => e.stopPropagation()}>
                 {experience.website && (
                   <a
@@ -140,7 +157,7 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
                 )}
               </div>
 
-              {/* Working/Present Badge */}
+              {/* Working Indicator Badge */}
               {experience.isCurrent && (
                 <div className="sleek-exp-working-badge">
                   <span className="sleek-exp-pulse-dot" />
@@ -148,15 +165,15 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
                 </div>
               )}
 
-              {/* Chevron Accordion Toggle */}
+              {/* Chevron Collapse/Expand Button */}
               {!alwaysOpen && (
                 <button
                   type="button"
                   onClick={toggleOpen}
                   className={`sleek-exp-toggle-btn ${isExpanded ? 'is-rotated' : ''}`}
-                  aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                  aria-label={isExpanded ? 'Collapse' : 'Expand'}
                 >
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
@@ -169,8 +186,8 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
           </div>
         </div>
 
-        {/* Right Side: Date Range & Location */}
-        <div className="sleek-exp-header-right">
+        {/* Right Side: Date & Location */}
+        <div className="sleek-exp-right-col">
           <p className="sleek-exp-date-text">
             {experience.startDate || experience.period?.split('-')[0]?.trim() || ''}
             {' - '}
@@ -182,31 +199,49 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
         </div>
       </div>
 
-      {/* Accordion Expandable Content */}
+      {/* Expanded Accordion Body */}
       <div className={`sleek-exp-accordion ${isExpanded ? 'is-open' : ''}`}>
         <div className="sleek-exp-accordion-inner">
           {/* Technologies & Tools */}
           {skillsList && skillsList.length > 0 && (
             <div className="sleek-exp-tech-section">
-              <h4 className="sleek-exp-tech-heading">Technologies & Tools</h4>
+              <h4 className="sleek-exp-tech-heading">Technologies &amp; Tools</h4>
               <div className="sleek-exp-tech-list">
-                {skillsList.map((skill, sIdx) => (
-                  <span key={sIdx} className="sleek-exp-tech-chip">
-                    {skill}
-                  </span>
-                ))}
+                {skillsList.map((tech, idx) => {
+                  const name = typeof tech === 'string' ? tech : tech.name;
+                  const href = typeof tech === 'object' ? tech.href : null;
+                  return href ? (
+                    <a
+                      key={idx}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="sleek-exp-tech-chip skill-inner-shadow"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span>{name}</span>
+                    </a>
+                  ) : (
+                    <span key={idx} className="sleek-exp-tech-chip skill-inner-shadow">
+                      {name}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Description Bullet Points */}
+          {/* Description Bullets */}
           {descriptionList && descriptionList.length > 0 && (
             <div className="sleek-exp-desc-list">
-              {descriptionList.map((bullet, bIdx) => (
-                <div key={bIdx} className="sleek-exp-desc-item">
-                  <span className="sleek-exp-desc-bullet" aria-hidden="true">•</span>
-                  <p className="sleek-exp-desc-text">{bullet}</p>
-                </div>
+              {descriptionList.map((desc, idx) => (
+                <p
+                  key={idx}
+                  className="sleek-exp-desc-bullet-row"
+                  dangerouslySetInnerHTML={{
+                    __html: `• ${parseDescription(desc)}`,
+                  }}
+                />
               ))}
             </div>
           )}
@@ -215,4 +250,3 @@ export function ExperienceCard({ experience, alwaysOpen = false, defaultOpen = f
     </article>
   );
 }
-

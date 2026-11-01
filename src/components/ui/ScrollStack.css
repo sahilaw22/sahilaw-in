@@ -10,15 +10,9 @@
   justify-content: flex-start;
   align-items: center;
   overflow: visible !important;
-}
-
-.scroll-stack-pinned-footer {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1.75rem;
-  z-index: 20;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .scroll-stack-pinned-header {
@@ -27,13 +21,28 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 2rem;
-  z-index: 20;
+  z-index: 25;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+.scroll-stack-pinned-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2.25rem;
+  margin-bottom: 0.5rem;
+  z-index: 30;
+  position: relative;
 }
 
 .scroll-stack-stage {
   position: relative;
   width: min(460px, calc(100vw - 2.5rem));
-  height: 28rem;
+  height: 31rem;
   margin: 0 auto;
   overflow: visible !important;
 }
@@ -58,10 +67,13 @@
   }
   .scroll-stack-stage {
     width: min(440px, calc(100vw - 2rem));
-    height: 26rem;
+    height: 29.5rem;
   }
   .scroll-stack-item {
     height: 21rem;
+  }
+  .scroll-stack-pinned-footer {
+    margin-top: 1.75rem;
   }
 }
 
@@ -71,9 +83,12 @@
   }
   .scroll-stack-stage {
     width: calc(100vw - 1.5rem);
-    height: 25rem;
+    height: 28rem;
   }
   .scroll-stack-item {
     height: 20rem;
+  }
+  .scroll-stack-pinned-footer {
+    margin-top: 1.5rem;
   }
 }

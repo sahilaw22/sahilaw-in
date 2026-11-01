@@ -154,7 +154,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     const onWindowMove = (e) => {
       if (!isDraggingRef.current) return;
       const dy = e.clientY - startYRef.current;
-      if (Math.abs(dy) > 4) {
+      if (Math.abs(dy) > 2) {
         hasMovedRef.current = true;
       }
       if (hasMovedRef.current) {
@@ -255,15 +255,15 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       ref={navRef}
       className={`portfolio-scroll-pills-nav ${
         isMobileVisible ? 'is-mobile-visible' : 'is-mobile-hidden'
-      }`}
+      } ${isDragging ? 'is-dragging' : ''}`}
       aria-label="Portfolio quick section navigation"
       onPointerDown={handlePointerDown}
       style={{
         '--notch-offset-y': `${offsetY}px`,
         transform: `translateY(calc(-50% + ${offsetY}px))`,
         transition: isDragging
-          ? 'none'
-          : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease',
+          ? 'none !important'
+          : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
       }}
     >
       {/* Mobile notch drag indicator handle */}
