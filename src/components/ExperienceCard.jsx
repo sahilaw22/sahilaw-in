@@ -6,6 +6,46 @@ const parseDescription = (text) => {
   return text.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
 };
 
+const formatTimelineDate = (exp) => {
+  if (!exp) return '';
+  const monthMap = {
+    jan: 'January', feb: 'February', mar: 'March', apr: 'April',
+    may: 'May', jun: 'June', jul: 'July', aug: 'August',
+    sep: 'September', oct: 'October', nov: 'November', dec: 'December'
+  };
+
+  const cleanPart = (str) => {
+    if (!str) return '';
+    const trimmed = str.trim();
+    if (/^present$/i.test(trimmed)) return 'Present';
+    const match = trimmed.match(/^([a-zA-Z]+)\s*(\d{4})?$/);
+    if (match) {
+      const monthPrefix = match[1].toLowerCase().slice(0, 3);
+      const fullMonth = monthMap[monthPrefix] || (match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase());
+      const year = match[2] || '';
+      return year ? `${fullMonth} ${year}` : fullMonth;
+    }
+    return trimmed;
+  };
+
+  let start = exp.startDate || '';
+  let end = exp.endDate || '';
+
+  if (!start && exp.period) {
+    const parts = exp.period.split(/[-–—]/);
+    start = parts[0]?.trim();
+    end = parts[1]?.trim();
+  }
+
+  const cleanStart = cleanPart(start);
+  const cleanEnd = exp.isCurrent ? 'Present' : cleanPart(end);
+
+  if (cleanStart && cleanEnd) {
+    return `${cleanStart} - ${cleanEnd}`;
+  }
+  return cleanStart || cleanEnd || exp.period || '';
+};
+
 export function ExperienceCard({
   experience,
   alwaysOpen = false,
@@ -37,10 +77,7 @@ export function ExperienceCard({
 
   const skillsList = experience.technologies || experience.skills || [];
 
-  const dateRange = [
-    experience.startDate || experience.period?.split('-')[0]?.trim() || '',
-    experience.isCurrent ? 'Present' : (experience.endDate || experience.period?.split('-')[1]?.trim() || ''),
-  ].filter(Boolean).join(' - ');
+  const dateRange = formatTimelineDate(experience);
 
   let locationText = experience.location || '';
   if (locationText.toLowerCase() === 'remote') {
@@ -102,9 +139,23 @@ export function ExperienceCard({
           {/* Info */}
           <div className="sleek-exp-details-col">
 
-            {/* Company name + social links + Working badge + chevron — all one line */}
+            {/* Company name + collapse chevron + social links + Working badge */}
             <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
+
+              {/* Chevron — placed directly next to company name with no gap */}
+              {!alwaysOpen && (
+                <button
+                  type="button"
+                  onClick={toggleOpen}
+                  className={`sleek-exp-toggle-btn ${isExpanded ? 'is-rotated' : ''}`}
+                  aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+              )}
 
               <div className="sleek-exp-social-links" onClick={(e) => e.stopPropagation()}>
                 {experience.website && (
@@ -144,20 +195,6 @@ export function ExperienceCard({
                   <span className="sleek-exp-pulse-dot" />
                   <span>Working</span>
                 </div>
-              )}
-
-              {/* Chevron — pushed to far right */}
-              {!alwaysOpen && (
-                <button
-                  type="button"
-                  onClick={toggleOpen}
-                  className={`sleek-exp-toggle-btn ${isExpanded ? 'is-rotated' : ''}`}
-                  aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                >
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
               )}
             </div>
 

@@ -13,16 +13,16 @@
 .experience-page-header {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
   margin-bottom: 2.75rem;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
 .experience-page-title {
   margin: 0;
   font-family: 'Plus Jakarta Sans', var(--font-primary), sans-serif;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -30,29 +30,32 @@
 }
 
 .experience-page-subtitle {
-  margin: 0;
+  margin: 0 auto;
   max-width: 38rem;
   font-family: var(--font-secondary), sans-serif;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 350;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
 }
 
 .experience-page-meta-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  margin-top: 1rem;
-  padding-bottom: 0.75rem;
+  margin-top: 1.25rem;
+  padding-bottom: 0.85rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .experience-count-badge {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.01em;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.02em;
 }
 
 .experience-page-list {

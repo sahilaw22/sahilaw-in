@@ -4672,23 +4672,26 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .exp-company-block {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .exp-company-name {
   font-family: 'Space Grotesk', -apple-system, sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.02em;
   margin: 0;
+  line-height: 1.25;
 }
 
 .exp-role-title {
@@ -4702,6 +4705,10 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+  text-align: right;
+  margin-top: 0.2rem;
+  white-space: nowrap;
 }
 
 .exp-now-tag {
