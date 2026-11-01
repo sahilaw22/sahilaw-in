@@ -37,6 +37,11 @@ export function ExperienceCard({
 
   const skillsList = experience.technologies || experience.skills || [];
 
+  const dateRange = [
+    experience.startDate || experience.period?.split('-')[0]?.trim() || '',
+    experience.isCurrent ? 'Present' : (experience.endDate || experience.period?.split('-')[1]?.trim() || ''),
+  ].filter(Boolean).join(' — ');
+
   return (
     <article
       className={`sleek-exp-card ${isExpanded ? 'is-expanded' : ''} ${isFeatured ? 'is-featured' : ''}`}
@@ -56,7 +61,7 @@ export function ExperienceCard({
         <div className="sleek-exp-connecting-line" aria-hidden="true" />
       )}
 
-      {/* Main Row: Logo + Info + Date */}
+      {/* Main Row: Logo + Info */}
       <div className="sleek-exp-main-row">
         {/* Left Side: Logo & Info */}
         <div className="sleek-exp-left-col">
@@ -89,6 +94,8 @@ export function ExperienceCard({
 
           {/* Info Details */}
           <div className="sleek-exp-details-col">
+
+            {/* Company name row: name + social links + working badge + chevron — all inline */}
             <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
 
@@ -110,7 +117,6 @@ export function ExperienceCard({
                     </svg>
                   </a>
                 )}
-
                 {experience.github && (
                   <a
                     href={experience.github}
@@ -125,7 +131,6 @@ export function ExperienceCard({
                     </svg>
                   </a>
                 )}
-
                 {experience.linkedin && (
                   <a
                     href={experience.linkedin}
@@ -140,7 +145,6 @@ export function ExperienceCard({
                     </svg>
                   </a>
                 )}
-
                 {experience.x && (
                   <a
                     href={experience.x}
@@ -157,7 +161,7 @@ export function ExperienceCard({
                 )}
               </div>
 
-              {/* Working Indicator Badge */}
+              {/* Working badge — inline with company name */}
               {experience.isCurrent && (
                 <div className="sleek-exp-working-badge">
                   <span className="sleek-exp-pulse-dot" />
@@ -165,7 +169,7 @@ export function ExperienceCard({
                 </div>
               )}
 
-              {/* Chevron Collapse/Expand Button */}
+              {/* Chevron — inline with company name, pushed to end */}
               {!alwaysOpen && (
                 <button
                   type="button"
@@ -180,22 +184,20 @@ export function ExperienceCard({
               )}
             </div>
 
+            {/* Role — white, prominent */}
             <p className="sleek-exp-position-text">
               {experience.position || experience.role}
             </p>
-          </div>
-        </div>
 
-        {/* Right Side: Date & Location */}
-        <div className="sleek-exp-right-col">
-          <p className="sleek-exp-date-text">
-            {experience.startDate || experience.period?.split('-')[0]?.trim() || ''}
-            {' - '}
-            {experience.isCurrent ? 'Present' : (experience.endDate || experience.period?.split('-')[1]?.trim() || '')}
-          </p>
-          {experience.location && (
-            <p className="sleek-exp-location-text">{experience.location}</p>
-          )}
+            {/* Timeline block: date range + location, full-width below header */}
+            <div className="sleek-exp-timeline-block">
+              <span className="sleek-exp-timeline-date">{dateRange}</span>
+              {experience.location && (
+                <span className="sleek-exp-timeline-location">{experience.location}</span>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
 
