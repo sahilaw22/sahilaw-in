@@ -1,0 +1,407 @@
+/* Sleek Experience Section Styles */
+
+.portfolio-journey-section {
+  position: relative;
+  width: 100%;
+  padding: 5.5rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.sleek-exp-container {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Experience Cards Stack */
+.sleek-exp-cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.sleek-exp-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(18, 20, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  padding: 1.4rem 1.6rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+  user-select: none;
+}
+
+.sleek-exp-card:hover,
+.sleek-exp-card:focus-visible {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(24, 27, 33, 0.82);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  outline: none;
+}
+
+.sleek-exp-card.is-expanded {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(22, 25, 30, 0.88);
+}
+
+/* Header Row */
+.sleek-exp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.sleek-exp-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Company Logo Wrap */
+.sleek-exp-logo-wrap {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 0.65rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.06);
+}
+
+.sleek-exp-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sleek-exp-logo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Info Column */
+.sleek-exp-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.sleek-exp-company-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+}
+
+.sleek-exp-company-name {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', var(--font-primary), sans-serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+/* Social Buttons */
+.sleek-exp-social-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sleek-exp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 0.4rem;
+  color: rgba(255, 255, 255, 0.55);
+  background: transparent;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.sleek-exp-icon-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Working/Present Badge */
+.sleek-exp-working-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  color: #34d399;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sleek-exp-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: expPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes expPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* Chevron Toggle Button */
+.sleek-exp-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 0.4rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease, background 0.2s ease;
+}
+
+.sleek-exp-toggle-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sleek-exp-toggle-btn.is-rotated {
+  transform: rotate(180deg);
+  color: #ffffff;
+}
+
+.sleek-exp-position-text {
+  margin: 0;
+  font-family: var(--font-secondary), sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.4;
+}
+
+/* Right Header Column */
+.sleek-exp-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+  gap: 0.2rem;
+}
+
+.sleek-exp-date-text {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  white-space: nowrap;
+}
+
+.sleek-exp-location-text {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.46);
+  white-space: nowrap;
+}
+
+/* Accordion Smooth Grid Transition */
+.sleek-exp-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+}
+
+.sleek-exp-accordion.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.sleek-exp-accordion-inner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding-top: 1.15rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Technologies & Tools */
+.sleek-exp-tech-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sleek-exp-tech-heading {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sleek-exp-tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.sleek-exp-tech-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.6rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Description Bullet List */
+.sleek-exp-desc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sleek-exp-desc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.sleek-exp-desc-bullet {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.1rem;
+  line-height: 1.35;
+  user-select: none;
+}
+
+.sleek-exp-desc-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+/* View All Experience CTA Button */
+.sleek-exp-footer-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.sleek-exp-view-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.sleek-exp-view-all-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+}
+
+.sleek-exp-view-all-btn svg {
+  transition: transform 0.25s ease;
+}
+
+.sleek-exp-view-all-btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .portfolio-journey-section {
+    padding: 3.5rem 1rem;
+  }
+
+  .sleek-exp-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sleek-exp-header-right {
+    align-items: flex-start;
+    text-align: left;
+    padding-left: calc(48px + 1rem);
+  }
+
+  .sleek-exp-card {
+    padding: 1.15rem 1.2rem;
+  }
+
+  .sleek-exp-company-name {
+    font-size: 1.02rem;
+  }
+
+  .sleek-exp-position-text {
+    font-size: 0.88rem;
+  }
+
+  .sleek-exp-date-text {
+    font-size: 0.82rem;
+  }
+
+  .sleek-exp-desc-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}

@@ -3946,9 +3946,9 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
     flex-shrink: 0 !important;
   }
   .hero-pitch-statement {
-    font-size: 1.18rem !important;
-    line-height: 1.62 !important;
-    max-width: 95% !important;
+    font-size: 0.98rem !important;
+    line-height: 1.55 !important;
+    max-width: 92% !important;
     color: rgba(255, 255, 255, 0.76) !important;
   }
   #section-hero #social-icons-wrapper .styles_links__5qJaS {
@@ -4132,6 +4132,7 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 
 @media (max-width: 768px) {
   .portfolio-scroll-pills-nav {
+    position: fixed !important;
     right: 0 !important;
     top: 50% !important;
     padding: 8px 4px 8px 8px !important;

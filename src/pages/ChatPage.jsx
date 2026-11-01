@@ -62,6 +62,15 @@ function getLinkIcon(label, url) {
     );
   }
 
+  if (l.includes('admin') || l.includes('console')) {
+    return (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="chat-link-icon-brand" aria-hidden="true">
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    );
+  }
+
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="chat-link-icon-brand" aria-hidden="true">
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -70,8 +79,26 @@ function getLinkIcon(label, url) {
   );
 }
 
-function assistantReply(question) {
+function assistantReply(question, pendingAuth = false) {
   const q = question.toLowerCase().trim();
+  const clean = q.replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // Secret Admin Authentication flow
+  if (clean === 'i am sahil your boss') {
+    return {
+      plainText: "Welcome, Boss. Verification required to access the admin portal: What is your Date of Birth (year of birth)?\n\nDirect Portal: Admin Console (#/chatbot-response)",
+      formattedText: "Welcome, Boss. Verification required to access the admin portal: What is your Date of Birth (year of birth)?\n\nDirect Portal: [Admin Console](#/chatbot-response)",
+      step: 'verify_dob',
+    };
+  }
+
+  if (clean.includes('2006') && (pendingAuth || clean === '2006' || clean.includes('dob'))) {
+    return {
+      plainText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- Portal: Access Admin Console (#/chatbot-response)\n- Username: admin\n- Password: sahil@admin",
+      formattedText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- **Portal**: [Access Admin Console](#/chatbot-response)\n- **Username**: `admin`\n- **Password**: `sahil@admin`",
+      step: 'verified',
+    };
+  }
 
   // 1. GitHub specifically
   if (q.includes('github') || q.includes('repo') || q.includes('git ') || q === 'git') {
@@ -264,6 +291,7 @@ export default function ChatPage() {
   const typingTimersRef = useRef(new Set());
   const conversationIdRef = useRef(null);
   const sessionIdRef = useRef(`session-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`);
+  const adminAuthPendingRef = useRef(false);
 
   useEffect(() => {
     if (isComposerFocused) return undefined;
@@ -336,6 +364,11 @@ export default function ChatPage() {
     let plainReply = '';
     let formattedReply = '';
 
+    const cleanQ = question.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (cleanQ === 'i am sahil your boss') {
+      adminAuthPendingRef.current = true;
+    }
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -359,10 +392,16 @@ export default function ChatPage() {
       } else {
         formattedReply = plainReply;
       }
+      if (cleanQ.includes('2006')) {
+        adminAuthPendingRef.current = false;
+      }
     } catch {
-      const fallbackData = assistantReply(question);
+      const fallbackData = assistantReply(question, adminAuthPendingRef.current);
       plainReply = fallbackData.plainText;
       formattedReply = fallbackData.formattedText;
+      if (fallbackData.step === 'verified') {
+        adminAuthPendingRef.current = false;
+      }
     }
 
     setMessages((current) =>
@@ -402,7 +441,7 @@ export default function ChatPage() {
           <p className="chat-subtitle">Ask about my work, projects, skills, or experience.</p>
         </header>
 
-        <div className="chat-messages" ref={messagesRef}>
+        <div className="chat-messages" ref={messagesRef} data-lenis-prevent>
           {messages.map((message) => (
             <div className={`chat-message ${message.role}`} key={message.id}>
               {message.role === 'user' && (

@@ -1,66 +1,46 @@
 import React from 'react';
 import { usePortfolioData } from '../data/usePortfolioData.js';
+import { ExperienceCard } from './ExperienceCard.jsx';
+import './ExperienceSection.css';
 
-// Experience section rendering role milestones, timeline nodes, and tech stack tags
+// Experience section rendering interactive featured role cards and view-all CTA
 export default function ExperienceSection() {
   const { experiences } = usePortfolioData();
+
+  // Show top featured experiences on the home page
+  const featuredList = experiences && experiences.length > 0 ? experiences.slice(0, 2) : [];
 
   return (
     <section id="section-journey" className="portfolio-section portfolio-journey-section">
       <div className="section-container">
-        {/* Clean Header: Single tag matching section */}
+        {/* Clean Section Tag Header */}
         <div className="section-header-block">
           <div className="contact-image-tag">
             <span>EXPERIENCE</span>
           </div>
         </div>
 
-        {/* Connected Experience List with Logos & Connecting Spine */}
-        <div className="timeline-connected-list">
-          {experiences.map((item, idx) => (
-            <div key={item.id || item.company} className="timeline-connected-item">
-              {/* Left Column: Logo Node & Connecting Line */}
-              <div className="timeline-logo-col">
-                <div className="timeline-logo-node" title={item.company}>
-                  {typeof item.logo === 'string' && (item.logo.startsWith('http') || item.logo.startsWith('/') || item.logo.startsWith('data:')) ? (
-                    <img src={item.logo} alt={item.company} style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }} />
-                  ) : (
-                    item.logo || (
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="20" height="14" x="2" y="7" rx="2" />
-                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                      </svg>
-                    )
-                  )}
-                </div>
-                {idx < experiences.length - 1 && <div className="timeline-connecting-spine" />}
-              </div>
+        <div className="sleek-exp-container">
+          <div className="sleek-exp-cards-wrapper">
+            {featuredList.map((item, idx) => (
+              <ExperienceCard
+                key={item.company || idx}
+                experience={item}
+                defaultOpen={idx === 0}
+              />
+            ))}
+          </div>
 
-              {/* Right Column: Experience Details */}
-              <div className="timeline-content-col">
-                <div className="exp-top-row">
-                  <div className="exp-company-block">
-                    <h3 className="exp-company-name">{item.company}</h3>
-                    <span className="exp-role-title">{item.role}</span>
-                  </div>
-                  <div className="exp-period-badge">
-                    {item.isCurrent && <span className="exp-now-tag">NOW</span>}
-                    <span className="exp-period-text">{item.period}</span>
-                  </div>
-                </div>
-
-                <p className="exp-clean-desc">{item.desc}</p>
-
-                <div className="exp-skills-row">
-                  {item.skills.map((skill) => (
-                    <span key={skill} className="exp-skill-chip">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
+          {/* View all experience button linking to full experience page */}
+          <div className="sleek-exp-footer-cta">
+            <a href="#/experience" className="sleek-exp-view-all-btn">
+              <span>View all experience</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </section>

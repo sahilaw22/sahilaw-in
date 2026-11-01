@@ -61,7 +61,8 @@ export function ScrollStack({ children, header, footer, className = '' }) {
     if (footerEl) {
       gsap.set(footerEl, {
         opacity: 0,
-        y: 20,
+        yPercent: 250,
+        y: 0,
         pointerEvents: 'none',
       });
     }
@@ -118,13 +119,14 @@ export function ScrollStack({ children, header, footer, className = '' }) {
           );
         }
 
-        // 3. When reaching the last project card, reveal the explore button with it
+        // 3. When reaching the last project card, move the explore button in sync with the last card
         if (i === total - 1 && footerEl) {
           tl.to(
             footerEl,
             {
-              opacity: 1,
+              yPercent: 0,
               y: 0,
+              opacity: 1,
               pointerEvents: 'auto',
               ease: 'power1.out',
               duration: 1,

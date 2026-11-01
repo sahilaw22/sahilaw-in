@@ -54,12 +54,18 @@ router.post('/chat', async (req, res) => {
     if (conversation.messages && conversation.messages.length > 0) {
       const lastAssistantMsg = [...conversation.messages]
         .reverse()
-        .find((m) => m.sender === 'assistant' && m.matched_knowledge_id);
+        .find((m) => m.sender === 'assistant');
 
-      if (lastAssistantMsg && lastAssistantMsg.matched_knowledge_id) {
-        const lastEntry = db.getKnowledgeEntryById(lastAssistantMsg.matched_knowledge_id);
-        if (lastEntry) {
-          conversationContext.lastKnowledgeEntry = lastEntry;
+      if (lastAssistantMsg) {
+        if (lastAssistantMsg.intent === 'admin_auth_prompt') {
+          conversationContext.lastIntent = 'admin_auth_prompt';
+          conversationContext.waitingForDob = true;
+        }
+        if (lastAssistantMsg.matched_knowledge_id) {
+          const lastEntry = db.getKnowledgeEntryById(lastAssistantMsg.matched_knowledge_id);
+          if (lastEntry) {
+            conversationContext.lastKnowledgeEntry = lastEntry;
+          }
         }
       }
     }

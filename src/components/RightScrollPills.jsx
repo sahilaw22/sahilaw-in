@@ -72,7 +72,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     function handleScroll() {
-      // Reveal notch on mobile when user scrolls; hide after 3 seconds of inactivity
+      // Reveal notch on mobile when user scrolls; hide after 2 seconds of inactivity
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
         setIsMobileVisible(true);
         if (mobileHideTimerRef.current) {
@@ -82,7 +82,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           if (!isDraggingRef.current) {
             setIsMobileVisible(false);
           }
-        }, 3000);
+        }, 2000);
       }
 
       if (!isHome) return;
@@ -106,9 +106,17 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    document.addEventListener('touchmove', handleScroll, { passive: true });
+    if (window.lenis) {
+      window.lenis.on('scroll', handleScroll);
+    }
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('touchmove', handleScroll);
+      if (window.lenis) {
+        window.lenis.off('scroll', handleScroll);
+      }
       if (mobileHideTimerRef.current) {
         clearTimeout(mobileHideTimerRef.current);
       }
@@ -164,14 +172,14 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           }
         } catch (_) {}
 
-        // Schedule hide after 3 seconds of idle time following drag
+        // Schedule hide after 2 seconds of idle time following drag
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
           if (mobileHideTimerRef.current) {
             clearTimeout(mobileHideTimerRef.current);
           }
           mobileHideTimerRef.current = setTimeout(() => {
             setIsMobileVisible(false);
-          }, 3000);
+          }, 2000);
         }
       }
     };

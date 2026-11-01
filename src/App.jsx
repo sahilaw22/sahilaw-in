@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useHashRouter } from './hooks/useHashRouter.js';
 import { useSoundEngine } from './hooks/useSoundEngine.js';
+import { useSmoothScroll } from './hooks/useSmoothScroll.js';
 
 import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
@@ -8,6 +9,7 @@ import HomePage from './pages/HomePage.jsx';
 import BlogPage from './pages/BlogPage.jsx';
 import PostPage from './pages/PostPage.jsx';
 import ResumePage from './pages/ResumePage.jsx';
+import ExperiencePage from './pages/ExperiencePage.jsx';
 import ChatPage from './pages/ChatPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
@@ -18,9 +20,9 @@ function routeToView(route) {
   if (route === '/blog') return 'blog';
   if (route.startsWith('/blog/')) return 'post';
   if (route.startsWith('/projects')) return 'projects';
-  if (route === '/careers' || route === '/resume') return 'careers';
+  if (route === '/careers' || route === '/resume' || route === '/experience' || route === '/work-experience') return 'careers';
   if (route === '/chat') return 'chat';
-  if (route === '/chatbot-response') return 'admin';
+  if (route === '/chatbot-response' || route === '/admin') return 'admin';
   return 'home';
 }
 
@@ -28,7 +30,10 @@ export default function App() {
   const { route } = useHashRouter();
   const sound = useSoundEngine();
   const activeView = routeToView(route);
-  const isAdmin = route === '/chatbot-response';
+  const isAdmin = route === '/chatbot-response' || route === '/admin';
+
+  // Initialize smooth inertial scrolling with Lenis synchronized with GSAP ScrollTrigger
+  useSmoothScroll(route);
 
   const [isPreloaderActive, setIsPreloaderActive] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -50,13 +55,14 @@ export default function App() {
 
   // Render the correct page based on the current hash route
   function renderPage() {
-    if (route === '/chatbot-response') return <AdminPage />;
+    if (route === '/chatbot-response' || route === '/admin') return <AdminPage />;
     if (route === '/') return <HomePage sound={sound} onIntroComplete={handlePreloaderComplete} />;
     if (route === '/blog') return <BlogPage sound={sound} />;
     if (route.startsWith('/blog/')) {
       const slug = route.replace('/blog/', '');
       return <PostPage slug={slug} sound={sound} />;
     }
+    if (route === '/experience' || route === '/work-experience') return <ExperiencePage />;
     if (route === '/careers' || route === '/resume') return <ResumePage />;
     if (route === '/chat') return <ChatPage />;
     if (route === '/projects') return <ProjectsPage />;

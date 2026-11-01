@@ -25,50 +25,96 @@ export const ABOUT_PARAGRAPHS = [
 // 3. EXPERIENCE SECTION DATA (Matching header: EXPERIENCE)
 export const EXPERIENCES = [
   {
+    company: 'BigTopSocial',
+    role: 'Web Developer Intern',
+    position: 'Web Developer Intern',
+    period: 'DEC 2025 - PRESENT',
+    startDate: 'December 2025',
+    endDate: 'Present',
+    location: 'Nagpur',
+    isCurrent: true,
+    image: '/company/BT.png',
+    website: 'https://www.bigtopsocial.com/',
+    github: 'https://github.com/NagpurHeightsOfficial/Official_Bigtopsocial',
+    description: [
+      'Designed, Developed, and Deployed the official website for BigtopSocials as a Web Developer Intern, delivering a responsive, high-performance user experience aligned with the brand digital strategy.',
+      'Maintained and enhanced Nagpur Heights property listing platforms by implementing structured JSON data workflows for efficient content management.',
+      'Created and optimized web assets, including images, graphics, and UI components, improving visual consistency and performance across digital platforms.',
+      'Developed brand toolkits and social media creatives to strengthen visual identity, enhance marketing communication, and maintain cohesive branding across online channels.',
+    ],
+    desc: 'Designed, developed, and deployed the official website for BigtopSocials as a Web Developer Intern. Maintained property listing platforms and optimized responsive UI assets.',
+    skills: ['Next.js', 'Tailwind CSS', 'TypeScript', 'React', 'Figma', 'Vercel', 'Canva'],
+  },
+  {
+    company: 'Lamp Hub',
+    role: 'Front End Developer Intern',
+    position: 'Front End Developer Intern',
+    period: 'JAN 2025 - MAR 2025',
+    startDate: 'January 2025',
+    endDate: 'March 2025',
+    location: 'Nagpur (Remote)',
+    isCurrent: false,
+    image: '/company/LH.png',
+    website: 'https://lamphub.com/',
+    linkedin: 'https://www.linkedin.com/company/lamp-hub/',
+    description: [
+      'Remote web development internship at LampHub, gaining hands-on experience with HTML, CSS, Bootstrap, jQuery, and jQuery UI.',
+      'Built responsive interfaces and interactive components to understand layout systems and styling workflows.',
+      'Developed the Quiz Mitra project, a web-based quiz management system allowing teachers to manage quizzes while students attempt quizzes online.',
+      'Strengthened debugging, code structuring, and frontend best practices through project-based learning and iterative improvements.',
+    ],
+    desc: 'Remote web development internship at LampHub, building responsive interfaces and developing the Quiz Mitra quiz management system with interactive UI components.',
+    skills: ['HTML', 'JavaScript', 'CSS', 'SQL', 'Bootstrap', 'jQuery'],
+  },
+  {
     company: 'Big Block Theory',
     role: 'Reddit Growth & Research Intern',
+    position: 'Reddit Growth & Research Intern',
     period: 'JUL 2026 - PRESENT',
+    startDate: 'July 2026',
+    endDate: 'Present',
     location: 'India',
     isCurrent: true,
-    desc: 'Conducted in-depth research on Reddit communities, platform trends, and user behavior to identify high-potential content opportunities. Developed and executed organic growth strategies, tested data-driven content formats, and collaborated with product teams to turn research into actionable user acquisition.',
+    image: '/company/loop.png',
+    description: [
+      'Conducted in-depth research on Reddit communities, platform trends, and user behavior to identify high-potential content opportunities.',
+      'Developed and executed organic growth strategies, tested data-driven content formats, and collaborated with product teams to turn research into actionable user acquisition.',
+    ],
+    desc: 'Conducted in-depth research on Reddit communities, platform trends, and user behavior to identify high-potential content opportunities. Developed and executed organic growth strategies.',
     skills: ['Reddit Analytics', 'Growth Strategy', 'Audience Research', 'Content Optimization'],
-    logo: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-        <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="#ff5555" strokeWidth="2" strokeLinejoin="round" />
-        <path d="M12 22V12M21 7l-9 5M3 7l9 5" stroke="#ff5555" strokeWidth="2" strokeLinejoin="round" />
-      </svg>
-    ),
   },
   {
     company: 'FlyRank AI',
     role: 'Frontend AI Intern',
+    position: 'Frontend AI Intern',
     period: 'JUL 2026 - SEP 2026',
+    startDate: 'July 2026',
+    endDate: 'September 2026',
     location: 'Remote',
     isCurrent: false,
-    desc: 'Designed and developed responsive frontend interfaces for AI-powered ranking and content tools using React, Next.js, TypeScript, and Tailwind CSS. Built interactive chat surfaces, result visualization dashboards, and integrated LLM streaming APIs to translate raw model outputs into intuitive web experiences.',
+    image: '/company/prepeasy.png',
+    description: [
+      'Designed and developed responsive frontend interfaces for AI-powered ranking and content tools using React, Next.js, TypeScript, and Tailwind CSS.',
+      'Built interactive chat surfaces, result visualization dashboards, and integrated LLM streaming APIs to translate raw model outputs into intuitive web experiences.',
+    ],
+    desc: 'Designed and developed responsive frontend interfaces for AI-powered ranking and content tools using React, Next.js, TypeScript, and Tailwind CSS.',
     skills: ['React', 'Next.js', 'TypeScript', 'LLM Streaming', 'Tailwind CSS'],
-    logo: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#a855f7" />
-      </svg>
-    ),
   },
   {
     company: 'Perplexity',
     role: 'Campus Partner',
+    position: 'Campus Partner',
     period: 'SEP 2025 - NOV 2025',
+    startDate: 'September 2025',
+    endDate: 'November 2025',
     location: 'India',
     isCurrent: false,
+    image: '/company/expelee.png',
+    description: [
+      'Spearheaded AI awareness and campus engagement initiatives for Perplexity AI, driving student adoption, workflow optimization, and hands-on workshops on agentic search tools.',
+    ],
     desc: 'Spearheaded AI awareness and campus engagement initiatives for Perplexity AI, driving student adoption, workflow optimization, and hands-on workshops on agentic search tools.',
     skills: ['AI Evangelism', 'Community Growth', 'Workshops', 'Perplexity Pro'],
-    logo: (
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#22d3ee" strokeWidth="2.2" strokeLinecap="round">
-        <line x1="12" y1="2" x2="12" y2="22" />
-        <line x1="3.34" y1="7" x2="20.66" y2="17" />
-        <line x1="3.34" y1="17" x2="20.66" y2="7" />
-        <circle cx="12" cy="12" r="3" fill="#22d3ee" />
-      </svg>
-    ),
   },
 ];
 

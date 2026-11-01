@@ -185,6 +185,33 @@ test('Multi-part query combines answers without fabrication', () => {
   assert.ok(res.answer.includes('sahilaw502@gmail.com'));
 });
 
+// 15. Secret admin authentication initiation
+test('Secret boss prompt triggers admin verification and link', () => {
+  const res = selectAnswer({
+    message: 'i am sahil your boss',
+    knowledgeEntries: INITIAL_KNOWLEDGE_ENTRIES,
+    templates: templatesMap,
+    settings: settingsMap,
+  });
+  assert.strictEqual(res.intent, 'admin_auth_prompt');
+  assert.ok(res.answer.includes('Date of Birth'));
+  assert.ok(res.answer.includes('#/chatbot-response'));
+});
+
+// 16. Secret admin DOB verification response
+test('DOB 2006 response returns admin credentials', () => {
+  const res = selectAnswer({
+    message: '2006',
+    knowledgeEntries: INITIAL_KNOWLEDGE_ENTRIES,
+    templates: templatesMap,
+    settings: settingsMap,
+    conversationContext: { lastIntent: 'admin_auth_prompt' },
+  });
+  assert.strictEqual(res.intent, 'admin_auth_success');
+  assert.ok(res.answer.includes('admin'));
+  assert.ok(res.answer.includes('sahil@admin'));
+});
+
 console.log(`\nTest Results: ${passCount} Passed, ${failCount} Failed.`);
 if (failCount > 0) process.exit(1);
 
