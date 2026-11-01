@@ -47,12 +47,14 @@
 /* Featured Spine Connecting Line between logo boxes (Home section only) */
 .sleek-exp-connecting-line {
   position: absolute;
+  /* logo is 48px tall, starts at top of card. Line starts from bottom edge of logo */
   top: 48px;
   bottom: calc(-1 * var(--sleek-exp-gap));
+  /* center of 48px logo = 24px from article left edge */
   left: 24px;
   width: 2px;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.18);
+  background: linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(255,255,255,0.06));
   pointer-events: none;
   z-index: 1;
 }
@@ -62,14 +64,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 0.5rem;
   width: 100%;
 }
 
 @media (min-width: 641px) {
   .sleek-exp-main-row {
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
 
@@ -177,13 +181,16 @@
   align-items: center;
   gap: 0.35rem;
   border-radius: 6px;
-  border: 1px solid rgba(134, 239, 172, 0.3);
-  background: rgba(34, 197, 94, 0.1);
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
-  color: #4ade80;
-  font-weight: 500;
+  border: none;
+  background: #166534;
+  padding: 0.18rem 0.55rem;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #ffffff;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .sleek-exp-pulse-dot {
@@ -241,36 +248,42 @@
   line-height: 1.4;
 }
 
-/* Timeline block: date range + location, sits below role, full width */
-.sleek-exp-timeline-block {
+/* Timeline block styles — removed (timeline now lives in right-col only) */
+
+/* Right Column: Date & Location */
+.sleek-exp-right-col {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
-  margin-top: 0.5rem;
+  text-align: left;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  padding-left: calc(48px + 1rem);
 }
 
-.sleek-exp-timeline-date {
-  font-family: 'Lora', 'Georgia', serif;
+@media (min-width: 641px) {
+  .sleek-exp-right-col {
+    text-align: right;
+    align-items: flex-end;
+    padding-left: 0;
+  }
+}
+
+.sleek-exp-date-text {
+  margin: 0;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   font-size: 0.9rem;
-  font-style: italic;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.01em;
-  line-height: 1.4;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
 }
 
-.sleek-exp-timeline-location {
-  font-family: 'Lora', 'Georgia', serif;
-  font-size: 0.82rem;
-  font-style: normal;
+.sleek-exp-location-text {
+  margin: 0;
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8rem;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.02em;
-}
-
-/* Right Column: Date & Location — hidden now (timeline is inline) */
-.sleek-exp-right-col {
-  display: none;
+  color: rgba(255, 255, 255, 0.32);
+  white-space: nowrap;
 }
 
 /* Expanded Accordion */
