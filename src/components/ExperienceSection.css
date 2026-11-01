@@ -58,38 +58,23 @@
   z-index: 1;
 }
 
-/* Main Top Row */
+/* Main Top Row (Same sleek layout on both desktop & mobile) */
 .sleek-exp-main-row {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.75rem;
   width: 100%;
-}
-
-@media (min-width: 641px) {
-  .sleek-exp-main-row {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1rem;
-  }
 }
 
 /* Left Column: Logo + Info */
 .sleek-exp-left-col {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  width: 100%;
+  gap: 0.85rem;
+  flex: 1;
   min-width: 0;
-}
-
-@media (min-width: 641px) {
-  .sleek-exp-left-col {
-    width: auto;
-    flex: 1;
-  }
 }
 
 /* Logo Box */
@@ -252,29 +237,21 @@
 
 /* Timeline block styles — removed (timeline now lives in right-col only) */
 
-/* Right Column: Date & Location */
+/* Right Column: Date & Location (Clean right-aligned on all viewports) */
 .sleek-exp-right-col {
   display: flex;
   flex-direction: column;
-  text-align: left;
+  text-align: right;
+  align-items: flex-end;
   gap: 0.05rem;
   flex-shrink: 0;
-  padding-left: calc(var(--sleek-logo-size, 48px) + 1rem);
-}
-
-@media (min-width: 641px) {
-  .sleek-exp-right-col {
-    text-align: right;
-    align-items: flex-end;
-    padding-left: 0;
-    gap: 0.05rem;
-  }
+  padding-left: 0;
 }
 
 .sleek-exp-date-text {
   margin: 0;
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.88rem;
+  font-size: clamp(0.75rem, 2.3vw, 0.88rem);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.65);
   line-height: 1.25;
@@ -284,7 +261,7 @@
 .sleek-exp-location-text {
   margin: 0;
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  font-size: 0.78rem;
+  font-size: clamp(0.68rem, 2vw, 0.78rem);
   font-weight: 400;
   color: rgba(255, 255, 255, 0.38);
   line-height: 1.25;
@@ -443,12 +420,8 @@
     font-size: 1.05rem;
   }
 
-  .sleek-exp-right-col {
-    padding-left: calc(40px + 1rem);
-  }
-
   .sleek-exp-accordion-inner {
-    padding-left: calc(40px + 1rem);
+    padding-left: calc(var(--sleek-logo-size, 40px) + 0.85rem);
     margin-top: 0.65rem;
   }
 

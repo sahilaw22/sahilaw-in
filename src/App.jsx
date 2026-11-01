@@ -3,6 +3,7 @@ import { useHashRouter } from './hooks/useHashRouter.js';
 import { useSoundEngine } from './hooks/useSoundEngine.js';
 import { useSmoothScroll } from './hooks/useSmoothScroll.js';
 
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
 import HomePage from './pages/HomePage.jsx';
@@ -31,6 +32,7 @@ export default function App() {
   const sound = useSoundEngine();
   const activeView = routeToView(route);
   const isAdmin = route === '/chatbot-response' || route === '/admin';
+  const isExperience = route === '/experience' || route === '/work-experience';
 
   // Initialize smooth inertial scrolling with Lenis synchronized with GSAP ScrollTrigger
   useSmoothScroll(route);
@@ -73,10 +75,12 @@ export default function App() {
   return (
     <>
       <div key={route} className="page-transition-wrapper">
-        {renderPage()}
+        <ErrorBoundary>
+          {renderPage()}
+        </ErrorBoundary>
       </div>
-      {!isAdmin && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
-      {!isAdmin && !isPreloaderActive && <BottomNav activeView={activeView} />}
+      {!isAdmin && !isExperience && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {!isAdmin && !isExperience && !isPreloaderActive && <BottomNav activeView={activeView} />}
     </>
   );
 }
