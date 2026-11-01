@@ -262,7 +262,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
         '--notch-offset-y': `${offsetY}px`,
         transform: `translateY(calc(-50% + ${offsetY}px))`,
         transition: isDragging
-          ? 'none !important'
+          ? 'none'
           : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
       }}
     >

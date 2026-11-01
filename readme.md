@@ -19,13 +19,14 @@ Personal portfolio, design engineering experiments, and modular content manageme
 
 ## Overview
 
-My Coolofio is a personal portfolio and creative engineering showcase. It combines tactile micro-interactions, procedural Web Audio feedback, an interactive 3D OrbitDeck project carousel, and an admin management panel with one-click ZIP backup export.
+A personal design engineering portfolio and interactive web system. It combines tactile micro-interactions, procedural Web Audio feedback, an interactive 3D OrbitDeck project carousel, and an admin management panel with one-click ZIP backup export.
 
 ---
 
 ## Core Features
 
-- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white Glad you're here typography, session-based first-visit display, complete navbar suppression across mobile and desktop, and keyboard/click skip affordance.
+- **Interactive Work Experience**: Sleek timeline cards with continuous vertical spine lines, company logo nodes, animated pulsating "Working" indicator, tight date and location hierarchy, and dedicated `#/experience` view with distraction-free layout.
+- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white typography, session-based first-visit display, complete navbar suppression across mobile and desktop, and keyboard/click skip affordance.
 - **Scroll Stack Project Deck**: Featured work presented in a stacked card deck (`@reactbits-starter/scroll-stack-tw`) that glides and scales smoothly as the user scrolls.
 - **3D OrbitDeck Carousel**: Cylindrical card perspective ring powered by CSS 3D matrix math with pointer scrub and inertial dampening.
 - **Procedural Web Audio Engine**: Synthesized acoustic clicks and frequency pops triggered on interactive elements using the native Web Audio API with zero external media files.
@@ -45,19 +46,20 @@ My Coolofio is a personal portfolio and creative engineering showcase. It combin
                                    [ main.jsx ]
                                         │
                                    [ App.jsx ]
-                   (Matrix Canvas, Sound Engine, Hash Router)
+                    (Matrix Canvas, Sound Engine, Hash Router)
                                         │
-       ┌─────────────────┬──────────────┴──────────────┬─────────────────┐
-       ▼                 ▼                             ▼                 ▼
-  [ HomePage ]     [ ProjectsPage ]              [ ResumePage ]     [ AdminPage ]
-  - Preloader      - 3D OrbitDeck                - PDF Document     - Live Editor
-  - Hero Header    - Project Modals              - Skills Export    - Skill Manager
-  - About Section  - Archive Grid                - Experience       - ZIP Export
-  - Experience
-  - Scroll Stack
-  - Skills
-  - Certifications
-  - Contact
+        ┌──────────────┬────────────────┴────────────────┬──────────────┐
+        ▼              ▼                                 ▼              ▼
+   [ HomePage ]   [ ExperiencePage ]              [ ProjectsPage ] [ AdminPage ]
+   - Preloader    - All Experiences Deck          - 3D OrbitDeck   - Live Editor
+   - Hero Header  - Collapsible Roles             - Modals         - Skill Manager
+   - About        - Live Working Status           - Archive Grid   - ZIP Export
+   - Experience   - Distraction-Free View
+   - Scroll Stack
+   - Education
+   - Skills
+   - Certifications
+   - Contact
 ```
 
 All data is structured modularly in [`data/`](data/) and read through [`src/data/usePortfolioData.js`](src/data/usePortfolioData.js).

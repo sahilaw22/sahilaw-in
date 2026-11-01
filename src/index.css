@@ -4470,6 +4470,18 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
   padding-bottom: 0.85rem !important;
 }
 
+.portfolio-about-section .section-header-block {
+  margin-bottom: 0.65rem !important;
+}
+
+.portfolio-about-section .contact-image-tag {
+  margin-bottom: 0 !important;
+}
+
+.portfolio-about-section .anime-text-container {
+  margin-top: 0 !important;
+}
+
 /* Technical Career Timeline matching reference design */
 .career-timeline-container {
   width: 100%;

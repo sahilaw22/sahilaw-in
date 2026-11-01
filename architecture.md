@@ -60,13 +60,16 @@ Avara/
     ├── index.css                  # Global technical stylesheet & typography rules
     │
     ├── components/                # Production UI components (1:1 header match)
-    │   ├── AboutSection.jsx       # [ABOUT ME] section container
+    │   ├── AboutSection.jsx       # [ABOUT ME] section container with tight header spacing
     │   ├── BottomNav.jsx          # Floating bottom expandable tabs navigation
     │   ├── CareerTimeline.jsx     # Vector career & education step-graph ruler
     │   ├── CertificationsSection.jsx # [CERTIFICATIONS] list with issuer icons
-    │   ├── ContactSection.jsx     # [CONTACT] interactive email & social links
-    │   ├── EducationSection.jsx   # [EDUCATION] connected spine with logos
-    │   ├── ExperienceSection.jsx  # [EXPERIENCE] connected spine with company logos
+    │   ├── ContactSection.jsx     # [CONTACT] interactive email capsule & social links
+    │   ├── EducationSection.jsx   # [EDUCATION] connected spine with logos & right dates
+    │   ├── ErrorBoundary.jsx      # Catch-all component failure boundary with recovery UI
+    │   ├── ExperienceCard.jsx     # Sleek timeline card with accordion details & working status
+    │   ├── ExperienceSection.jsx  # [EXPERIENCE] connected spine with featured company roles
+    │   ├── ExperienceSection.css  # Timeline layout, logo boxes, spine line & chip styling
     │   ├── FeaturedProjectsSection.jsx # [FEATURED PROJECTS] pinned cascading stack
     │   ├── FeaturedProjectsSection.css # Stacked card styling and pinned slot
     │   ├── GlassDistortionSVG.jsx # SVG filter definitions for glass refraction
@@ -94,11 +97,13 @@ Avara/
     │       └── OrbitDeck.css      # 3D transforms & perspective layout
     │
     ├── data/                      # Centralized Content & State Data
-    │   ├── portfolioData.jsx      # Single source of truth for all section data
+    │   ├── portfolioData.jsx      # Canonical portfolio content structures
+    │   ├── usePortfolioData.js    # Data management hook with local storage persistence
     │   └── blog.js                # Markdown articles and blog post metadata
     │
     ├── hooks/                     # Custom React Hooks
     │   ├── useHashRouter.js       # Lightweight hash routing engine
+    │   ├── useSmoothScroll.js     # Lenis smooth scrolling integration
     │   └── useSoundEngine.js      # Synthesizer audio engine (click, hover, success)
     │
     ├── lib/
@@ -106,11 +111,15 @@ Avara/
     │
     └── pages/                     # Top-level Route Views
         ├── HomePage.jsx           # Main full-scroll single-page portfolio
+        ├── ExperiencePage.jsx     # Dedicated full experience view with clean back nav
+        ├── ExperiencePage.css     # Experience page header, meta count & spacing
         ├── ProjectsPage.jsx       # 3D OrbitDeck interactive project showcase
         ├── ResumePage.jsx         # Interactive resume & CV document viewer
         ├── ChatPage.jsx           # AI Interactive chat terminal with LatticeLoader
         ├── BlogPage.jsx           # Engineering writings and tutorials index
-        └── PostPage.jsx           # Single blog article dynamic reader
+        ├── PostPage.jsx           # Single blog article dynamic reader
+        ├── AdminPage.jsx          # Administrative live content manager & backup export
+        └── AdminPage.css          # Admin workspace layout & dark control styling
 ```
 
 ---
@@ -142,14 +151,14 @@ Every major section in the main portfolio directly corresponds to the visual tag
 | Visual Header Tag | Component Location | Data Location | Description |
 | :--- | :--- | :--- | :--- |
 | **HERO** | `src/components/HeroHeader.jsx`<br>`src/components/SocialIcons.jsx` | `portfolioData.jsx` (`HERO_ROLES`) | Intro greeting, pitch, rotating status-red badge (`#ff4444`), and social links. |
-| **ABOUT ME** | `src/components/AboutSection.jsx` | `portfolioData.jsx` (`ABOUT_PARAGRAPHS`) | Word-by-word opacity reveal with Figma, React, Flutter SkillIcons placed before tech names and 3D Resume button. |
+| **ABOUT ME** | `src/components/AboutSection.jsx` | `portfolioData.jsx` (`ABOUT_PARAGRAPHS`) | Word-by-word opacity reveal with Figma, React, Flutter SkillIcons placed before tech names, compact header margin, and 3D Resume button. |
 | **(TIMELINE)** | `src/components/CareerTimeline.jsx` | Sub-component of About | Vector ruler from 2021 to 2026, PCM track, break baseline, internship nodes, and `NOW` status. |
-| **EXPERIENCE** | `src/components/ExperienceSection.jsx` | `portfolioData.jsx` (`EXPERIENCES`) | Company nodes (Big Block Theory, FlyRank AI, Perplexity) connected by vertical spine. |
+| **EXPERIENCE** | `src/components/ExperienceSection.jsx`<br>`src/components/ExperienceCard.jsx` | `portfolioData.jsx` (`EXPERIENCES`) | Sleek timeline layout with connected spine line, company logo nodes, working indicator badge, right-aligned formatted date & location, and expandable skills/description. |
 | **FEATURED PROJECTS** | `src/components/FeaturedProjectsSection.jsx`<br>`src/components/ui/ScrollStack.jsx` | `portfolioData.jsx` (`PROJECTS`) | Pinned cascading stacked card deck with solid cards, pinned header/footer, and smooth scroll transitions. |
-| **EDUCATION** | `src/components/EducationSection.jsx` | `portfolioData.jsx` (`EDUCATION_ITEMS`) | B.Tech CSE (GCET Jammu) and PCM (SP Smart School) connected with institutional nodes. |
+| **EDUCATION** | `src/components/EducationSection.jsx` | `portfolioData.jsx` (`EDUCATION_ITEMS`) | B.Tech CSE (GCET Jammu) and PCM (SP Smart School) connected with institutional nodes and right-aligned timeline period badges. |
 | **SKILLS** | `src/components/SkillsSection.jsx` | `portfolioData.jsx` (`SKILL_CATEGORIES`) | Categorized skill groups (Frontend, AI, Backend, Tools) rendered with `TechIcon` pills. |
 | **CERTIFICATIONS** | `src/components/CertificationsSection.jsx` | `portfolioData.jsx` (`CERTIFICATIONS`) | Clean technical rows with brand vectors, issuers, year badges, and direct credential links. |
-| **CONTACT** | `src/components/ContactSection.jsx` | `src/components/ContactSection.jsx` | Content-hugging email action button, availability metadata, and direct social links. |
+| **CONTACT** | `src/components/ContactSection.jsx` | `src/components/ContactSection.jsx` | Content-hugging email action button, availability metadata, direct social links, and bottom scroll clearance. |
 
 ---
 
@@ -163,11 +172,14 @@ All dynamic portfolio records are unified inside `src/data/portfolioData.jsx`. U
 3. **`EXPERIENCES`**:
    - `company`: Company name
    - `role`: Position title
-   - `period`: Date range string
-   - `isCurrent`: Boolean flag (renders `#ff4444` `NOW` indicator)
+   - `startDate`: Start month and year
+   - `endDate`: End month and year (or `Present`)
+   - `period`: Legacy date range string fallback
+   - `location`: Office location or `(Remote)`
+   - `isCurrent`: Boolean flag (renders green pulsating `Working` badge)
    - `desc`: Summary of work and impact
-   - `skills`: Array of technical keywords
-   - `logo`: JSX vector logo
+   - `technologies`: Array of technical skill chips
+   - `image`: Company logo asset path
 4. **`EDUCATION_ITEMS`**:
    - `degree`: Academic degree or diploma
    - `institution`: School or University
@@ -193,14 +205,16 @@ All dynamic portfolio records are unified inside `src/data/portfolioData.jsx`. U
 Routing is managed through hash-based state inside `src/hooks/useHashRouter.js`, allowing zero-configuration hosting on GitHub Pages, Vercel, or Netlify without server rewrite rules.
 
 ```
-Route Hash               Page Component           View Mode
--------------------------------------------------------------------------
-#/ or #                  HomePage.jsx             Full scrolling portfolio
-#/projects               ProjectsPage.jsx         3D OrbitDeck project gallery
-#/resume or #/careers    ResumePage.jsx           Interactive resume & document viewer
-#/chat                   ChatPage.jsx             Interactive AI assistant console
-#/blog                   BlogPage.jsx             Articles & technical writeups
-#/blog/:slug             PostPage.jsx             Dynamic Markdown article reader
+Route Hash                      Page Component           View Mode
+-----------------------------------------------------------------------------------------
+#/ or #                         HomePage.jsx             Full scrolling portfolio
+#/experience or #/work-experience ExperiencePage.jsx     Dedicated all-experiences view
+#/projects                      ProjectsPage.jsx         3D OrbitDeck project gallery
+#/resume or #/careers           ResumePage.jsx           Interactive resume & document viewer
+#/chat                          ChatPage.jsx             Interactive AI assistant console
+#/blog                          BlogPage.jsx             Articles & technical writeups
+#/blog/:slug                    PostPage.jsx             Dynamic Markdown article reader
+#/admin or #/chatbot-response   AdminPage.jsx            In-browser editor & ZIP export
 ```
 
 ---

@@ -24,13 +24,13 @@ export default function EducationSection() {
                 <div className="timeline-logo-node" title={item.institution}>
                   {typeof item.logo === 'string' && (item.logo.startsWith('http') || item.logo.startsWith('/') || item.logo.startsWith('data:')) ? (
                     <img src={item.logo} alt={item.institution} style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }} />
+                  ) : React.isValidElement(item.logo) ? (
+                    item.logo
                   ) : (
-                    item.logo || (
-                      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                        <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                      </svg>
-                    )
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                    </svg>
                   )}
                 </div>
                 {idx < education.length - 1 && <div className="timeline-connecting-spine" />}

@@ -8,11 +8,13 @@ export default function ExperiencePage() {
 
   return (
     <main className="experience-page">
-      <a href="#/" className="custom-back-btn" aria-label="Back to home">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-      </a>
+      <div className="experience-page-nav">
+        <a href="#/" className="custom-back-btn" aria-label="Back to home">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </a>
+      </div>
 
       <header className="experience-page-header">
         <h1 className="experience-page-title">Work Experience</h1>

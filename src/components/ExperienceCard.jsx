@@ -98,18 +98,15 @@ export function ExperienceCard({
         }
       }}
     >
-      {/* Spine Connecting Line between logo boxes */}
+      {/* Vertical spine line */}
       {!isLast && (
         <div className="sleek-exp-connecting-line" aria-hidden="true" />
       )}
 
-      {/* Main Row: Logo + Info + Date/Location */}
+      {/* Main card header */}
       <div className="sleek-exp-main-row">
-
-        {/* Left: Logo + Details */}
         <div className="sleek-exp-left-col">
-
-          {/* Company Logo Box */}
+          {/* Company logo */}
           <div className="sleek-exp-logo-wrap">
             {experience.image ? (
               <img
@@ -136,14 +133,11 @@ export function ExperienceCard({
             </div>
           </div>
 
-          {/* Info */}
           <div className="sleek-exp-details-col">
-
-            {/* Company name + collapse chevron + Working badge + social links */}
             <div className="sleek-exp-title-row">
               <h3 className="sleek-exp-company-name">{experience.company}</h3>
 
-              {/* Chevron — placed directly next to company name with no gap */}
+              {/* Accordion toggle */}
               {!alwaysOpen && (
                 <button
                   type="button"
@@ -157,7 +151,7 @@ export function ExperienceCard({
                 </button>
               )}
 
-              {/* Working badge — right beside collapse button */}
+              {/* Current role indicator */}
               {experience.isCurrent && (
                 <div className="sleek-exp-working-badge">
                   <span className="sleek-exp-pulse-dot" />
@@ -198,25 +192,22 @@ export function ExperienceCard({
               </div>
             </div>
 
-            {/* Role — white */}
             <p className="sleek-exp-position-text">
               {experience.position || experience.role}
             </p>
-
           </div>
         </div>
 
-        {/* Right: Date & Location */}
+        {/* Date and location */}
         <div className="sleek-exp-right-col">
-          <p className="sleek-exp-date-text">{dateRange}</p>
+          <span className="sleek-exp-date-text">{dateRange}</span>
           {locationText && (
-            <p className="sleek-exp-location-text">{locationText}</p>
+            <span className="sleek-exp-location-text">{locationText}</span>
           )}
         </div>
-
       </div>
 
-      {/* Expanded Accordion Body */}
+      {/* Expandable details */}
       <div className={`sleek-exp-accordion ${isExpanded ? 'is-open' : ''}`}>
         <div className="sleek-exp-accordion-inner">
           {/* Skills */}
