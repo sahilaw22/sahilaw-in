@@ -8,15 +8,19 @@ export default function ExperiencePage() {
 
   return (
     <main className="experience-page">
-      <div className="experience-page-nav">
-        <a href="#/" className="custom-back-btn" aria-label="Back to home">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <header className="experience-page-header">
+        <a
+          href="#/"
+          className="projects-back-link experience-back-link cursor-target"
+          data-cursor-label="Back"
+          aria-label="Back"
+        >
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
+          <span>Back</span>
         </a>
-      </div>
 
-      <header className="experience-page-header">
         <h1 className="experience-page-title">Work Experience</h1>
         <p className="experience-page-subtitle">
           My work experiences across different companies and roles.

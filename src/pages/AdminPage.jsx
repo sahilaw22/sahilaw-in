@@ -227,10 +227,25 @@ function renderAboutParagraphPreview(text, customIcons = []) {
   });
 }
 
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return 'Just now';
+  const diff = Date.now() - Number(timestamp);
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 3600000);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 86400000);
+  return `${days}d ago`;
+}
+
 export default function AdminPage() {
   const [token, setToken] = useState(() => localStorage.getItem('portfolio_admin_token') || '');
   const [adminUser, setAdminUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview'); // overview, portfolio, unanswered, knowledge, templates, sandbox, conversations, settings
+  const [activeTab, setActiveTab] = useState('visitor-analytics'); // visitor-analytics, overview, portfolio, unanswered, knowledge, templates, sandbox, conversations, settings
+  const [visitorAnalytics, setVisitorAnalytics] = useState(null);
+  const [analyticsRange, setAnalyticsRange] = useState('7d');
+  const [visitorLoading, setVisitorLoading] = useState(false);
 
   // Portfolio dynamic content management state
   const [portfolioContent, setPortfolioContent] = useState({
@@ -401,8 +416,33 @@ export default function AdminPage() {
       });
   }, [token]);
 
+  function loadVisitorAnalytics(range = analyticsRange, authToken = token) {
+    if (!authToken) return;
+    setVisitorLoading(true);
+    fetch(`/api/admin/visitor-analytics?range=${range}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setVisitorAnalytics(data);
+      })
+      .catch((err) => {
+        console.error('Failed to load visitor analytics:', err);
+      })
+      .finally(() => {
+        setVisitorLoading(false);
+      });
+  }
+
+  function handleRangeChange(newRange) {
+    setAnalyticsRange(newRange);
+    loadVisitorAnalytics(newRange);
+  }
+
   function loadDashboardData(authToken = token) {
     const headers = { Authorization: `Bearer ${authToken}` };
+
+    loadVisitorAnalytics(analyticsRange, authToken);
 
     fetch('/api/admin/analytics', { headers })
       .then((r) => r.json())
@@ -698,8 +738,8 @@ export default function AdminPage() {
       .then((res) => {
         if (!res.success) throw new Error(res.error || 'Failed to update section');
         setPortfolioContent((prev) => ({ ...prev, [section]: data }));
-        setContentSaveMsg(`Saved ${section} in real time!`);
-        setTimeout(() => setContentSaveMsg(''), 3500);
+        setContentSaveMsg('Your website has been updated successfully.');
+        setTimeout(() => setContentSaveMsg(''), 4000);
 
         // Notify other windows/components
         window.dispatchEvent(new CustomEvent('portfolio-content-updated', { detail: { [section]: data } }));
@@ -1262,17 +1302,14 @@ export default function AdminPage() {
 
   const categories = ['all', ...Array.from(new Set(knowledge.map((k) => k.category)))];
 
-  // If unauthenticated, show minimal clean login view (zero animation, pure black theme, no top header)
+  // If unauthenticated, show minimal clean login view
   if (!adminUser) {
     return (
       <div className="admin-viewport">
         <div className="admin-login-wrapper">
           <div className="admin-login-card">
             <div className="admin-login-header">
-              <h1 className="admin-login-title">ADMIN ACCESS</h1>
-              <p className="admin-login-desc">
-                AUTHENTICATION CONSOLE // PORTFOLIO ENGINE
-              </p>
+              <h1 className="admin-login-title">Admin Access</h1>
             </div>
 
             {loginError && (
@@ -1310,16 +1347,15 @@ export default function AdminPage() {
 
               <button
                 type="submit"
-                className="admin-btn admin-btn-accent"
-                style={{ marginTop: '10px', justifyContent: 'center', height: '42px', width: '100%', fontFamily: "'Disket Mono', monospace", letterSpacing: '0.08em' }}
+                className="admin-btn admin-btn-accent admin-login-submit-btn"
                 disabled={loginLoading}
               >
-                {loginLoading ? 'AUTHENTICATING...' : 'ENTER CONSOLE'}
+                {loginLoading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 
             <a href="#/" className="admin-login-return-link">
-              ← Return to Portfolio
+              Return to Portfolio
             </a>
           </div>
         </div>
@@ -1334,19 +1370,12 @@ export default function AdminPage() {
       {/* Top Navbar */}
       <header className="admin-navbar">
         <div className="admin-brand">
-          <div>
-            <div className="admin-brand-title" style={{ fontFamily: "'Disket Mono', monospace", fontSize: '13px', letterSpacing: '0.12em', color: '#ffffff' }}>
-              SAHIL WANI // DETERMINISTIC ENGINE
-            </div>
-            <div className="admin-brand-sub" style={{ fontFamily: "'Disket Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255, 255, 255, 0.45)', marginTop: '2px' }}>
-              RULE ENGINE // 0 LLM RUNTIME
-            </div>
-          </div>
+          <div className="admin-brand-title">Admin Dashboard</div>
         </div>
 
         <div className="admin-nav-actions">
-          <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.45)', fontFamily: "'Disket Mono', monospace" }}>
-            USER: <strong style={{ color: '#ffffff' }}>{adminUser.username}</strong>
+          <span className="admin-user-pill">
+            USER: <strong>{adminUser.username}</strong>
           </span>
           <button
             type="button"
@@ -1382,10 +1411,23 @@ export default function AdminPage() {
         <aside className="admin-sidebar">
           <button
             type="button"
-            className={`admin-tab-btn ${activeTab === 'overview' ? 'is-active' : ''}`}
-            onClick={() => setActiveTab('overview')}
+            className={`admin-tab-btn ${activeTab === 'visitor-analytics' ? 'is-active' : ''}`}
+            onClick={() => {
+              setActiveTab('visitor-analytics');
+              loadVisitorAnalytics(analyticsRange);
+            }}
           >
-            <span>Overview & Analytics</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              <span>Visitor Analytics</span>
+            </div>
+            {visitorAnalytics?.uniqueVisitors > 0 && (
+              <span className="admin-tab-count admin-tab-count-active">{visitorAnalytics.uniqueVisitors}</span>
+            )}
           </button>
 
           <button
@@ -1393,7 +1435,29 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'portfolio' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('portfolio')}
           >
-            <span>Portfolio Content</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
+                <line x1="9" y1="21" x2="9" y2="9" />
+              </svg>
+              <span>Portfolio Content</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            className={`admin-tab-btn ${activeTab === 'overview' ? 'is-active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span>Assistant Metrics</span>
+            </div>
           </button>
 
           <button
@@ -1401,7 +1465,14 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'unanswered' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('unanswered')}
           >
-            <span>Unanswered Questions</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+              <span>Unanswered</span>
+            </div>
             {newUnansweredCount > 0 && <span className="admin-tab-count">{newUnansweredCount}</span>}
           </button>
 
@@ -1410,7 +1481,13 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'knowledge' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('knowledge')}
           >
-            <span>Knowledge Base</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <span>Knowledge Base</span>
+            </div>
             <span style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace' }}>{knowledge.length}</span>
           </button>
 
@@ -1419,7 +1496,13 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'templates' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('templates')}
           >
-            <span>Response Templates</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="4 17 10 11 4 5" />
+                <line x1="12" y1="19" x2="20" y2="19" />
+              </svg>
+              <span>Templates</span>
+            </div>
           </button>
 
           <button
@@ -1427,7 +1510,12 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'sandbox' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('sandbox')}
           >
-            <span>Match Preview Sandbox</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span>Sandbox</span>
+            </div>
           </button>
 
           <button
@@ -1435,7 +1523,12 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'conversations' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('conversations')}
           >
-            <span>Conversations Log</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>Conversations</span>
+            </div>
           </button>
 
           <button
@@ -1443,12 +1536,335 @@ export default function AdminPage() {
             className={`admin-tab-btn ${activeTab === 'settings' ? 'is-active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            <span>Settings & Security</span>
+            <div className="admin-tab-btn-content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <span>Settings</span>
+            </div>
           </button>
         </aside>
 
         {/* Dynamic Content Panel */}
         <main className="admin-content">
+          {/* VISITOR ANALYTICS */}
+          {activeTab === 'visitor-analytics' && (
+            <div className="admin-analytics-view">
+              <div className="admin-analytics-header">
+                <div>
+                  <h1 className="admin-page-title">Visitor Analytics</h1>
+                  <p className="admin-page-desc">
+                    Live visitor traffic, geographic locations, devices, and session paths.
+                  </p>
+                </div>
+
+                <div className="admin-analytics-controls">
+                  <div className="admin-range-selector" role="group" aria-label="Time range">
+                    {[
+                      { label: '24h', value: '24h' },
+                      { label: '7d', value: '7d' },
+                      { label: '30d', value: '30d' },
+                      { label: 'All', value: 'all' },
+                    ].map((r) => (
+                      <button
+                        key={r.value}
+                        type="button"
+                        className={`admin-range-btn ${analyticsRange === r.value ? 'is-active' : ''}`}
+                        onClick={() => handleRangeChange(r.value)}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary admin-refresh-btn"
+                    onClick={() => loadVisitorAnalytics(analyticsRange)}
+                    disabled={visitorLoading}
+                    title="Refresh visitor analytics"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={visitorLoading ? 'admin-spin' : ''}
+                      aria-hidden="true"
+                    >
+                      <polyline points="23 4 23 10 17 10" />
+                      <polyline points="1 20 1 14 7 14" />
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    <span>{visitorLoading ? 'Refreshing...' : 'Refresh'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Metric Summary Cards */}
+              <div className="admin-metrics-grid">
+                <div className="admin-metric-card">
+                  <div className="admin-metric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </div>
+                  <div className="admin-metric-val">{visitorAnalytics?.totalViews ?? 0}</div>
+                  <div className="admin-metric-label">Total Pageviews</div>
+                  <div className="admin-metric-sub">Across all routes and tabs</div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div className="admin-metric-val">{visitorAnalytics?.uniqueVisitors ?? 0}</div>
+                  <div className="admin-metric-label">Unique Visitors</div>
+                  <div className="admin-metric-sub">Distinct anonymous devices</div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                  </div>
+                  <div className="admin-metric-val">{visitorAnalytics?.totalSessions ?? 0}</div>
+                  <div className="admin-metric-label">Active Sessions</div>
+                  <div className="admin-metric-sub">Browsing sessions initiated</div>
+                </div>
+
+                <div className="admin-metric-card">
+                  <div className="admin-metric-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f472b6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </div>
+                  <div className="admin-metric-val" style={{ fontSize: '18px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                    {visitorAnalytics?.topLocations?.[0]
+                      ? `${visitorAnalytics.topLocations[0].city || 'Unknown'}, ${visitorAnalytics.topLocations[0].country || ''}`
+                      : 'No data yet'}
+                  </div>
+                  <div className="admin-metric-label">Top Location</div>
+                  <div className="admin-metric-sub">
+                    {visitorAnalytics?.topLocations?.[0]
+                      ? `${visitorAnalytics.topLocations[0].visits} visits recorded`
+                      : 'Awaiting visitor requests'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Locations & Pages Row */}
+              <div className="admin-analytics-row">
+                <div className="admin-card admin-analytics-card">
+                  <div className="admin-card-header">
+                    <div>
+                      <h2 className="admin-card-title">Visitor Locations</h2>
+                      <p className="admin-card-subtitle">Geographic distribution of your audience</p>
+                    </div>
+                  </div>
+
+                  {(!visitorAnalytics?.topLocations || visitorAnalytics.topLocations.length === 0) ? (
+                    <div className="admin-empty-state">
+                      <p>No geographic visitor data recorded for this time range.</p>
+                    </div>
+                  ) : (
+                    <div className="admin-locations-list">
+                      {visitorAnalytics.topLocations.map((loc, idx) => {
+                        const maxVisits = visitorAnalytics.topLocations[0]?.visits || 1;
+                        const pct = Math.max(8, Math.round((loc.visits / maxVisits) * 100));
+                        const locationLabel = loc.city && loc.country
+                          ? `${loc.city}, ${loc.country}`
+                          : (loc.city || loc.country || 'Unknown location');
+                        return (
+                          <div key={`${loc.country}-${loc.city}-${idx}`} className="admin-location-row">
+                            <div className="admin-location-info">
+                              <span className="admin-location-rank">#{idx + 1}</span>
+                              <span className="admin-location-name">{locationLabel}</span>
+                            </div>
+                            <div className="admin-location-stats">
+                              <div className="admin-location-bar-track">
+                                <div className="admin-location-bar-fill" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="admin-location-badge">{loc.visits} visits</span>
+                              <span className="admin-location-visitors">{loc.visitors} unique</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="admin-card admin-analytics-card">
+                  <div className="admin-card-header">
+                    <div>
+                      <h2 className="admin-card-title">Most Visited Pages</h2>
+                      <p className="admin-card-subtitle">Popular portfolio routes and views</p>
+                    </div>
+                  </div>
+
+                  {(!visitorAnalytics?.topPages || visitorAnalytics.topPages.length === 0) ? (
+                    <div className="admin-empty-state">
+                      <p>No pageview records found for this period.</p>
+                    </div>
+                  ) : (
+                    <div className="admin-pages-list">
+                      {visitorAnalytics.topPages.map((p) => {
+                        const maxViews = visitorAnalytics.topPages[0]?.views || 1;
+                        const pct = Math.max(8, Math.round((p.views / maxViews) * 100));
+                        return (
+                          <div key={p.path} className="admin-page-row">
+                            <div className="admin-page-info">
+                              <span className="admin-page-path">{p.path === '/' ? 'Home (/)' : p.path}</span>
+                            </div>
+                            <div className="admin-page-stats">
+                              <div className="admin-location-bar-track">
+                                <div className="admin-location-bar-fill admin-bar-page" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="admin-location-badge">{p.views} views</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Devices, Browsers, OS Triplet */}
+              <div className="admin-analytics-triplet">
+                <div className="admin-card admin-analytics-subcard">
+                  <h3 className="admin-subcard-title">Devices</h3>
+                  {(!visitorAnalytics?.devices || visitorAnalytics.devices.length === 0) ? (
+                    <div className="admin-empty-mini">No device data</div>
+                  ) : (
+                    <div className="admin-pill-breakdown">
+                      {visitorAnalytics.devices.map((d) => (
+                        <div key={d.name} className="admin-breakdown-row">
+                          <span className="admin-breakdown-label">{d.name}</span>
+                          <span className="admin-breakdown-count">{d.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="admin-card admin-analytics-subcard">
+                  <h3 className="admin-subcard-title">Browsers</h3>
+                  {(!visitorAnalytics?.browsers || visitorAnalytics.browsers.length === 0) ? (
+                    <div className="admin-empty-mini">No browser data</div>
+                  ) : (
+                    <div className="admin-pill-breakdown">
+                      {visitorAnalytics.browsers.map((b) => (
+                        <div key={b.name} className="admin-breakdown-row">
+                          <span className="admin-breakdown-label">{b.name}</span>
+                          <span className="admin-breakdown-count">{b.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="admin-card admin-analytics-subcard">
+                  <h3 className="admin-subcard-title">Operating Systems</h3>
+                  {(!visitorAnalytics?.osList || visitorAnalytics.osList.length === 0) ? (
+                    <div className="admin-empty-mini">No OS data</div>
+                  ) : (
+                    <div className="admin-pill-breakdown">
+                      {visitorAnalytics.osList.map((o) => (
+                        <div key={o.name} className="admin-breakdown-row">
+                          <span className="admin-breakdown-label">{o.name}</span>
+                          <span className="admin-breakdown-count">{o.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Visitor Sessions */}
+              <div className="admin-card admin-analytics-card">
+                <div className="admin-card-header">
+                  <div>
+                    <h2 className="admin-card-title">Recent Visitor Sessions</h2>
+                    <p className="admin-card-subtitle">Who visited your website and their browsing journeys</p>
+                  </div>
+                </div>
+
+                {(!visitorAnalytics?.recentVisitors || visitorAnalytics.recentVisitors.length === 0) ? (
+                  <div className="admin-empty-state">
+                    <p>No recent visitor sessions recorded yet.</p>
+                  </div>
+                ) : (
+                  <div className="admin-recent-visitors-list">
+                    {visitorAnalytics.recentVisitors.map((v, idx) => {
+                      const locText = v.city && v.country ? `${v.city}, ${v.country}` : (v.city || v.country || 'Location Unknown');
+                      const timeAgo = formatRelativeTime(v.last_active);
+                      return (
+                        <div key={v.session_id || idx} className="admin-visitor-session-card">
+                          <div className="admin-visitor-header">
+                            <div className="admin-visitor-identity">
+                              <span className="admin-visitor-pin-badge">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                  <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                {locText}
+                              </span>
+                              <span className="admin-visitor-time">{timeAgo}</span>
+                            </div>
+                            <div className="admin-visitor-meta-pills">
+                              <span className="admin-pill-subtle">{v.device_type}</span>
+                              <span className="admin-pill-subtle">{v.browser} · {v.os}</span>
+                              {v.referrer && v.referrer !== 'direct' && (
+                                <span className="admin-pill-subtle admin-pill-ref">via {v.referrer}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="admin-visitor-path-box">
+                            <div className="admin-visitor-path-title">
+                              <span>Navigation Path ({v.pages_viewed} {v.pages_viewed === 1 ? 'page' : 'pages'})</span>
+                            </div>
+                            <div className="admin-visitor-path-flow">
+                              {v.path_history ? (
+                                v.path_history.split(' -> ').map((step, sIdx, arr) => (
+                                  <span key={sIdx} className="admin-path-step">
+                                    <span className="admin-path-tag">{step === '/' ? 'Home (/)' : step}</span>
+                                    {sIdx < arr.length - 1 && <span className="admin-path-arrow">→</span>}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="admin-path-step">
+                                  <span className="admin-path-tag">Home (/)</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 1. OVERVIEW & ANALYTICS */}
           {activeTab === 'overview' && (
             <div>
@@ -3761,6 +4177,17 @@ export default function AdminPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Floating Save Notification Toast */}
+      {contentSaveMsg && (
+        <div className="admin-toast-notification" role="status">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          <span>{contentSaveMsg}</span>
         </div>
       )}
     </div>

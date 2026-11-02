@@ -1,0 +1,77 @@
+/* Interactive Cursor-Following Eyes Avatar */
+.hero-avatar-inline-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin: 0;
+  line-height: 1;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+  -webkit-text-fill-color: initial;
+  text-fill-color: initial;
+  color: initial;
+}
+
+.hero-avatar-svg {
+  height: 1.15em;
+  width: auto;
+  aspect-ratio: 772 / 784;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45));
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.hero-avatar-svg:hover {
+  transform: scale(1.08) rotate(-2deg);
+  filter: drop-shadow(0 6px 18px rgba(97, 220, 163, 0.25));
+}
+
+.hero-avatar-svg:active {
+  transform: scale(0.96) rotate(1deg);
+}
+
+/* Sclera & Pupils */
+.avatar-sclera {
+  fill: #ffffff;
+  transition: opacity 0.2s ease;
+}
+
+.avatar-pupil {
+  fill: #0c0d10;
+}
+
+.avatar-highlight-primary {
+  fill: #ffffff;
+  opacity: 0.95;
+}
+
+.avatar-highlight-secondary {
+  fill: #ffffff;
+  opacity: 0.75;
+}
+
+.avatar-eyelid-crease {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 14;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.08s ease;
+}
+
+.avatar-eyelid-crease.is-visible {
+  opacity: 1;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .hero-avatar-svg {
+    transition: none !important;
+  }
+}
+

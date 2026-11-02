@@ -98,7 +98,7 @@ export default function ContactSection({ play }) {
             {/* Left section: Click to copy */}
             <button
               type="button"
-              className="email-capsule-copy-btn"
+              className="email-capsule-copy-btn cursor-target" data-cursor-label={copied ? "Copied" : "Copy"}
               onClick={handleCopyEmail}
               title="Click to copy email address"
               aria-label="Copy email address to clipboard"
@@ -126,7 +126,7 @@ export default function ContactSection({ play }) {
             {/* Right section: Up arrow button to open Gmail directly */}
             <button
               type="button"
-              className="email-capsule-arrow"
+              className="email-capsule-arrow cursor-target" data-cursor-label="Gmail"
               onClick={handleOpenGmail}
               aria-label="Open Gmail directly"
               title="Open in Gmail"
@@ -145,8 +145,7 @@ export default function ContactSection({ play }) {
             href="https://www.linkedin.com/in/sahil-a-057a0231a"
             target="_blank"
             rel="noopener noreferrer"
-            className="contact-keycap-btn"
-            aria-label="LinkedIn"
+            className="contact-keycap-btn cursor-target" data-cursor-label="LinkedIn" aria-label="LinkedIn"
             onClick={() => play?.('click')}
           >
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -160,8 +159,7 @@ export default function ContactSection({ play }) {
             href="https://www.threads.com/@sahilaw2"
             target="_blank"
             rel="noopener noreferrer"
-            className="contact-keycap-btn"
-            aria-label="Threads"
+            className="contact-keycap-btn cursor-target" data-cursor-label="Threads" aria-label="Threads"
             onClick={() => play?.('click')}
           >
             <svg aria-hidden="true" width="22" height="22" viewBox="-12 -12 346 400">
@@ -173,8 +171,7 @@ export default function ContactSection({ play }) {
             href="https://github.com/sahilaw22"
             target="_blank"
             rel="noopener noreferrer"
-            className="contact-keycap-btn"
-            aria-label="GitHub"
+            className="contact-keycap-btn cursor-target" data-cursor-label="GitHub" aria-label="GitHub"
             onClick={() => play?.('click')}
           >
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

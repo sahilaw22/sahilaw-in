@@ -1,43 +1,38 @@
-<div align="center">
+# Sahil Ahmed Wani — Portfolio & Engineering Showcase
 
-# Design Engineering Portfolio
-Personal portfolio, design engineering experiments, and modular content management.
+A personal portfolio and interactive web platform built with React, Vite, and GSAP. Features custom micro-interactions, procedural Web Audio feedback, an interactive 3D project carousel, and an in-browser management panel with visitor analytics and ZIP export.
 
-**Visit:** [sahilaw.in](https://sahilaw.in)
-
-<p align="center">
-  <img src="https://custom-icon-badges.demolab.com/badge/React-20232A?logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://custom-icon-badges.demolab.com/badge/Vite-646CFF?logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://custom-icon-badges.demolab.com/badge/TypeScript-007ACC?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://custom-icon-badges.demolab.com/badge/Tailwind_CSS-38BDF8?logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://custom-icon-badges.demolab.com/badge/Figma-F24E1E?logo=figma&logoColor=white" alt="Figma" />
-</p>
-
-</div>
+**Live site:** [sahilaw.in](https://sahilaw.in)
 
 ---
 
-## Overview
+## Highlights
 
-A personal design engineering portfolio and interactive web system. It combines tactile micro-interactions, procedural Web Audio feedback, an interactive 3D OrbitDeck project carousel, and an admin management panel with one-click ZIP backup export.
-
----
-
-## Core Features
-
-- **Interactive Work Experience**: Sleek timeline cards with continuous vertical spine lines, company logo nodes, animated pulsating "Working" indicator, tight date and location hierarchy, and dedicated `#/experience` view with distraction-free layout.
-- **React Bits Pro Preloader**: Solid entrance screen (`@reactbits-starter/preloader-tw`) with white typography, session-based first-visit display, complete navbar suppression across mobile and desktop, and keyboard/click skip affordance.
-- **Scroll Stack Project Deck**: Featured work presented in a stacked card deck (`@reactbits-starter/scroll-stack-tw`) that glides and scales smoothly as the user scrolls.
-- **3D OrbitDeck Carousel**: Cylindrical card perspective ring powered by CSS 3D matrix math with pointer scrub and inertial dampening.
-- **Procedural Web Audio Engine**: Synthesized acoustic clicks and frequency pops triggered on interactive elements using the native Web Audio API with zero external media files.
-- **SkillIcons & Custom Badges**: Inline technology pills rendered via `skillicons.dev` placed directly before tech names alongside custom uploaded skill icons managed in the admin dashboard.
-- **Dual Tab Recognition**: Modular Certification & Recognition sections featuring issue dates, issuing organizations, and direct credential links.
-- **Admin Dashboard & ZIP Export**: In-browser portfolio content editor with live JSON preview and full ZIP package backup bundling all assets and structured data.
-- **Zero-Dependency Hash Router**: Smooth client-side view switching compatible with all static hosting providers.
+- **Interactive Avatar**: Vector-based character in the hero greeting with pupils that track cursor movement via spring physics, natural double-blinking, and low-power tab suspension.
+- **ScrollStack Project Deck**: Pinned cascading card deck built with GSAP ScrollTrigger. Cards dock sequentially as the user scrolls, finishing with a gliding "Explore all projects" action that unpins smoothly into subsequent sections.
+- **3D OrbitDeck Carousel**: Cylindrical perspective ring powered by CSS 3D transforms, with mouse drag and touch scrubbing.
+- **Work Experience & Education**: Vertical connected timeline with company logos, animated working indicators, and a dedicated distraction-free route (`#/experience`).
+- **Procedural Audio Engine**: Lightweight sound feedback synthesized directly in the browser via the Web Audio API without loading external audio files.
+- **Ribbon Cursor**: GPU-accelerated WebGL cursor trail on desktop pointers, completely disabled on touch and mobile screens to preserve battery and frame rates.
+- **Admin Workspace & Visitor Analytics**: In-browser content editor with real-time updates, local storage sync, visitor tracking, and one-click ZIP archive backup.
+- **Client-Side Hash Routing**: Lightweight router without server rewrite requirements, deployable to GitHub Pages, Vercel, or Netlify.
 
 ---
 
-## Architecture Pipeline
+## Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend Framework** | React 18, Vite 5 |
+| **Animation & Motion** | GSAP 3 (ScrollTrigger), Lenis Smooth Scroll |
+| **Graphics & Audio** | Canvas API, WebGL2, Web Audio API |
+| **Styling** | Vanilla CSS, CSS Grid/Flexbox, Tailwind utility classes |
+| **Icons & Media** | SkillIcons, inline SVGs, TechIcon vectors |
+| **Data & Storage** | Local Storage, SQLite backend (`portfolio.db`) |
+
+---
+
+## Architecture
 
 ```
                                   [ index.html ]
@@ -45,40 +40,66 @@ A personal design engineering portfolio and interactive web system. It combines 
                                         ▼
                                    [ main.jsx ]
                                         │
+                                        ▼
                                    [ App.jsx ]
-                    (Matrix Canvas, Sound Engine, Hash Router)
+            (Desktop Ribbons, Sound Engine, Hash Router, Smooth Scroll)
                                         │
-        ┌──────────────┬────────────────┴────────────────┬──────────────┐
-        ▼              ▼                                 ▼              ▼
-   [ HomePage ]   [ ExperiencePage ]              [ ProjectsPage ] [ AdminPage ]
-   - Preloader    - All Experiences Deck          - 3D OrbitDeck   - Live Editor
-   - Hero Header  - Collapsible Roles             - Modals         - Skill Manager
-   - About        - Live Working Status           - Archive Grid   - ZIP Export
-   - Experience   - Distraction-Free View
-   - Scroll Stack
-   - Education
-   - Skills
-   - Certifications
-   - Contact
+      ┌──────────────┬──────────────────┴──────────────────┬──────────────┐
+      ▼              ▼                                     ▼              ▼
+ [ HomePage ]   [ ExperiencePage ]                  [ ProjectsPage ] [ AdminPage ]
+ - Hero & Avatar - Full Timeline Deck               - 3D OrbitDeck   - Content Editor
+ - About Me      - Distraction-Free View            - Archive Grid   - Visitor Stats
+ - ScrollStack   - Working Status Indicators        - Project Modals - ZIP Backup Export
+ - Education
+ - Skills
+ - Certifications
+ - Contact
 ```
 
-All data is structured modularly in [`data/`](data/) and read through [`src/data/usePortfolioData.js`](src/data/usePortfolioData.js).
+---
+
+## Directory Structure
+
+```
+├── public/                 # Static assets served at root
+│   ├── images/             # Visual assets and navigation icons
+│   │   ├── avatar-head.png # Vector avatar line art
+│   │   └── navigation/     # Navigation pills
+│   ├── projects/           # Featured project thumbnails
+│   └── styles/             # Base stylesheets
+│
+├── src/                    # Source code
+│   ├── components/         # UI components
+│   │   ├── InteractiveAvatar.jsx   # Cursor-following eye physics
+│   │   ├── HeroHeader.jsx          # Hero greeting & rotating role
+│   │   ├── FeaturedProjectsSection.jsx # Cascading project deck
+│   │   ├── ExperienceSection.jsx   # Timeline with company logos
+│   │   ├── AboutSection.jsx        # Bio & skill highlights
+│   │   ├── ContactSection.jsx      # Contact buttons & social links
+│   │   └── ui/                     # Reusable widgets (ScrollStack, Ribbons)
+│   │
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useHashRouter.js        # Client-side hash router
+│   │   ├── useSoundEngine.js       # Procedural audio generator
+│   │   ├── useSmoothScroll.js      # Lenis scroll controller
+│   │   └── useVisitorTracking.js   # Analytics logger
+│   │
+│   ├── pages/              # Route views
+│   │   ├── HomePage.jsx            # Main scrollable single-page layout
+│   │   ├── ExperiencePage.jsx      # Extended career experience view
+│   │   ├── ProjectsPage.jsx        # Project gallery & 3D carousel
+│   │   ├── ResumePage.jsx          # Interactive CV preview
+│   │   ├── ChatPage.jsx            # Interactive assistant
+│   │   └── AdminPage.jsx           # Management workspace
+│   │
+│   └── data/               # Structured content & data hooks
+│
+└── server/                 # Local Node.js API and analytics server
+```
 
 ---
 
-## Admin & Data Export
-
-The portfolio includes an administrative workspace (`#/admin`) designed for quick updates:
-
-1. **Inline Skills Manager**: Add, edit, or remove skills with support for comma-separated entries, skillicons slugs, and custom image uploads.
-2. **One-Click ZIP Backup**: Click **Export ZIP** in the admin toolbar to download a complete, structured ZIP archive containing:
-   - Modular JSON files (`about.json`, `experiences.json`, `education.json`, `skills.json`, `meta.json`, `knowledge-base.json`)
-   - Custom uploaded logos extracted into `assets/logos/`
-   - Archive manifest with timestamp and versioning
-
----
-
-## Local Development
+## Local Setup
 
 ### Prerequisites
 
@@ -91,7 +112,7 @@ The portfolio includes an administrative workspace (`#/admin`) designed for quic
 # Clone the repository
 git clone https://github.com/sahilaw22/sahilaw-in.git
 
-# Enter project directory
+# Navigate into the project directory
 cd sahilaw-in
 
 # Install dependencies
@@ -101,20 +122,20 @@ npm install
 ### Running Locally
 
 ```bash
-# Start Vite development server
+# Start the Vite development server
 npm run dev
 
-# Run backend API & question matcher test suite
-npm run test:bot
+# Start the optional backend API server
+npm run server
 ```
 
 ### Production Build
 
 ```bash
-# Build optimized production bundle into dist/
+# Compile and optimize production assets to dist/
 npm run build
 
-# Preview build locally
+# Preview the production build locally
 npm run preview
 ```
 
@@ -122,4 +143,4 @@ npm run preview
 
 ## License
 
-MIT © [Sahil](https://github.com/sahilaw22)
+MIT © [Sahil Ahmed Wani](https://github.com/sahilaw22)

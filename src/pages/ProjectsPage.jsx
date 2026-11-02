@@ -86,7 +86,7 @@ function DetailModal({ project, onClose, onNext, onPrev }) {
       {/* Top Floating Back Button (outside card) */}
       <button
         type="button"
-        className="project-modal-top-back"
+        className="project-modal-top-back cursor-target" data-cursor-label="Back"
         onClick={onClose}
         aria-label="Back to projects"
       >
@@ -101,7 +101,7 @@ function DetailModal({ project, onClose, onNext, onPrev }) {
         {/* Previous Project Button (Outside card, Left side) */}
         <button
           type="button"
-          className="project-nav-btn project-nav-prev"
+          className="project-nav-btn project-nav-prev cursor-target" data-cursor-label="Prev"
           onClick={onPrev}
           aria-label="Previous project"
         >
@@ -118,7 +118,7 @@ function DetailModal({ project, onClose, onNext, onPrev }) {
             <div className="project-card-play-overlay">
               <button
                 type="button"
-                className="project-play-circle-btn"
+                className="project-play-circle-btn cursor-target" data-cursor-label="Play"
                 aria-label="Play video demo"
               >
                 <svg width="32" height="32" viewBox="0 0 256 256" fill="currentColor">
@@ -144,7 +144,7 @@ function DetailModal({ project, onClose, onNext, onPrev }) {
 
             <div className="project-detail-actions">
               <a
-                className="project-detail-cta"
+                className="project-detail-cta cursor-target" data-cursor-label="Visit"
                 href={project.link}
                 target={project.link.startsWith('http') ? '_blank' : undefined}
                 rel={project.link.startsWith('http') ? 'noreferrer' : undefined}
@@ -157,7 +157,7 @@ function DetailModal({ project, onClose, onNext, onPrev }) {
 
               {project.github && (
                 <a
-                  className="project-detail-source-btn"
+                  className="project-detail-source-btn cursor-target" data-cursor-label="Code"
                   href={project.github}
                   target="_blank"
                   rel="noreferrer"
@@ -222,7 +222,7 @@ export default function ProjectsPage({ showAll = false }) {
     return (
       <main className="projects-page projects-all-page">
         <header className="projects-header projects-header-all">
-          <a href="#/projects" className="projects-back-link" aria-label="Back">
+          <a href="#/projects" className="projects-back-link cursor-target" data-cursor-label="Back" aria-label="Back">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
@@ -236,7 +236,7 @@ export default function ProjectsPage({ showAll = false }) {
           {projects.map((project) => (
             <article
               key={project.id || project.title}
-              className="projects-grid-card od-grid-card"
+              className="projects-grid-card od-grid-card cursor-target" data-cursor-label="Details"
               onClick={() => setSelectedProject(project)}
             >
               {/* Full bleed card background image */}
@@ -276,7 +276,7 @@ export default function ProjectsPage({ showAll = false }) {
                 >
                   <button
                     type="button"
-                    className="od-btn-detail"
+                    className="od-btn-detail cursor-target" data-cursor-label="Details"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedProject(project);
@@ -287,7 +287,7 @@ export default function ProjectsPage({ showAll = false }) {
 
                   {project.link && (
                     <a
-                      className="od-visit-btn"
+                      className="od-visit-btn cursor-target" data-cursor-label="Visit"
                       href={project.link}
                       target={project.link.startsWith('http') ? '_blank' : undefined}
                       rel={project.link.startsWith('http') ? 'noreferrer' : undefined}
@@ -339,7 +339,7 @@ export default function ProjectsPage({ showAll = false }) {
         />
 
         <div className="projects-more-section">
-          <a className="projects-more-button" href="#/projects/all">
+          <a className="projects-more-button cursor-target" data-cursor-label="View All" href="#/projects/all">
             <span>Explore all projects</span>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" />

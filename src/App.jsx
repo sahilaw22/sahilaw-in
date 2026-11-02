@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useHashRouter } from './hooks/useHashRouter.js';
+import { useVisitorTracking } from './hooks/useVisitorTracking.js';
 import { useSoundEngine } from './hooks/useSoundEngine.js';
 import { useSmoothScroll } from './hooks/useSmoothScroll.js';
 
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
+import Ribbons from './components/ui/Ribbons.jsx';
 import HomePage from './pages/HomePage.jsx';
 import BlogPage from './pages/BlogPage.jsx';
 import PostPage from './pages/PostPage.jsx';
@@ -31,11 +33,30 @@ export default function App() {
   const { route } = useHashRouter();
   const sound = useSoundEngine();
   const activeView = routeToView(route);
+  const isHome = route === '/' || route === '';
   const isAdmin = route === '/chatbot-response' || route === '/admin';
   const isExperience = route === '/experience' || route === '/work-experience';
 
   // Initialize smooth inertial scrolling with Lenis synchronized with GSAP ScrollTrigger
   useSmoothScroll(route);
+  useVisitorTracking(route);
+
+  // Strictly detect desktop pointer devices to remove WebGL ribbon cursor from all mobile screens and touch devices
+  const [isDesktopPointer, setIsDesktopPointer] = useState(false);
+
+  useEffect(() => {
+    function checkDesktop() {
+      if (typeof window === 'undefined') return false;
+      const isTouch = 'ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+      const isMobileWidth = window.innerWidth <= 820;
+      return !isTouch && !isMobileWidth;
+    }
+
+    setIsDesktopPointer(checkDesktop());
+    const onResize = () => setIsDesktopPointer(checkDesktop());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const [isPreloaderActive, setIsPreloaderActive] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -74,12 +95,35 @@ export default function App() {
 
   return (
     <>
+      {isDesktopPointer && (
+        <div
+          className="ribbons-cursor-container"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            zIndex: 99999,
+            overflow: 'hidden',
+          }}
+          aria-hidden="true"
+        >
+          <Ribbons
+            colors={['#f43f5e']}
+            thickness={15}
+            length={1.4}
+            shape="comet"
+          />
+        </div>
+      )}
       <div key={route} className="page-transition-wrapper">
         <ErrorBoundary>
           {renderPage()}
         </ErrorBoundary>
       </div>
-      {!isAdmin && !isExperience && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {isHome && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
       {!isAdmin && !isExperience && !isPreloaderActive && <BottomNav activeView={activeView} />}
     </>
   );

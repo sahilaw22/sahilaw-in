@@ -40,10 +40,13 @@ const PILLS = [
 ];
 
 export default function RightScrollPills({ play, currentRoute = '/' }) {
+  const isHome = currentRoute === '/' || currentRoute === '';
+  if (!isHome) return null;
+
   const [activeSlug, setActiveSlug] = useState('about');
   const [hoveredSlug, setHoveredSlug] = useState(null);
 
-  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 3s idle
+  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 1s idle
   const [isMobileVisible, setIsMobileVisible] = useState(false);
   const mobileHideTimerRef = useRef(null);
 
@@ -72,7 +75,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     function handleScroll() {
-      // Reveal notch on mobile when user scrolls; hide after 2 seconds of inactivity
+      // Reveal notch on mobile when user scrolls; hide after 1 second of inactivity
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
         setIsMobileVisible(true);
         if (mobileHideTimerRef.current) {
@@ -82,7 +85,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           if (!isDraggingRef.current) {
             setIsMobileVisible(false);
           }
-        }, 2000);
+        }, 1000);
       }
 
       if (!isHome) return;
@@ -107,15 +110,30 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('touchmove', handleScroll, { passive: true });
-    if (window.lenis) {
-      window.lenis.on('scroll', handleScroll);
-    }
+
+    let attachedLenis = null;
+    const checkLenis = () => {
+      if (window.lenis && window.lenis !== attachedLenis) {
+        if (attachedLenis) {
+          try {
+            attachedLenis.off('scroll', handleScroll);
+          } catch (_) {}
+        }
+        window.lenis.on('scroll', handleScroll);
+        attachedLenis = window.lenis;
+      }
+    };
+    checkLenis();
+    const lenisInterval = setInterval(checkLenis, 250);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('touchmove', handleScroll);
-      if (window.lenis) {
-        window.lenis.off('scroll', handleScroll);
+      clearInterval(lenisInterval);
+      if (attachedLenis) {
+        try {
+          attachedLenis.off('scroll', handleScroll);
+        } catch (_) {}
       }
       if (mobileHideTimerRef.current) {
         clearTimeout(mobileHideTimerRef.current);
@@ -137,18 +155,25 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     return Math.max(maxUp, Math.min(maxDown, targetOffset));
   }, []);
 
-  // Pointer/touch drag handling
+  // Pointer drag handling: allows user to hold and drag the notch on touch/mobile
   const handlePointerDown = (e) => {
-    // If user clicked or tapped an interactive button, let the button handle it directly
-    if (e.target && e.target.closest('button')) {
+    if (e.button !== undefined && e.button !== 0) return;
+
+    // On desktop (mouse), clicking buttons should never trigger dragging
+    if (e.pointerType === 'mouse' && e.target.closest('.portfolio-scroll-pill-btn')) {
       return;
     }
-    if (e.button !== undefined && e.button !== 0) return;
-    try {
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-    } catch (_) {}
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const isTouch = e.pointerType === 'touch' || e.pointerType === 'pen';
+    const isHandle = e.target.closest('.notch-drag-handle');
+
+    // Only allow dragging on mobile touch or explicitly on the drag handle
+    if (!isMobile && !isTouch && !isHandle) {
+      return;
+    }
+
     isDraggingRef.current = true;
-    setIsDragging(true);
     startYRef.current = e.clientY;
     startOffsetRef.current = offsetY;
     hasMovedRef.current = false;
@@ -160,8 +185,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       const dy = e.clientY - startYRef.current;
       if (Math.abs(dy) > 5) {
         hasMovedRef.current = true;
-      }
-      if (hasMovedRef.current) {
+        setIsDragging(true);
         setOffsetY(clampOffset(startOffsetRef.current + dy));
       }
     };
@@ -170,11 +194,16 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       if (isDraggingRef.current) {
         isDraggingRef.current = false;
         setIsDragging(false);
-        try {
-          if (e?.pointerId && navRef.current) {
-            navRef.current.releasePointerCapture?.(e.pointerId);
+
+        // When user finishes dragging on mobile, restart the 1s idle auto-hide timer
+        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+          if (mobileHideTimerRef.current) {
+            clearTimeout(mobileHideTimerRef.current);
           }
-        } catch (_) {}
+          mobileHideTimerRef.current = setTimeout(() => {
+            setIsMobileVisible(false);
+          }, 1000);
+        }
       }
     };
 
@@ -204,8 +233,11 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
 
     if (window.lenis && el) {
       window.lenis.scrollTo(el, { duration: 1.1, offset: 0 });
-    } else if (el && el.scrollIntoView) {
+    } else if (el && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ behavior: 'smooth' });
+    } else if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
   };
 
@@ -217,20 +249,6 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
 
     if (typeof play === 'function') {
       play('click');
-    }
-
-    const isHome =
-      window.location.hash === '' ||
-      window.location.hash === '#/' ||
-      window.location.hash === '#';
-
-    // If on another page, navigate to home and scroll to target section
-    if (!isHome) {
-      window.location.hash = '#/';
-      setTimeout(() => {
-        scrollToTarget(`#${pill.targetId}`);
-      }, 150);
-      return;
     }
 
     // If clicking Pill 1 and user is in the About section, smoothly scroll back to top (Hero)
@@ -261,14 +279,14 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       onPointerDown={handlePointerDown}
       style={{
         '--notch-offset-y': `${offsetY}px`,
-        transform: `translateY(calc(-50% + ${offsetY}px))`,
-        transition: isDragging
-          ? 'none'
-          : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease',
       }}
     >
       {/* Mobile notch drag indicator handle */}
-      <div className="notch-drag-handle" aria-hidden="true" />
+      <div
+        className="notch-drag-handle"
+        aria-label="Drag navigation handle"
+        role="separator"
+      />
 
       <div className="portfolio-scroll-pills-container">
         {PILLS.map((pill) => {
@@ -305,7 +323,18 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
                   e.stopPropagation();
                   handlePillClick(pill);
                 }}
-                className={`portfolio-scroll-pill-btn ${isActive ? 'is-active' : ''}`}
+                onPointerDown={(e) => {
+                  if (e.pointerType === 'mouse') {
+                    e.stopPropagation();
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePillClick(pill);
+                  }
+                }}
+                className={`portfolio-scroll-pill-btn cursor-target ${isActive ? 'is-active' : ''}`} data-cursor-label={pill.label}
                 aria-label={`Scroll to ${pill.label}`}
                 style={{
                   '--pill-glow': pill.glowColor,

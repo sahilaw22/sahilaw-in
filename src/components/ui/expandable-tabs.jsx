@@ -81,9 +81,10 @@ export function ExpandableTabs({
               key={tab.key || tab.title || tab.label || `tab-${index}`}
               onClick={() => handleSelect(index, tab)}
               className={cn(
-                'expandable-tab-btn',
+                'expandable-tab-btn cursor-target',
                 isSelected ? cn('is-selected', activeColor) : 'is-idle'
               )}
+              data-cursor-label={tab.title || tab.label}
               aria-selected={isSelected}
               aria-label={tab.title || tab.label}
             >

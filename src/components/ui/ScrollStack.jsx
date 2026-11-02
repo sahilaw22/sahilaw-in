@@ -61,7 +61,8 @@ export function ScrollStack({ children, header, footer, className = '' }) {
     if (footerEl) {
       gsap.set(footerEl, {
         opacity: 0,
-        y: 35,
+        yPercent: 120,
+        y: 0,
         pointerEvents: 'none',
       });
     }
@@ -71,24 +72,21 @@ export function ScrollStack({ children, header, footer, className = '' }) {
         scrollTrigger: {
           trigger: container,
           start: isMobile ? 'top 86px' : 'top 52px',
-          end: () => `+=${(total - 1) * (window.innerHeight * 0.75)}`,
+          end: () => `+=${total * (window.innerHeight * 0.72)}`,
           pin: true,
           pinSpacing: true,
           scrub: 0.65,
-          anticipatePin: 0,
+          anticipatePin: 1,
+          fastScrollEnd: true,
           invalidateOnRefresh: true,
         },
       });
 
-      // Animate each card sequentially:
-      // Card 1 (Lurian AI) moves FIRST into place over Card 0
-      // Then Card 2 moves over Card 1
-      // Then Card 3 moves over Card 2
+      // Animate each card sequentially
       for (let i = 1; i < total; i++) {
         const targetY = i * stepDistance;
         const stepLabel = `step-${i}`;
 
-        // 1. Current card i fades in and glides up smoothly into stack position
         tl.to(
           items[i],
           {
@@ -101,7 +99,6 @@ export function ScrollStack({ children, header, footer, className = '' }) {
           stepLabel
         );
 
-        // 2. Scale down all earlier cards underneath
         for (let prev = 0; prev < i; prev++) {
           const depth = i - prev;
           const targetScale = Math.max(0.88, 1 - depth * scaleFactor);
@@ -117,21 +114,23 @@ export function ScrollStack({ children, header, footer, className = '' }) {
             stepLabel
           );
         }
+      }
 
-        // 3. When reaching the last project card, reveal the explore button directly below the last card without overlap
-        if (i === total - 1 && footerEl) {
-          tl.to(
-            footerEl,
-            {
-              y: 0,
-              opacity: 1,
-              pointerEvents: 'auto',
-              ease: 'power2.out',
-              duration: 0.9,
-            },
-            stepLabel
-          );
-        }
+      // After the last card is docked, animate the explore button following the stack glide
+      if (footerEl) {
+        const lastStepLabel = `step-${total}`;
+        tl.to(
+          footerEl,
+          {
+            yPercent: 0,
+            y: 0,
+            opacity: 1,
+            pointerEvents: 'auto',
+            ease: 'power2.out',
+            duration: 1.1,
+          },
+          lastStepLabel
+        );
       }
     }, container);
 

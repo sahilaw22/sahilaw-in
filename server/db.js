@@ -138,10 +138,31 @@ class SqliteStorage {
         updated_at INTEGER NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS page_views (
+        id TEXT PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        visitor_id TEXT NOT NULL,
+        path TEXT NOT NULL,
+        title TEXT,
+        referrer TEXT,
+        device_type TEXT,
+        browser TEXT,
+        os TEXT,
+        country TEXT,
+        region TEXT,
+        city TEXT,
+        ip_hash TEXT,
+        created_at INTEGER NOT NULL
+      );
+
       CREATE INDEX IF NOT EXISTS idx_aliases_text ON question_aliases(question_text);
       CREATE INDEX IF NOT EXISTS idx_keywords_word ON knowledge_keywords(keyword);
       CREATE INDEX IF NOT EXISTS idx_conv_updated ON conversations(updated_at);
       CREATE INDEX IF NOT EXISTS idx_unanswered_norm ON unanswered_questions(normalized_question);
+      CREATE INDEX IF NOT EXISTS idx_pv_session ON page_views(session_id);
+      CREATE INDEX IF NOT EXISTS idx_pv_created ON page_views(created_at);
+      CREATE INDEX IF NOT EXISTS idx_pv_visitor ON page_views(visitor_id);
+      CREATE INDEX IF NOT EXISTS idx_pv_path ON page_views(path);
     `);
   }
 
@@ -611,6 +632,147 @@ class SqliteStorage {
 
   addAuditLog(action, details = '') {
     this.db.prepare('INSERT INTO audit_logs (action, details, created_at) VALUES (?, ?, ?)').run(action, details, Date.now());
+  }
+
+  // --- Visitor Analytics ---
+  recordPageView(entry) {
+    const id = `pv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const now = Date.now();
+    this.db.prepare(`
+      INSERT INTO page_views (
+        id, session_id, visitor_id, path, title, referrer,
+        device_type, browser, os, country, region, city, ip_hash, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id,
+      entry.sessionId || 'anonymous-session',
+      entry.visitorId || 'anonymous-visitor',
+      entry.path || '/',
+      entry.title || '',
+      entry.referrer || '',
+      entry.deviceType || 'Desktop',
+      entry.browser || 'Unknown',
+      entry.os || 'Unknown',
+      entry.country || 'Unknown',
+      entry.region || '',
+      entry.city || 'Unknown',
+      entry.ipHash || '',
+      now
+    );
+    return id;
+  }
+
+  getVisitorAnalytics(range = '7d') {
+    let cutoff = 0;
+    const now = Date.now();
+    if (range === '24h') cutoff = now - 24 * 60 * 60 * 1000;
+    else if (range === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
+    else if (range === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
+
+    const totalViews = this.db.prepare('SELECT COUNT(*) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
+    const uniqueVisitors = this.db.prepare('SELECT COUNT(DISTINCT visitor_id) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
+    const totalSessions = this.db.prepare('SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
+
+    const topPages = this.db.prepare(`
+      SELECT path, COUNT(*) as views
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY path
+      ORDER BY views DESC
+      LIMIT 8
+    `).all(cutoff);
+
+    const topLocations = this.db.prepare(`
+      SELECT country, city, COUNT(*) as visits, COUNT(DISTINCT visitor_id) as visitors
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY country, city
+      ORDER BY visits DESC
+      LIMIT 12
+    `).all(cutoff);
+
+    const devices = this.db.prepare(`
+      SELECT device_type as name, COUNT(*) as count
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY device_type
+      ORDER BY count DESC
+    `).all(cutoff);
+
+    const browsers = this.db.prepare(`
+      SELECT browser as name, COUNT(*) as count
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY browser
+      ORDER BY count DESC
+      LIMIT 6
+    `).all(cutoff);
+
+    const osList = this.db.prepare(`
+      SELECT os as name, COUNT(*) as count
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY os
+      ORDER BY count DESC
+      LIMIT 6
+    `).all(cutoff);
+
+    const referrers = this.db.prepare(`
+      SELECT referrer as name, COUNT(*) as count
+      FROM page_views
+      WHERE created_at >= ? AND referrer != '' AND referrer != 'direct'
+      GROUP BY referrer
+      ORDER BY count DESC
+      LIMIT 6
+    `).all(cutoff);
+
+    const recentVisitors = this.db.prepare(`
+      SELECT 
+        session_id,
+        visitor_id,
+        country,
+        city,
+        device_type,
+        browser,
+        os,
+        referrer,
+        MIN(created_at) as start_time,
+        MAX(created_at) as last_active,
+        COUNT(*) as pages_viewed,
+        GROUP_CONCAT(path, ' -> ') as path_history
+      FROM page_views
+      WHERE created_at >= ?
+      GROUP BY session_id
+      ORDER BY last_active DESC
+      LIMIT 25
+    `).all(cutoff);
+
+    // Timeline buckets
+    const viewsTimestamps = this.db.prepare(`
+      SELECT created_at
+      FROM page_views
+      WHERE created_at >= ?
+      ORDER BY created_at ASC
+    `).all(cutoff);
+
+    return {
+      summary: {
+        totalViews,
+        uniqueVisitors,
+        totalSessions,
+        topCountry: topLocations[0]?.country || 'None',
+        topCity: topLocations[0]?.city || 'None',
+      },
+      topPages,
+      topLocations,
+      devices,
+      browsers,
+      operatingSystems: osList,
+      referrers,
+      recentVisitors,
+      viewsTimestamps: viewsTimestamps.map((r) => r.created_at),
+      range,
+    };
   }
 
   // --- Portfolio Content Dynamic Persistence ---

@@ -58,7 +58,7 @@ export default function FeaturedProjectsSection({ play }) {
           <div className="projects-more-section">
             <a
               href="#/projects/all"
-              className="projects-more-button"
+              className="projects-more-button cursor-target" data-cursor-label="View All"
               onClick={() => play?.('click')}
               aria-label="Explore all projects"
             >
@@ -76,7 +76,7 @@ export default function FeaturedProjectsSection({ play }) {
             index={idx}
           >
             <div
-              className="scroll-stack-card"
+              className="scroll-stack-card cursor-target" data-cursor-label="View"
               role="button"
               tabIndex={0}
               onClick={() => {
@@ -124,7 +124,7 @@ export default function FeaturedProjectsSection({ play }) {
                     href={project.website || project.link}
                     target={project.website?.startsWith('http') ? '_blank' : undefined}
                     rel={project.website?.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="scroll-stack-arrow-link"
+                    className="scroll-stack-arrow-link cursor-target" data-cursor-label="Open"
                     title={`Visit ${project.title}`}
                     aria-label={`Visit ${project.title}`}
                     onClick={(e) => {

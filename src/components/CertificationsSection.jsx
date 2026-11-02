@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 import { CERTIFICATIONS, ACHIEVEMENTS } from '../data/portfolioData.jsx';
 import './CertificationsSection.css';
@@ -115,15 +115,31 @@ function renderCertIcon(item) {
 export default function CertificationsSection({ play }) {
   const [activeTab, setActiveTab] = useState('certifications');
   const [showAll, setShowAll] = useState(false);
+  const switcherRef = useRef(null);
   const { certifications, achievements } = usePortfolioData();
 
   const certList = certifications && certifications.length > 0 ? certifications : CERTIFICATIONS;
   const achieveList = achievements && achievements.length > 0 ? achievements : ACHIEVEMENTS;
 
   const handleTabSwitch = (tab) => {
+    if (tab === activeTab) return;
+    const prevTop = switcherRef.current?.getBoundingClientRect().top;
+
     setActiveTab(tab);
     setShowAll(false);
     play?.('click');
+
+    if (prevTop !== undefined) {
+      requestAnimationFrame(() => {
+        const newTop = switcherRef.current?.getBoundingClientRect().top;
+        if (newTop !== undefined) {
+          const delta = newTop - prevTop;
+          if (Math.abs(delta) > 0.5) {
+            window.scrollBy({ top: delta, behavior: 'instant' });
+          }
+        }
+      });
+    }
   };
 
   const currentItems = activeTab === 'certifications' ? certList : achieveList;
@@ -135,12 +151,12 @@ export default function CertificationsSection({ play }) {
       <div className="section-container">
         {/* Centered Switcher Tabs (normal text, no extra uppercase header) */}
         <div className="cert-achieve-tabs-center">
-          <div className="cert-achieve-switcher" role="tablist" aria-label="Certifications and achievements">
+          <div ref={switcherRef} className="cert-achieve-switcher" role="tablist" aria-label="Certifications and achievements">
             <button
               type="button"
               role="tab"
               aria-selected={activeTab === 'certifications'}
-              className={`cert-switch-tab-btn ${activeTab === 'certifications' ? 'is-active' : ''}`}
+              className={`cert-switch-tab-btn cursor-target ${activeTab === 'certifications' ? 'is-active' : ''}`} data-cursor-label="Certifications"
               onClick={() => handleTabSwitch('certifications')}
             >
               <span>Certifications</span>
@@ -151,7 +167,7 @@ export default function CertificationsSection({ play }) {
               type="button"
               role="tab"
               aria-selected={activeTab === 'achievements'}
-              className={`cert-switch-tab-btn ${activeTab === 'achievements' ? 'is-active' : ''}`}
+              className={`cert-switch-tab-btn cursor-target ${activeTab === 'achievements' ? 'is-active' : ''}`} data-cursor-label="Achievements"
               onClick={() => handleTabSwitch('achievements')}
             >
               <span>Achievements</span>
@@ -168,7 +184,7 @@ export default function CertificationsSection({ play }) {
               href={item.link || '#'}
               target={item.link ? '_blank' : undefined}
               rel={item.link ? 'noopener noreferrer' : undefined}
-              className="cert-clean-row"
+              className="cert-clean-row cursor-target" data-cursor-label="Verify"
               title={`View ${item.title}`}
               onClick={() => play?.('click')}
             >
@@ -212,7 +228,7 @@ export default function CertificationsSection({ play }) {
           <div className="cert-see-all-wrap">
             <button
               type="button"
-              className="cert-see-all-btn"
+              className="cert-see-all-btn cursor-target" data-cursor-label={showAll ? "Less" : "More"}
               onClick={() => {
                 setShowAll((prev) => !prev);
                 play?.('click');

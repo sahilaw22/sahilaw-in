@@ -60,6 +60,18 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Clean Minimal List Container with stable height to prevent layout shifts */
+.certifications-clean-list {
+  min-height: 380px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .certifications-clean-list {
+    min-height: 410px;
+  }
+}
+
 .cert-clean-desc {
   margin: 0.35rem 0 0;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;

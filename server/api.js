@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import db from './db.js';
 import { selectAnswer } from './matchingEngine.js';
 import { hashPassword, verifyPassword, generateToken, authMiddleware } from './auth.js';
@@ -230,6 +231,88 @@ router.patch('/admin/password', authMiddleware, (req, res) => {
 // -------------------------------------------------------------
 // ADMIN MANAGEMENT ENDPOINTS (PROTECTED)
 // -------------------------------------------------------------
+
+function parseUserAgent(ua = '') {
+  let deviceType = 'Desktop';
+  if (/tablet|ipad|playbook|silk/i.test(ua)) {
+    deviceType = 'Tablet';
+  } else if (/mobile|iphone|ipod|android|blackberry|iemobile|opera mini/i.test(ua)) {
+    deviceType = 'Mobile';
+  }
+
+  let browser = 'Unknown';
+  if (/edg\//i.test(ua)) browser = 'Edge';
+  else if (/opr\/|opera/i.test(ua)) browser = 'Opera';
+  else if (/chrome|crios/i.test(ua)) browser = 'Chrome';
+  else if (/firefox|fxios/i.test(ua)) browser = 'Firefox';
+  else if (/safari/i.test(ua)) browser = 'Safari';
+  else if (/samsungbrowser/i.test(ua)) browser = 'Samsung Internet';
+
+  let os = 'Unknown';
+  if (/windows/i.test(ua)) os = 'Windows';
+  else if (/macintosh|mac os x/i.test(ua)) os = 'macOS';
+  else if (/iphone|ipad|ipod/i.test(ua)) os = 'iOS';
+  else if (/android/i.test(ua)) os = 'Android';
+  else if (/linux/i.test(ua)) os = 'Linux';
+
+  return { deviceType, browser, os };
+}
+
+/**
+ * POST /api/analytics/track
+ * Public visitor tracking endpoint
+ */
+router.post('/analytics/track', (req, res) => {
+  try {
+    const { path = '/', title = '', referrer = '', sessionId, visitorId } = req.body || {};
+    const ua = req.headers['user-agent'] || '';
+    const { deviceType, browser, os } = parseUserAgent(ua);
+
+    // Anonymized IP hash
+    const rawIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+    const ipHash = crypto.createHash('sha256').update(rawIp + 'portfolio_salt').digest('hex').substring(0, 16);
+
+    // Approximate geolocation from proxy headers or regional defaults
+    const country = req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || 'India';
+    const city = req.headers['x-vercel-ip-city'] || 'Jammu';
+    const region = req.headers['x-vercel-ip-country-region'] || 'JK';
+
+    db.recordPageView({
+      sessionId,
+      visitorId,
+      path,
+      title,
+      referrer,
+      deviceType,
+      browser,
+      os,
+      country,
+      region,
+      city,
+      ipHash,
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Analytics tracking error:', err);
+    return res.status(200).json({ success: false });
+  }
+});
+
+/**
+ * GET /api/admin/visitor-analytics
+ * Protected visitor analytics query
+ */
+router.get('/admin/visitor-analytics', authMiddleware, (req, res) => {
+  try {
+    const { range = '7d' } = req.query;
+    const data = db.getVisitorAnalytics(range);
+    return res.json(data);
+  } catch (err) {
+    console.error('Visitor Analytics Error:', err);
+    return res.status(500).json({ error: 'Failed to retrieve visitor analytics' });
+  }
+});
 
 /**
  * GET /api/admin/analytics

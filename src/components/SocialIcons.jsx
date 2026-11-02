@@ -55,6 +55,8 @@ export default function SocialIcons() {
           <li key={link.label}>
             <a
               href={link.href}
+              className="cursor-target"
+              data-cursor-label={link.label}
               target={link.label === 'Email' ? undefined : '_blank'}
               rel="noopener noreferrer"
               aria-label={link.label}

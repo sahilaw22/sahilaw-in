@@ -54,4 +54,8 @@ anti-slop
 
 # Agent and skill caches
 .agents/
+agent/
+agents/
+experience/
+experiences/
 skills-lock.json

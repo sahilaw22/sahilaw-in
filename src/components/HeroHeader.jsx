@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import RotatingText from './RotatingText';
+import InteractiveAvatar from './InteractiveAvatar';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 
 // Centered hero header with rotating role text.
@@ -26,7 +27,9 @@ export default function HeroHeader() {
     >
       <header className="hero-header-content">
         <h1 className="hero-greeting" id="hero-greeting-heading">
-          Hi, I'm {greetingName}.
+          <span className="hero-greeting-text">Hi, I'm</span>
+          <InteractiveAvatar />
+          <span className="hero-greeting-text">{greetingName}.</span>
         </h1>
 
         {/* Rotating role badge with white text and glass background */}

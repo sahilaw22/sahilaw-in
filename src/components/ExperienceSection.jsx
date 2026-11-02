@@ -35,7 +35,11 @@ export default function ExperienceSection() {
 
           {/* View all experience button linking to full experience page */}
           <div className="sleek-exp-footer-cta">
-            <a href="#/experience" className="sleek-exp-view-all-btn">
+            <a
+              href="#/experience"
+              className="sleek-exp-view-all-btn cursor-target"
+              data-cursor-label="Explore"
+            >
               <span>Show all work experiences</span>
             </a>
           </div>

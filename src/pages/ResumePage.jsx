@@ -264,7 +264,7 @@ export default function ResumePage() {
           <h1>ATS-friendly resume</h1>
           <p>Edit the fields and print or save the finished resume as a PDF.</p>
         </div>
-        <button type="button" className="resume-print-button" onClick={handleDownloadPdf}>
+        <button type="button" className="resume-print-button cursor-target" data-cursor-label="Print" onClick={handleDownloadPdf}>
           Print / Save PDF
         </button>
       </div>
@@ -542,7 +542,7 @@ export default function ResumePage() {
                 type="button"
                 onClick={handleDownloadPdf}
                 aria-label="Grab my resume as PDF"
-                className="resume-download-btn"
+                className="resume-download-btn cursor-target" data-cursor-label="Download"
               >
                 <span className="resume-download-text">Grab My Resume</span>
                 <span className="resume-download-arrow" aria-hidden="true">

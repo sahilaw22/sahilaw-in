@@ -79,6 +79,164 @@ function getLinkIcon(label, url) {
   );
 }
 
+function ChatCredentialCard({ credentials }) {
+  const [copiedField, setCopiedField] = useState(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  const copyToClipboard = async (field, value) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(value);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = value;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      setCopiedField(null);
+    }
+  };
+
+  const handleAutoLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
+    setLoginError('');
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Authentication failed');
+      }
+
+      if (data.token) {
+        localStorage.setItem('portfolio_admin_token', data.token);
+        window.location.hash = '#/chatbot-response';
+      } else {
+        throw new Error('Authentication succeeded but no session token received');
+      }
+    } catch (err) {
+      setLoginError(err.message || 'Auto login failed. Please try manual login.');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  return (
+    <div className="chat-credential-card">
+      <div className="chat-cred-header">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <polyline points="9 12 11 14 15 10" />
+        </svg>
+        <span className="chat-cred-badge">ADMINISTRATOR CREDENTIALS</span>
+      </div>
+
+      <div className="chat-cred-fields">
+        {/* Username field */}
+        <div className="chat-cred-field-row">
+          <div className="chat-cred-meta">
+            <span className="chat-cred-label">Username</span>
+            <code className="chat-cred-value">{credentials.username}</code>
+          </div>
+          <button
+            type="button"
+            className="chat-cred-copy-btn"
+            onClick={() => copyToClipboard('username', credentials.username)}
+            aria-label="Copy username"
+          >
+            {copiedField === 'username' ? (
+              <span className="copied-tag">Copied!</span>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Password field */}
+        <div className="chat-cred-field-row">
+          <div className="chat-cred-meta">
+            <span className="chat-cred-label">Password</span>
+            <code className="chat-cred-value">{credentials.password}</code>
+          </div>
+          <button
+            type="button"
+            className="chat-cred-copy-btn"
+            onClick={() => copyToClipboard('password', credentials.password)}
+            aria-label="Copy password"
+          >
+            {copiedField === 'password' ? (
+              <span className="copied-tag">Copied!</span>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {loginError && (
+        <div className="chat-cred-error" role="alert">{loginError}</div>
+      )}
+
+      {/* Action buttons */}
+      <div className="chat-cred-actions">
+        <button
+          type="button"
+          className="chat-cred-auto-btn"
+          onClick={handleAutoLogin}
+          disabled={isLoggingIn}
+        >
+          {isLoggingIn ? (
+            <span>Authenticating...</span>
+          ) : (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              <span>Auto Login</span>
+            </>
+          )}
+        </button>
+
+        <a
+          href={credentials.portalUrl || '#/chatbot-response'}
+          className="chat-cred-portal-btn"
+        >
+          Open Portal
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function assistantReply(question, pendingAuth = false) {
   const q = question.toLowerCase().trim();
   const clean = q.replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -92,11 +250,28 @@ function assistantReply(question, pendingAuth = false) {
     };
   }
 
-  if (clean.includes('2006') && (pendingAuth || clean === '2006' || clean.includes('dob'))) {
+  // DOB Verification with year 2006 check
+  const has2006 = /\b2006\b/.test(clean) || /\b2006\b/.test(q);
+  const isDobMention = clean.includes('dob') || clean.includes('birth') || clean === '2006';
+
+  if (has2006 && (pendingAuth || isDobMention)) {
     return {
-      plainText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- Portal: Access Admin Console (#/chatbot-response)\n- Username: admin\n- Password: sahil@admin",
-      formattedText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- **Portal**: [Access Admin Console](#/chatbot-response)\n- **Username**: `admin`\n- **Password**: `sahil@admin`",
+      plainText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- Username: admin\n- Password: sahil@admin\n- Portal: Access Admin Console (#/chatbot-response)",
+      formattedText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:",
       step: 'verified',
+      credentials: {
+        username: 'admin',
+        password: 'sahil@admin',
+        portalUrl: '#/chatbot-response',
+      },
+    };
+  }
+
+  if (pendingAuth && !has2006) {
+    return {
+      plainText: "Date of birth verification failed. Please enter your valid year of birth (e.g. 2006 or DD/MM/YYYY) to verify your administrator identity.",
+      formattedText: "Date of birth verification failed. Please enter your valid year of birth (e.g. **2006** or **DD/MM/YYYY**) to verify your administrator identity.",
+      step: 'verify_dob',
     };
   }
 
@@ -363,6 +538,7 @@ export default function ChatPage() {
 
     let plainReply = '';
     let formattedReply = '';
+    let credentials = null;
 
     const cleanQ = question.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
     if (cleanQ === 'i am sahil your boss') {
@@ -392,6 +568,17 @@ export default function ChatPage() {
       } else {
         formattedReply = plainReply;
       }
+
+      if (data.metadata?.credentials) {
+        credentials = data.metadata.credentials;
+      } else if (cleanQ.includes('2006') && (adminAuthPendingRef.current || cleanQ === '2006' || cleanQ.includes('dob'))) {
+        credentials = {
+          username: 'admin',
+          password: 'sahil@admin',
+          portalUrl: '#/chatbot-response',
+        };
+      }
+
       if (cleanQ.includes('2006')) {
         adminAuthPendingRef.current = false;
       }
@@ -399,6 +586,9 @@ export default function ChatPage() {
       const fallbackData = assistantReply(question, adminAuthPendingRef.current);
       plainReply = fallbackData.plainText;
       formattedReply = fallbackData.formattedText;
+      if (fallbackData.credentials) {
+        credentials = fallbackData.credentials;
+      }
       if (fallbackData.step === 'verified') {
         adminAuthPendingRef.current = false;
       }
@@ -406,7 +596,7 @@ export default function ChatPage() {
 
     setMessages((current) =>
       current.map((msg) =>
-        msg.id === replyId ? { ...msg, formattedText: formattedReply } : msg
+        msg.id === replyId ? { ...msg, formattedText: formattedReply, credentials } : msg
       )
     );
 
@@ -419,6 +609,7 @@ export default function ChatPage() {
             ...msg,
             text: formattedReply || plainReply,
             formattedText: formattedReply || plainReply,
+            credentials: credentials || msg.credentials,
             isDone: true,
           };
         })
@@ -476,6 +667,10 @@ export default function ChatPage() {
                       <MarkdownContent text={message.formattedText || message.text} maxParagraphs={2} />
                     </div>
                   ) : null}
+
+                  {message.isDone && message.credentials && (
+                    <ChatCredentialCard credentials={message.credentials} />
+                  )}
                 </>
               )}
             </div>
@@ -505,7 +700,7 @@ export default function ChatPage() {
               aria-label="Ask a question"
               rows="1"
             />
-            <button type="submit" aria-label="Send question" disabled={!draft.trim()}>
+            <button type="submit" className="cursor-target" data-cursor-label="Send" aria-label="Send question" disabled={!draft.trim()}>
               <svg viewBox="0 0 32 32" aria-hidden="true">
                 <path d="M10.774 23.619l-1.625 5.691C9.06 29.164 9 28.992 9 28.794v-5.57l13.09-12.793L10.774 23.619zM10.017 29.786c.243-.002.489-.084.69-.285l3.638-3.639-2.772-1.386-1.556 5.31zM28.835 2.009L3.802 14.326c-2.226 1.095-2.236 4.266-.017 5.375l4.89 2.445L27.464 3.79c.204-.199.516-.234.759-.086.326.2.396.644.147.935l-16.3 18.976 8.84 4.4c1.746.873 3.848-.128 4.27-2.034l5.071-22.858c.184-.819-.663-1.484-1.416-1.114z" fill="currentColor" />
               </svg>
@@ -517,6 +712,8 @@ export default function ChatPage() {
               {[...prompts, ...prompts, ...prompts, ...prompts].map((prompt, index) => (
                 <button
                   type="button"
+                  className="cursor-target"
+                  data-cursor-label="Ask"
                   key={`${prompt}-${index}`}
                   onClick={(e) => {
                     e.currentTarget.blur();

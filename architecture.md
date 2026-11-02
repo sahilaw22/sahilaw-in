@@ -1,19 +1,20 @@
 # Portfolio Architecture & Engineering System Map
 
-An exhaustive architectural reference and technical guide for the Sahil Ahmed Wani Design Engineering Portfolio.
+Technical documentation for the Sahil Ahmed Wani personal portfolio and design engineering web platform.
 
 ---
 
 ## 1. Executive Summary & Tech Stack
 
-This portfolio is a crafted, high-performance web experience blending front-end craft with interactive engineering. It features zero unnecessary dependencies, centralized data modeling, semantic asset directories, and a 1:1 match between on-screen section headers and component files.
+The platform is designed as an interactive, performant web portfolio with zero extraneous runtime frameworks. It combines physics-driven micro-interactions, canvas and WebGL graphics, procedural Web Audio generation, and centralized content schemas.
 
-- **Framework**: React 18 (Vite 5.4.21)
-- **Styling**: Vanilla CSS (`src/index.css`) with unified technical grid architecture, complemented by foundational base styles (`public/styles/base-layout.css` and `public/styles/base-theme.css`)
-- **Animations**: GSAP 3 (ScrollTrigger), Framer Motion
-- **Icons**: SkillIcons (`skillicons.dev`), Custom SVG Brand Marks, `TechIcons.jsx`
-- **Audio Engine**: Web Audio API Synthesizer (`src/hooks/useSoundEngine.js`)
-- **Routing**: Zero-dependency Client-side Hash Router (`src/hooks/useHashRouter.js`)
+- **Framework**: React 18 with Vite 5.4 bundler
+- **Styling Architecture**: Vanilla CSS (`src/index.css`) with scoped component sheets (`FeaturedProjectsSection.css`, `ExperienceSection.css`, `InteractiveAvatar.css`)
+- **Animation & Transitions**: GSAP 3 (ScrollTrigger) with Lenis smooth scrolling integration
+- **Visuals & Graphics**: WebGL2 ribbon cursor on desktop, HTML5 Canvas matrix background, and inline vector SVGs
+- **Audio Synthesis**: Native Web Audio API procedural synthesizer (`src/hooks/useSoundEngine.js`)
+- **Client Routing**: Hash-based router (`src/hooks/useHashRouter.js`) without server rewrite requirements
+- **Analytics & Content**: SQLite backend API (`server/`) with local browser fallback in `src/data/`
 
 ---
 
@@ -21,229 +22,136 @@ This portfolio is a crafted, high-performance web experience blending front-end 
 
 ```
 Avara/
-├── index.html                     # HTML5 entry shell, font preloads, and favicon link
-├── package.json                   # Project scripts and dependencies
+├── index.html                     # HTML5 entry shell, font preloads, and metadata
+├── package.json                   # Project dependencies and script declarations
 ├── vite.config.js                 # Vite bundler configuration
-├── PORTFOLIO_ARCHITECTURE.md      # This comprehensive architectural reference
+├── architecture.md                # System engineering guide and directory map
+├── readme.md                      # Human-friendly project overview and setup instructions
 │
-├── public/                        # Static Assets (served directly at root URL)
+├── public/                        # Static assets served at root
 │   ├── fonts/                     # Custom typography assets
-│   │   ├── Disket-Mono-Bold.ttf
-│   │   └── Disket-Mono-Regular.ttf
 │   ├── icons/                     # UI and brand vectors
-│   │   ├── favicon.svg            # Tab favicon (relocated from legacy ethereum.svg)
-│   │   └── skillicons/            # Local SVG skill badges (figma.svg, flutter.svg, react.svg)
-│   ├── images/                    # Visual imagery and UI graphics
-│   │   ├── navigation/            # 3D floating right-dock navigation pills
-│   │   │   ├── nav-about.png      # Pill for About section (formerly aave.png)
-│   │   │   ├── nav-experience.png # Pill for Experience section (formerly family.png)
-│   │   │   ├── nav-skills.png     # Pill for Skills section (formerly lens.png)
-│   │   │   └── nav-contact.png    # Pill for Contact section (formerly gho.png)
-│   │   └── tools/
-│   │       └── orbit-deck/        # Interactive OrbitDeck tool cards
+│   │   ├── favicon.svg            # Browser tab mark
+│   │   └── skillicons/            # Local SVG skill badges
+│   ├── images/                    # Visual assets
+│   │   ├── avatar-head.png        # Transparent vector line-art head
+│   │   └── navigation/            # 3D floating right-dock navigation pills
 │   ├── projects/                  # Project showcase preview thumbnails
 │   │   ├── audio-synth.png
 │   │   ├── connectkit.png
 │   │   ├── lurian-ai.png
 │   │   └── sahil-recreation.jpg
-│   ├── styles/                    # Foundational base vendor stylesheets
-│   │   ├── base-layout.css        # Clean rename of legacy 4e31a4da7006a8eb.css
-│   │   └── base-theme.css         # Clean rename of legacy 6c3c9d7b984e6c12.css
-│   ├── about-banner.jpg           # About section visual banner
-│   ├── profile.jpg                # Profile photography
-│   ├── profile.png                # Transparent profile portrait
-│   └── spider.png                 # Hanging spider scroll cue indicator
+│   └── styles/                    # Base layout and theme stylesheets
 │
-└── src/                           # Application Source Code
-    ├── App.jsx                    # Root application coordinator & route renderer
+├── server/                        # Backend API service
+│   ├── api.js                     # Express API routes (analytics, content updates)
+│   └── db.js                      # SQLite database connection & schema
+│
+└── src/                           # Application source code
+    ├── App.jsx                    # Root application coordinator, desktop ribbons, and route switcher
     ├── main.jsx                   # Vite React DOM entry point
-    ├── index.css                  # Global technical stylesheet & typography rules
+    ├── index.css                  # Global design system, typography, and responsive rules
     │
-    ├── components/                # Production UI components (1:1 header match)
-    │   ├── AboutSection.jsx       # [ABOUT ME] section container with tight header spacing
-    │   ├── BottomNav.jsx          # Floating bottom expandable tabs navigation
-    │   ├── CareerTimeline.jsx     # Vector career & education step-graph ruler
-    │   ├── CertificationsSection.jsx # [CERTIFICATIONS] list with issuer icons
-    │   ├── ContactSection.jsx     # [CONTACT] interactive email capsule & social links
-    │   ├── EducationSection.jsx   # [EDUCATION] connected spine with logos & right dates
-    │   ├── ErrorBoundary.jsx      # Catch-all component failure boundary with recovery UI
-    │   ├── ExperienceCard.jsx     # Sleek timeline card with accordion details & working status
-    │   ├── ExperienceSection.jsx  # [EXPERIENCE] connected spine with featured company roles
-    │   ├── ExperienceSection.css  # Timeline layout, logo boxes, spine line & chip styling
-    │   ├── FeaturedProjectsSection.jsx # [FEATURED PROJECTS] pinned cascading stack
-    │   ├── FeaturedProjectsSection.css # Stacked card styling and pinned slot
-    │   ├── GlassDistortionSVG.jsx # SVG filter definitions for glass refraction
-    │   ├── HeroHeader.jsx         # Hero rotating title badge with status-red glow
-    │   ├── LatticeLoader.jsx      # Matrix grid orbital loader for chat console
-    │   ├── LetterGlitch.jsx       # Matrix hex-code background canvas
-    │   ├── LetterGlitch.css       # Canvas styling for background
-    │   ├── Preloader.jsx          # Re-export of React Bits Pro entrance preloader
-    │   ├── RightScrollPills.jsx   # Right-side vertical section jump pills
-    │   ├── RotatingText.jsx       # Spring-physics role text rotation
-    │   ├── RotatingText.css       # Rotating text transitions
-    │   ├── SkillsSection.jsx      # [SKILLS] categorized technology pills
-    │   ├── SocialIcons.jsx        # Hero GitHub, LinkedIn, X, Discord links
-    │   ├── TechIcons.jsx          # Micro-icon vector dictionary for tech stacks
-    │   ├── TextRevealParagraph.jsx # ScrollTrigger word reveal with SkillIcons
-    │   │
-    │   └── ui/                    # Specialized interactive UI widgets
-    │       ├── expandable-tabs.jsx # Micro-animated navigation capsule
-    │       ├── expandable-tabs.css # Navigation styles
-    │       ├── Preloader.jsx      # React Bits Pro 10-stair entrance reveal
-    │       ├── Preloader.css      # Preloader styles & navbar suppression
-    │       ├── ScrollStack.jsx    # GSAP ScrollTrigger pinned stacked deck
-    │       ├── ScrollStack.css    # Pinned card stack positioning
+    ├── components/                # Modular UI components
+    │   ├── InteractiveAvatar.jsx  # Spring-physics googly eye tracking and blink animation
+    │   ├── InteractiveAvatar.css  # Avatar sizing, lens clips, and pupil styles
+    │   ├── HeroHeader.jsx         # Hero greeting title, inline avatar, and rotating role badge
+    │   ├── AboutSection.jsx       # Bio text reveal and career timeline
+    │   ├── CareerTimeline.jsx     # Vector career progression step-graph
+    │   ├── ExperienceSection.jsx  # Connected timeline with company nodes & live working tag
+    │   ├── ExperienceCard.jsx     # Accordion card with role details & tech chips
+    │   ├── FeaturedProjectsSection.jsx # Pinned cascading card deck
+    │   ├── FeaturedProjectsSection.css # Stacked deck layout & card styling
+    │   ├── EducationSection.jsx   # Academic history with degree badges
+    │   ├── SkillsSection.jsx      # Categorized skill badges
+    │   ├── CertificationsSection.jsx # Certifications & credentials list
+    │   ├── ContactSection.jsx     # Email copy action and social links
+    │   ├── BottomNav.jsx          # Expandable bottom navigation pill
+    │   ├── RightScrollPills.jsx   # Desktop floating section jump controls
+    │   ├── SocialIcons.jsx        # Social media vector links
+    │   ├── TechIcons.jsx          # SVG dictionary for technology chips
+    │   ├── LetterGlitch.jsx       # Matrix background canvas
+    │   └── ui/                    # Reusable interactive widgets
+    │       ├── Ribbons.jsx        # WebGL2 comet trail cursor for desktop
+    │       ├── Ribbons.css        # Canvas styling and mobile removal
+    │       ├── ScrollStack.jsx    # GSAP ScrollTrigger pinned stacked card system
+    │       ├── ScrollStack.css    # Stage geometry and responsive heights
     │       ├── OrbitDeck.jsx      # 3D interactive spinning project carousel
-    │       └── OrbitDeck.css      # 3D transforms & perspective layout
+    │       └── expandable-tabs.jsx # Navigation capsule tabs
     │
-    ├── data/                      # Centralized Content & State Data
-    │   ├── portfolioData.jsx      # Canonical portfolio content structures
-    │   ├── usePortfolioData.js    # Data management hook with local storage persistence
-    │   └── blog.js                # Markdown articles and blog post metadata
+    ├── hooks/                     # Custom hooks
+    │   ├── useHashRouter.js       # Client hash router
+    │   ├── useSoundEngine.js      # Procedural Web Audio synthesizer
+    │   ├── useSmoothScroll.js     # Lenis smooth scroll engine
+    │   └── useVisitorTracking.js  # Analytics tracking hook
     │
-    ├── hooks/                     # Custom React Hooks
-    │   ├── useHashRouter.js       # Lightweight hash routing engine
-    │   ├── useSmoothScroll.js     # Lenis smooth scrolling integration
-    │   └── useSoundEngine.js      # Synthesizer audio engine (click, hover, success)
+    ├── data/                      # Centralized data and storage hooks
+    │   ├── portfolioData.jsx      # Canonical portfolio schema
+    │   └── usePortfolioData.js    # Data hook with local storage syncing
     │
-    ├── lib/
-    │   └── utils.js               # Class name merging utility (clsx / tailwind-merge)
-    │
-    └── pages/                     # Top-level Route Views
-        ├── HomePage.jsx           # Main full-scroll single-page portfolio
-        ├── ExperiencePage.jsx     # Dedicated full experience view with clean back nav
-        ├── ExperiencePage.css     # Experience page header, meta count & spacing
-        ├── ProjectsPage.jsx       # 3D OrbitDeck interactive project showcase
-        ├── ResumePage.jsx         # Interactive resume & CV document viewer
-        ├── ChatPage.jsx           # AI Interactive chat terminal with LatticeLoader
-        ├── BlogPage.jsx           # Engineering writings and tutorials index
-        ├── PostPage.jsx           # Single blog article dynamic reader
-        ├── AdminPage.jsx          # Administrative live content manager & backup export
-        └── AdminPage.css          # Admin workspace layout & dark control styling
+    └── pages/                     # Route views
+        ├── HomePage.jsx           # Main single-page scroll layout
+        ├── ExperiencePage.jsx     # Full experience view with centered back button
+        ├── ProjectsPage.jsx       # Project archive and 3D carousel
+        ├── ResumePage.jsx         # Interactive CV document
+        ├── ChatPage.jsx           # Interactive assistant console
+        ├── BlogPage.jsx           # Engineering articles
+        ├── PostPage.jsx           # Dynamic markdown reader
+        └── AdminPage.jsx          # Portfolio content editor & visitor analytics
 ```
 
 ---
 
-## 3. Legacy Directory Refactoring (`public/avara.xyz/` Migration)
+## 3. Core Component Subsystems
 
-The original template contained an unorganized, scraped `public/avara.xyz/` directory with ~1.5 MB of dead Next.js build artifacts, hash-named CSS files, and cryptic media tokens. This has been cleanly refactored into modern, intuitive software engineering paths:
+### Interactive Avatar (`InteractiveAvatar.jsx`)
+- Vector line art rendered over custom SVG sclera and pupil elements.
+- Uses spring-damper physics (`stiffness: 0.16`, `damping: 0.24`) to follow the cursor with natural momentum.
+- Non-linear deflection scales pupil travel within elliptical boundary constraints.
+- Blinking runs on a randomized interval (3.2s to 6.5s) with a 160ms symmetrical blink curve.
+- Listens to `visibilitychange` to suspend animation loops when the tab is hidden, preventing background CPU or battery drain.
 
-| Legacy Path in `avara.xyz/` | Refactored Clean Path | Engineering Purpose |
+### Ribbon Cursor (`Ribbons.jsx`)
+- Uses WebGL2 shaders to render a fluid ribbon trail on desktop devices.
+- Strictly gated via `isDesktopPointer`: skips mounting entirely on mobile devices, touchscreens, and viewports `<= 820px`.
+- CSS media query enforces `display: none !important; opacity: 0;` on touch interfaces to prevent gesture interference during native scrolling.
+
+### Cascading Card Stack (`ScrollStack.jsx`)
+- Utilizes GSAP ScrollTrigger with `pin: true` and `scrub: 0.65`.
+- Cards dock sequentially on scroll (`step-1`, `step-2`, `step-3`), scaling earlier cards down to form a cascading deck.
+- The "Explore all projects" button docks in a dedicated final step (`step-4`) after the last project card lands.
+- Once the deck is complete, ScrollTrigger unpins naturally so the finished section scrolls into view with the remainder of the page.
+
+---
+
+## 4. Routing Architecture
+
+Routing uses hash-based paths managed by `useHashRouter.js`:
+
+| Hash Route | Component | Description |
 | :--- | :--- | :--- |
-| `avara.xyz/_next/static/css/4e31a4da7006a8eb.css` | `public/styles/base-layout.css` | Foundational layout styles loaded in `index.html` |
-| `avara.xyz/_next/static/css/6c3c9d7b984e6c12.css` | `public/styles/base-theme.css` | Foundational theme variables loaded in `index.html` |
-| `avara.xyz/_next/static/media/aave.9745096a.png` | `public/images/navigation/nav-about.png` | 3D navigation pill for About section |
-| `avara.xyz/_next/static/media/family.74707479.png`| `public/images/navigation/nav-experience.png`| 3D navigation pill for Experience section |
-| `avara.xyz/_next/static/media/lens.0f125713.png`  | `public/images/navigation/nav-skills.png` | 3D navigation pill for Skills section |
-| `avara.xyz/_next/static/media/gho.eae3e780.png`   | `public/images/navigation/nav-contact.png` | 3D navigation pill for Contact section |
-| `avara.xyz/icons/ethereum.svg`                    | `public/icons/favicon.svg` | Browser tab favicon |
-| `avara.xyz/_next/static/chunks/*` (1.5 MB)        | **Deleted** | Obsolete Next.js JavaScript chunks |
-| `avara.xyz/_next/static/K_C58gfjIUgw20ICPpyFV/*`  | **Deleted** | Obsolete Next.js build manifests |
-| `avara.xyz/fonts/*` (empty stubs)                 | **Deleted** | Zero-byte stub files (typography is in `/fonts/`) |
-| `public/avara.xyz/` folder                        | **Deleted** | Completely eradicated |
+| `#/` or `#` | `HomePage.jsx` | Full scrolling single-page portfolio |
+| `#/experience` | `ExperiencePage.jsx` | All career roles with center back navigation |
+| `#/projects` | `ProjectsPage.jsx` | 3D OrbitDeck and project showcase |
+| `#/projects/all` | `ProjectsPage.jsx` | Full archive grid |
+| `#/resume` | `ResumePage.jsx` | Interactive resume view |
+| `#/chat` | `ChatPage.jsx` | AI portfolio assistant |
+| `#/blog` | `BlogPage.jsx` | Articles index |
+| `#/blog/:slug` | `PostPage.jsx` | Article reader |
+| `#/admin` | `AdminPage.jsx` | Management dashboard & analytics |
 
 ---
 
-## 4. Header-to-Component Mapping
-
-Every major section in the main portfolio directly corresponds to the visual tag pill rendered on screen:
-
-| Visual Header Tag | Component Location | Data Location | Description |
-| :--- | :--- | :--- | :--- |
-| **HERO** | `src/components/HeroHeader.jsx`<br>`src/components/SocialIcons.jsx` | `portfolioData.jsx` (`HERO_ROLES`) | Intro greeting, pitch, rotating status-red badge (`#ff4444`), and social links. |
-| **ABOUT ME** | `src/components/AboutSection.jsx` | `portfolioData.jsx` (`ABOUT_PARAGRAPHS`) | Word-by-word opacity reveal with Figma, React, Flutter SkillIcons placed before tech names, compact header margin, and 3D Resume button. |
-| **(TIMELINE)** | `src/components/CareerTimeline.jsx` | Sub-component of About | Vector ruler from 2021 to 2026, PCM track, break baseline, internship nodes, and `NOW` status. |
-| **EXPERIENCE** | `src/components/ExperienceSection.jsx`<br>`src/components/ExperienceCard.jsx` | `portfolioData.jsx` (`EXPERIENCES`) | Sleek timeline layout with connected spine line, company logo nodes, working indicator badge, right-aligned formatted date & location, and expandable skills/description. |
-| **FEATURED PROJECTS** | `src/components/FeaturedProjectsSection.jsx`<br>`src/components/ui/ScrollStack.jsx` | `portfolioData.jsx` (`PROJECTS`) | Pinned cascading stacked card deck with solid cards, pinned header/footer, and smooth scroll transitions. |
-| **EDUCATION** | `src/components/EducationSection.jsx` | `portfolioData.jsx` (`EDUCATION_ITEMS`) | B.Tech CSE (GCET Jammu) and PCM (SP Smart School) connected with institutional nodes and right-aligned timeline period badges. |
-| **SKILLS** | `src/components/SkillsSection.jsx` | `portfolioData.jsx` (`SKILL_CATEGORIES`) | Categorized skill groups (Frontend, AI, Backend, Tools) rendered with `TechIcon` pills. |
-| **CERTIFICATIONS** | `src/components/CertificationsSection.jsx` | `portfolioData.jsx` (`CERTIFICATIONS`) | Clean technical rows with brand vectors, issuers, year badges, and direct credential links. |
-| **CONTACT** | `src/components/ContactSection.jsx` | `src/components/ContactSection.jsx` | Content-hugging email action button, availability metadata, direct social links, and bottom scroll clearance. |
-
----
-
-## 5. Centralized Data Architecture (`src/data/portfolioData.jsx`)
-
-All dynamic portfolio records are unified inside `src/data/portfolioData.jsx`. Updating credentials, adding an internship, or changing skill sets is performed in this single location:
-
-### Exported Data Models:
-1. **`HERO_ROLES`**: Array of role strings displayed in the rotating hero badge.
-2. **`ABOUT_PARAGRAPHS`**: Narrative strings with embedded SkillIcon tokens (`{{ICON_FIGMA}}`, `{{ICON_REACT}}`, `{{ICON_FLUTTER}}`).
-3. **`EXPERIENCES`**:
-   - `company`: Company name
-   - `role`: Position title
-   - `startDate`: Start month and year
-   - `endDate`: End month and year (or `Present`)
-   - `period`: Legacy date range string fallback
-   - `location`: Office location or `(Remote)`
-   - `isCurrent`: Boolean flag (renders green pulsating `Working` badge)
-   - `desc`: Summary of work and impact
-   - `technologies`: Array of technical skill chips
-   - `image`: Company logo asset path
-4. **`EDUCATION_ITEMS`**:
-   - `degree`: Academic degree or diploma
-   - `institution`: School or University
-   - `period`: Years attended
-   - `isCurrent`: Boolean flag
-   - `desc`: Overview of focus areas
-   - `courses`: Array of core coursework topics
-   - `logo`: Institutional vector mark
-5. **`SKILL_CATEGORIES`**:
-   - `category`: Domain title (Frontend, AI, Backend, Tools)
-   - `skills`: Array of individual skill names mapped by `TechIcons.jsx`
-6. **`CERTIFICATIONS`**:
-   - `title`: Credential name
-   - `issuer`: Organization or platform
-   - `year`: Issue year
-   - `link`: Verification URL
-   - `icon`: Company vector badge
-
----
-
-## 6. Routing & Page Architecture
-
-Routing is managed through hash-based state inside `src/hooks/useHashRouter.js`, allowing zero-configuration hosting on GitHub Pages, Vercel, or Netlify without server rewrite rules.
-
-```
-Route Hash                      Page Component           View Mode
------------------------------------------------------------------------------------------
-#/ or #                         HomePage.jsx             Full scrolling portfolio
-#/experience or #/work-experience ExperiencePage.jsx     Dedicated all-experiences view
-#/projects                      ProjectsPage.jsx         3D OrbitDeck project gallery
-#/resume or #/careers           ResumePage.jsx           Interactive resume & document viewer
-#/chat                          ChatPage.jsx             Interactive AI assistant console
-#/blog                          BlogPage.jsx             Articles & technical writeups
-#/blog/:slug                    PostPage.jsx             Dynamic Markdown article reader
-#/admin or #/chatbot-response   AdminPage.jsx            In-browser editor & ZIP export
-```
-
----
-
-## 7. Global Layout & Supporting Systems
-
-1. **Fixed Matrix Code Canvas (`LetterGlitch.jsx`)**:
-   - Positioned fixed at `z-index: 0` in `App.jsx`.
-   - Renders low-opacity hex code matrix (`characters="0123456789ABCDEF"`, `baseOpacity={0.12}`).
-2. **Audio Synthesizer Engine (`useSoundEngine.js`)**:
-   - Generates responsive click, hover, toggle, and success sounds via the Web Audio API without loading external MP3/WAV files.
-3. **Floating Navigation (`BottomNav.jsx` & `RightScrollPills.jsx`)**:
-   - Bottom Nav uses `expandable-tabs.jsx` to switch between main views (`/`, `/projects`, `/resume`, `/chat`, `/blog`).
-   - Right-side pills allow one-click jumping between sections on the Home page (`#section-about`, `#section-journey`, `#section-skills`, `#section-contact`).
-   - Clicking the About pill while already in the About section smoothly scrolls back to the top Hero section.
-4. **Scroll Indicators**:
-   - Hanging spider visual cue (`public/spider.png`) in `HomePage.jsx` provides an interactive one-click scroll down to the About section.
-5. **SkillIcons Asset System (`public/icons/skillicons/`)**:
-   - Local SVGs (`figma.svg`, `flutter.svg`, `react.svg`) provide instant 0ms rendering with network fallback to `https://skillicons.dev`.
-
----
-
-## 8. Build & Verification Commands
+## 5. Development & Build Verification
 
 ```bash
-# Development server
+# Start local development server
 npm run dev
 
-# Production build (outputs clean bundles to dist/)
+# Start local analytics API server
+npm run server
+
+# Run production build
 npm run build
 
 # Preview production build locally

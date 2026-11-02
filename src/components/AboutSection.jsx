@@ -24,7 +24,8 @@ export default function AboutSection({ play }) {
           <a
             href="#/resume"
             onClick={() => play?.('click')}
-            className="about-resume-3d-capsule"
+            className="about-resume-3d-capsule cursor-target"
+            data-cursor-label="Resume"
             aria-label="View Resume"
           >
             <span className="resume-capsule-text">View Resume</span>
