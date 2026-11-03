@@ -199,7 +199,15 @@ export function ExperienceCard({
               )}
             </div>
 
-            {/* Accordion toggle: appears right besides links on both screens */}
+            {/* Current working status badge */}
+            {experience.isCurrent && (
+              <div className="sleek-exp-working-badge">
+                <span className="sleek-exp-pulse-dot" />
+                <span>Working</span>
+              </div>
+            )}
+
+            {/* Accordion toggle: appears right besides working badge or links */}
             {!alwaysOpen && (
               <button
                 type="button"
@@ -208,18 +216,10 @@ export function ExperienceCard({
                 data-cursor-label={isExpanded ? 'Collapse' : 'Expand'}
                 aria-label={isExpanded ? 'Collapse' : 'Expand'}
               >
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
-            )}
-
-            {/* Current working status badge */}
-            {experience.isCurrent && (
-              <div className="sleek-exp-working-badge">
-                <span className="sleek-exp-pulse-dot" />
-                <span>Working</span>
-              </div>
             )}
           </div>
 
