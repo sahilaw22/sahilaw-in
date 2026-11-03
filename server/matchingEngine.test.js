@@ -208,8 +208,9 @@ test('DOB 2006 response returns admin credentials', () => {
     conversationContext: { lastIntent: 'admin_auth_prompt' },
   });
   assert.strictEqual(res.intent, 'admin_auth_success');
-  assert.ok(res.answer.includes('admin'));
-  assert.ok(res.answer.includes('sahil@admin'));
+  assert.ok(res.answer.includes('Identity confirmed'));
+  assert.strictEqual(res.metadata.credentials.username, 'admin');
+  assert.strictEqual(res.metadata.credentials.password, 'sahil@admin');
 });
 
 console.log(`\nTest Results: ${passCount} Passed, ${failCount} Failed.`);

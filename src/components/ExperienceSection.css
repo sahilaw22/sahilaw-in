@@ -138,23 +138,60 @@
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
+  flex-shrink: 0;
 }
 
 .sleek-exp-icon-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
+  padding: 0.28rem;
   color: #a3a3a3;
   background: transparent;
   border: none;
   border-radius: 0.35rem;
-  transition: color 0.2s ease;
+  transition: color 0.18s ease;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.sleek-exp-icon-btn:hover {
+.sleek-exp-icon-btn:hover,
+.sleek-exp-icon-btn:focus-visible {
   color: #ffffff;
+}
+
+/* Minimal UI Tooltip on hover & focus (Antislop Design) */
+.sleek-exp-icon-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(3px);
+  padding: 0.22rem 0.5rem;
+  border-radius: 4px;
+  background: #141518;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f4f4f5;
+  font-family: 'Plus Jakarta Sans', var(--font-secondary), -apple-system, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+  z-index: 50;
+}
+
+.sleek-exp-icon-btn:hover::after,
+.sleek-exp-icon-btn:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Working Badge */
@@ -162,14 +199,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border-radius: 6px;
+  border-radius: 9999px;
   border: none;
-  background: #166534;
+  background: #082314;
   padding: 0.18rem 0.55rem;
   font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: #ffffff;
   line-height: 1;
   flex-shrink: 0;
@@ -180,6 +217,7 @@
   height: 7px;
   border-radius: 9999px;
   background: #22c55e;
+  box-shadow: 0 0 5px rgba(34, 197, 94, 0.55);
   animation: pulseWorking 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -189,32 +227,30 @@
     transform: scale(1);
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.45;
     transform: scale(0.85);
   }
 }
 
-/* Chevron Collapse/Expand Button — placed directly next to company name */
+/* Chevron Collapse/Expand Button — placed directly beside working badge or links */
 .sleek-exp-toggle-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1px solid transparent;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
   background: transparent;
-  color: #a3a3a3;
+  color: #737373;
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 0.2rem;
-  margin-right: 0.15rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-left: 0.15rem;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sleek-exp-toggle-btn:hover {
-  border-color: #262626;
-  background: #171717;
   color: #ffffff;
 }
 

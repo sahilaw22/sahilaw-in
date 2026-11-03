@@ -7,10 +7,12 @@ import {
   SKILL_CATEGORIES,
   CERTIFICATIONS,
   ACHIEVEMENTS,
+  PROJECTS,
+  TESTIMONIALS,
 } from './portfolioData.jsx';
 
 // Bump storage key to bust any previously corrupted/deserialized React element cache
-const STORAGE_KEY = 'portfolio_content_cache_v12';
+const STORAGE_KEY = 'portfolio_content_cache_v13';
 
 function cleanAboutParagraphs(paragraphs) {
   if (!Array.isArray(paragraphs)) return paragraphs;
@@ -72,6 +74,8 @@ function getInitialState() {
     return {
       about: cleanAboutParagraphs(ABOUT_PARAGRAPHS),
       experiences: EXPERIENCES,
+      projects: PROJECTS,
+      testimonials: TESTIMONIALS,
       education: EDUCATION_ITEMS,
       skills: cleanSkillCategories(SKILL_CATEGORIES),
       certifications: CERTIFICATIONS,
@@ -82,9 +86,10 @@ function getInitialState() {
   }
 
   try {
-    // Purge old corrupted v9 cache if present
+    // Purge old cache keys
     localStorage.removeItem('portfolio_content_cache_v9');
     localStorage.removeItem('portfolio_content_cache_v10');
+    localStorage.removeItem('portfolio_content_cache_v12');
 
     const cached = localStorage.getItem(STORAGE_KEY);
     if (cached) {
@@ -92,6 +97,8 @@ function getInitialState() {
       return {
         about: cleanAboutParagraphs(parsed.about || ABOUT_PARAGRAPHS),
         experiences: parsed.experiences || EXPERIENCES,
+        projects: parsed.projects || PROJECTS,
+        testimonials: parsed.testimonials || TESTIMONIALS,
         education: cleanEducationItems(parsed.education),
         skills: cleanSkillCategories(parsed.skills || SKILL_CATEGORIES),
         certifications: cleanCertOrAchieveItems(parsed.certifications, CERTIFICATIONS),
@@ -107,6 +114,8 @@ function getInitialState() {
   return {
     about: cleanAboutParagraphs(ABOUT_PARAGRAPHS),
     experiences: EXPERIENCES,
+    projects: PROJECTS,
+    testimonials: TESTIMONIALS,
     education: EDUCATION_ITEMS,
     skills: cleanSkillCategories(SKILL_CATEGORIES),
     certifications: CERTIFICATIONS,
@@ -128,6 +137,8 @@ export function usePortfolioData() {
         const fresh = {
           about: cleanAboutParagraphs(json.content.about || ABOUT_PARAGRAPHS),
           experiences: json.content.experiences || EXPERIENCES,
+          projects: json.content.projects || PROJECTS,
+          testimonials: json.content.testimonials || TESTIMONIALS,
           education: cleanEducationItems(json.content.education),
           skills: cleanSkillCategories(json.content.skills || SKILL_CATEGORIES),
           certifications: cleanCertOrAchieveItems(json.content.certifications, CERTIFICATIONS),
@@ -183,6 +194,8 @@ export function usePortfolioData() {
   return {
     about: data.about || ABOUT_PARAGRAPHS,
     experiences: data.experiences || EXPERIENCES,
+    projects: data.projects || PROJECTS,
+    testimonials: data.testimonials || TESTIMONIALS,
     education: data.education || EDUCATION_ITEMS,
     skills: data.skills || SKILL_CATEGORIES,
     certifications: data.certifications || CERTIFICATIONS,

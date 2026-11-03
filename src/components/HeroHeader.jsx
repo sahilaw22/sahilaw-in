@@ -10,10 +10,17 @@ export default function HeroHeader() {
   const heroRoles = meta?.hero_roles && meta.hero_roles.length > 0 ? meta.hero_roles : ['Frontend AI Engineer', 'UI/UX Designer', 'App Developer'];
 
   useEffect(() => {
+    let lastState = window.scrollY > 160;
+    setIsScrolled(lastState);
+
     function handleScroll() {
-      setIsScrolled(window.scrollY > 160);
+      const nowState = window.scrollY > 160;
+      if (nowState !== lastState) {
+        lastState = nowState;
+        setIsScrolled(nowState);
+      }
     }
-    handleScroll();
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

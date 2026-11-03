@@ -149,6 +149,42 @@ router.post('/chat/feedback', (req, res) => {
 // ADMIN AUTHENTICATION ENDPOINTS
 // -------------------------------------------------------------
 
+const excludedAdminIps = new Set(['127.0.0.1', '::1', 'localhost']);
+
+function isInternalOrAdminIp(ip) {
+  if (!ip) return true;
+  const clean = ip.replace(/^::ffff:/, '').trim();
+  if (excludedAdminIps.has(clean)) return true;
+  if (
+    clean === '127.0.0.1' ||
+    clean === '::1' ||
+    clean === 'localhost' ||
+    clean.startsWith('192.168.') ||
+    clean.startsWith('10.') ||
+    clean.startsWith('172.16.') ||
+    clean.startsWith('172.17.') ||
+    clean.startsWith('172.18.') ||
+    clean.startsWith('172.19.') ||
+    clean.startsWith('172.20.') ||
+    clean.startsWith('172.21.') ||
+    clean.startsWith('172.22.') ||
+    clean.startsWith('172.23.') ||
+    clean.startsWith('172.24.') ||
+    clean.startsWith('172.25.') ||
+    clean.startsWith('172.26.') ||
+    clean.startsWith('172.27.') ||
+    clean.startsWith('172.28.') ||
+    clean.startsWith('172.29.') ||
+    clean.startsWith('172.30.') ||
+    clean.startsWith('172.31.') ||
+    clean.startsWith('fc00:') ||
+    clean.startsWith('fe80:')
+  ) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * POST /api/admin/login
  */
@@ -168,6 +204,10 @@ router.post('/admin/login', (req, res) => {
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid username or password.' });
     }
+
+    const rawIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+    const cleanIp = rawIp.replace(/^::ffff:/, '').trim();
+    if (cleanIp) excludedAdminIps.add(cleanIp);
 
     db.updateAdminLastLogin(admin.id);
     db.addAuditLog('admin_login', `Admin ${admin.username} logged in.`);
@@ -269,7 +309,14 @@ router.post('/analytics/track', (req, res) => {
     const { deviceType, browser, os } = parseUserAgent(ua);
 
     // Anonymized IP hash
-    const rawIp = req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+    const rawIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || req.socket?.remoteAddress || '';
+    const cleanIp = rawIp.replace(/^::ffff:/, '').trim();
+
+    // Exclude local IP, internal network, and admin devices
+    if (isInternalOrAdminIp(cleanIp) || req.headers['x-admin-device'] === 'true' || req.body?.isAdminDevice) {
+      return res.json({ success: true, ignored: true });
+    }
+
     const ipHash = crypto.createHash('sha256').update(rawIp + 'portfolio_salt').digest('hex').substring(0, 16);
 
     // Approximate geolocation from proxy headers or regional defaults
@@ -409,7 +456,7 @@ router.patch('/admin/unanswered/:id', authMiddleware, (req, res) => {
  * POST /api/admin/unanswered/:id/convert
  * Converts an unanswered question into a newly published knowledge entry.
  */
-router.post('/api/admin/unanswered/:id/convert', authMiddleware, (req, res) => {
+router.post(['/admin/unanswered/:id/convert', '/api/admin/unanswered/:id/convert'], authMiddleware, (req, res) => {
   try {
     const { canonical_question, answer, category = 'General', aliases = [], keywords = [], links = [] } = req.body;
     if (!canonical_question || !answer) {

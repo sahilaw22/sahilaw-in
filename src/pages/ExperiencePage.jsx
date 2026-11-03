@@ -13,7 +13,14 @@ export default function ExperiencePage() {
           href="#/"
           className="projects-back-link experience-back-link cursor-target"
           data-cursor-label="Back"
-          aria-label="Back"
+          aria-label="Back to experience section"
+          onClick={(e) => {
+            e.preventDefault();
+            try {
+              sessionStorage.setItem('scroll_target', 'section-journey');
+            } catch {}
+            window.location.hash = '#/';
+          }}
         >
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M19 12H5M12 19l-7-7 7-7" />

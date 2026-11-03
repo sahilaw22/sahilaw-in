@@ -102,6 +102,29 @@ export default function HomePage({ sound, onIntroComplete }) {
     return () => ctx.revert();
   }, [showIntro]);
 
+  useEffect(() => {
+    let scrollTarget = null;
+    try {
+      scrollTarget = sessionStorage.getItem('scroll_target');
+    } catch {}
+
+    if (scrollTarget) {
+      try {
+        sessionStorage.removeItem('scroll_target');
+      } catch {}
+      setTimeout(() => {
+        const targetEl = document.getElementById(scrollTarget);
+        if (targetEl) {
+          if (window.lenis) {
+            window.lenis.scrollTo(targetEl, { offset: -30, immediate: false });
+          } else {
+            targetEl.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 120);
+    }
+  }, []);
+
   const handleScrollTo = (id) => {
     const el = document.getElementById(id);
     if (el) {

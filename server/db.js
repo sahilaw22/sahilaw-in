@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { INITIAL_KNOWLEDGE_ENTRIES, INITIAL_SETTINGS, INITIAL_TEMPLATES } from './knowledgeSeed.js';
 import { DEFAULT_PORTFOLIO_CONTENT } from './defaultContent.js';
@@ -7,14 +8,36 @@ import { hashPassword } from './auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.resolve(__dirname, '../data/assistant-db');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// In serverless environments (Vercel, AWS Lambda), the code directory is read-only.
+// Use /tmp for writable SQLite storage if running on Vercel.
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NOW_REGION);
+const DATA_DIR = isServerless
+  ? path.join(os.tmpdir(), 'portfolio-db')
+  : path.resolve(__dirname, '../data/assistant-db');
+
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Gracefully handle read-only environments
 }
 
 const DB_PATH = path.join(DATA_DIR, 'portfolio.db');
 const JSON_BACKUP_PATH = path.join(DATA_DIR, 'portfolio.json');
+
+// Copy pre-seeded repository SQLite database to /tmp on Vercel cold-start if available
+if (isServerless) {
+  try {
+    const repoDbPath = path.resolve(__dirname, '../data/assistant-db/portfolio.db');
+    if (fs.existsSync(repoDbPath) && !fs.existsSync(DB_PATH)) {
+      fs.copyFileSync(repoDbPath, DB_PATH);
+    }
+  } catch (e) {
+    // Non-fatal if copy fails; will seed fresh
+  }
+}
 
 // Try loading built-in node:sqlite
 let DatabaseSync = null;
@@ -22,7 +45,7 @@ try {
   const sqlite = await import('node:sqlite');
   DatabaseSync = sqlite.DatabaseSync;
 } catch (err) {
-  // node:sqlite not available; fallback to JSON storage
+  // node:sqlite not available; fallback to MemoryStorage
 }
 
 class SqliteStorage {
@@ -209,13 +232,26 @@ class SqliteStorage {
     }
 
     // 5. Seed Portfolio Content Persistence
-    const existingContent = this.db.prepare('SELECT COUNT(*) as count FROM portfolio_content').get();
-    if (existingContent.count === 0) {
-      const insertContent = this.db.prepare('INSERT INTO portfolio_content (section, data_json, updated_at) VALUES (?, ?, ?)');
-      for (const [section, data] of Object.entries(DEFAULT_PORTFOLIO_CONTENT)) {
-        insertContent.run(section, JSON.stringify(data), Date.now());
-      }
+    const insertContent = this.db.prepare(`
+      INSERT INTO portfolio_content (section, data_json, updated_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(section) DO NOTHING
+    `);
+    for (const [section, data] of Object.entries(DEFAULT_PORTFOLIO_CONTENT)) {
+      insertContent.run(section, JSON.stringify(data), Date.now());
     }
+
+    // Auto-migrate experiences if earlier schema lacked BigTopSocial / Lamp Hub
+    try {
+      const expRow = this.db.prepare("SELECT data_json FROM portfolio_content WHERE section = 'experiences'").get();
+      if (expRow) {
+        const currentExp = JSON.parse(expRow.data_json);
+        const hasBts = Array.isArray(currentExp) && currentExp.some((e) => (e.company || '').toLowerCase().includes('bigtop'));
+        if (!hasBts) {
+          this.updatePortfolioSection('experiences', DEFAULT_PORTFOLIO_CONTENT.experiences);
+        }
+      }
+    } catch {}
   }
 
   // Reload/re-seed updated knowledge entries and templates
@@ -669,14 +705,15 @@ class SqliteStorage {
     else if (range === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
     else if (range === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
 
-    const totalViews = this.db.prepare('SELECT COUNT(*) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
-    const uniqueVisitors = this.db.prepare('SELECT COUNT(DISTINCT visitor_id) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
-    const totalSessions = this.db.prepare('SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= ?').get(cutoff).c;
+    const filter = " AND LOWER(city) != 'localhost' AND LOWER(country) != 'localhost' AND LOWER(ip_hash) NOT LIKE '%local%'";
+    const totalViews = this.db.prepare(`SELECT COUNT(*) as c FROM page_views WHERE created_at >= ?${filter}`).get(cutoff).c;
+    const uniqueVisitors = this.db.prepare(`SELECT COUNT(DISTINCT visitor_id) as c FROM page_views WHERE created_at >= ?${filter}`).get(cutoff).c;
+    const totalSessions = this.db.prepare(`SELECT COUNT(DISTINCT session_id) as c FROM page_views WHERE created_at >= ?${filter}`).get(cutoff).c;
 
     const topPages = this.db.prepare(`
       SELECT path, COUNT(*) as views
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY path
       ORDER BY views DESC
       LIMIT 8
@@ -685,7 +722,7 @@ class SqliteStorage {
     const topLocations = this.db.prepare(`
       SELECT country, city, COUNT(*) as visits, COUNT(DISTINCT visitor_id) as visitors
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY country, city
       ORDER BY visits DESC
       LIMIT 12
@@ -694,7 +731,7 @@ class SqliteStorage {
     const devices = this.db.prepare(`
       SELECT device_type as name, COUNT(*) as count
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY device_type
       ORDER BY count DESC
     `).all(cutoff);
@@ -702,7 +739,7 @@ class SqliteStorage {
     const browsers = this.db.prepare(`
       SELECT browser as name, COUNT(*) as count
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY browser
       ORDER BY count DESC
       LIMIT 6
@@ -711,7 +748,7 @@ class SqliteStorage {
     const osList = this.db.prepare(`
       SELECT os as name, COUNT(*) as count
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY os
       ORDER BY count DESC
       LIMIT 6
@@ -720,7 +757,7 @@ class SqliteStorage {
     const referrers = this.db.prepare(`
       SELECT referrer as name, COUNT(*) as count
       FROM page_views
-      WHERE created_at >= ? AND referrer != '' AND referrer != 'direct'
+      WHERE created_at >= ?${filter} AND referrer != '' AND referrer != 'direct'
       GROUP BY referrer
       ORDER BY count DESC
       LIMIT 6
@@ -741,7 +778,7 @@ class SqliteStorage {
         COUNT(*) as pages_viewed,
         GROUP_CONCAT(path, ' -> ') as path_history
       FROM page_views
-      WHERE created_at >= ?
+      WHERE created_at >= ?${filter}
       GROUP BY session_id
       ORDER BY last_active DESC
       LIMIT 25
@@ -811,6 +848,400 @@ class SqliteStorage {
   }
 }
 
+// In-Memory Storage Fallback for serverless environments where node:sqlite is unavailable
+class MemoryStorage {
+  constructor() {
+    this.admins = new Map();
+    this.settings = new Map();
+    this.templates = new Map();
+    this.knowledgeEntries = new Map();
+    this.conversations = new Map();
+    this.messages = [];
+    this.unanswered = new Map();
+    this.feedback = [];
+    this.auditLogs = [];
+    this.pageViews = [];
+    this.portfolioContent = new Map();
+
+    this.seedInitialData();
+  }
+
+  seedInitialData() {
+    for (const s of INITIAL_SETTINGS) {
+      this.settings.set(s.key, s.value);
+    }
+    for (const t of INITIAL_TEMPLATES) {
+      this.templates.set(t.key, { ...t, updated_at: Date.now() });
+    }
+    for (const item of INITIAL_KNOWLEDGE_ENTRIES) {
+      this.createKnowledgeEntry(item);
+    }
+    const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'sahil@admin';
+    const hash = hashPassword(defaultPassword);
+    this.admins.set('admin', {
+      id: 'admin-default',
+      username: 'admin',
+      password_hash: hash,
+      created_at: Date.now(),
+      last_login: null
+    });
+    for (const [section, data] of Object.entries(DEFAULT_PORTFOLIO_CONTENT)) {
+      this.portfolioContent.set(section, { section, data_json: JSON.stringify(data), updated_at: Date.now() });
+    }
+  }
+
+  getSettings() {
+    const result = {};
+    for (const [k, v] of this.settings) result[k] = v;
+    return result;
+  }
+
+  getSetting(key) {
+    return this.settings.get(key) || null;
+  }
+
+  updateSetting(key, value) {
+    this.settings.set(key, String(value));
+  }
+
+  getTemplates() {
+    return Array.from(this.templates.values());
+  }
+
+  getTemplate(key) {
+    const t = this.templates.get(key);
+    return t ? t.template : null;
+  }
+
+  updateTemplate(key, template) {
+    const existing = this.templates.get(key) || { key, name: key };
+    this.templates.set(key, { ...existing, template, updated_at: Date.now() });
+  }
+
+  getKnowledgeEntries(filter = {}) {
+    let list = Array.from(this.knowledgeEntries.values());
+    if (filter.activeOnly) {
+      list = list.filter(e => e.is_active);
+    }
+    return list;
+  }
+
+  getKnowledgeEntryById(id) {
+    return this.knowledgeEntries.get(id) || null;
+  }
+
+  createKnowledgeEntry(data) {
+    const id = data.id || `kb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const entry = {
+      id,
+      category: data.category || 'General',
+      canonical_question: data.canonical_question,
+      answer: data.answer,
+      links: Array.isArray(data.links) ? data.links : [],
+      related_entities: Array.isArray(data.related_entities) ? data.related_entities : [],
+      is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
+      aliases: Array.isArray(data.aliases) ? data.aliases : [],
+      keywords: Array.isArray(data.keywords) ? data.keywords : [],
+      created_at: Date.now(),
+      updated_at: Date.now()
+    };
+    this.knowledgeEntries.set(id, entry);
+    return entry;
+  }
+
+  updateKnowledgeEntry(id, fields) {
+    const entry = this.knowledgeEntries.get(id);
+    if (!entry) return null;
+    if (fields.category !== undefined) entry.category = fields.category;
+    if (fields.canonical_question !== undefined) entry.canonical_question = fields.canonical_question;
+    if (fields.answer !== undefined) entry.answer = fields.answer;
+    if (fields.links !== undefined) entry.links = fields.links;
+    if (fields.related_entities !== undefined) entry.related_entities = fields.related_entities;
+    if (fields.is_active !== undefined) entry.is_active = Boolean(fields.is_active);
+    if (fields.aliases !== undefined) entry.aliases = fields.aliases;
+    if (fields.keywords !== undefined) entry.keywords = fields.keywords;
+    entry.updated_at = Date.now();
+    return entry;
+  }
+
+  deleteKnowledgeEntry(id) {
+    return this.knowledgeEntries.delete(id);
+  }
+
+  reseedKnowledge() {
+    this.knowledgeEntries.clear();
+    for (const item of INITIAL_KNOWLEDGE_ENTRIES) {
+      this.createKnowledgeEntry(item);
+    }
+  }
+
+  getAdminByUsername(username) {
+    return this.admins.get(username) || null;
+  }
+
+  getAdminById(id) {
+    for (const a of this.admins.values()) {
+      if (a.id === id) return { id: a.id, username: a.username, created_at: a.created_at, last_login: a.last_login };
+    }
+    return null;
+  }
+
+  updateAdminPassword(id, newHash) {
+    for (const a of this.admins.values()) {
+      if (a.id === id) {
+        a.password_hash = newHash;
+        break;
+      }
+    }
+  }
+
+  updateAdminLastLogin(id) {
+    for (const a of this.admins.values()) {
+      if (a.id === id) {
+        a.last_login = Date.now();
+        break;
+      }
+    }
+  }
+
+  getOrCreateConversation(sessionId) {
+    for (const c of this.conversations.values()) {
+      if (c.session_id === sessionId) return c;
+    }
+    const id = `conv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const now = Date.now();
+    const conv = { id, session_id: sessionId, status: 'active', created_at: now, updated_at: now, total_messages: 0, messages: [] };
+    this.conversations.set(id, conv);
+    return conv;
+  }
+
+  getConversation(id) {
+    const c = this.conversations.get(id);
+    if (!c) return null;
+    c.messages = this.messages.filter(m => m.conversation_id === id);
+    return c;
+  }
+
+  listConversations({ page = 1, limit = 20, status, search } = {}) {
+    let list = Array.from(this.conversations.values());
+    if (status && status !== 'all') {
+      list = list.filter(c => c.status === status);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(c => c.id.toLowerCase().includes(q) || c.session_id.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => b.updated_at - a.updated_at);
+    const total = list.length;
+    const paginated = list.slice((page - 1) * limit, page * limit);
+    for (const c of paginated) {
+      c.messages = this.messages.filter(m => m.conversation_id === c.id);
+    }
+    return { conversations: paginated, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  updateConversationStatus(id, status) {
+    const c = this.conversations.get(id);
+    if (c) {
+      c.status = status;
+      c.updated_at = Date.now();
+    }
+  }
+
+  addMessage({ conversationId, sender, text, matchedKnowledgeId = null, confidence = 0, intent = 'general', metadata = {} }) {
+    const id = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const now = Date.now();
+    const msg = {
+      id,
+      conversation_id: conversationId,
+      sender,
+      text,
+      matched_knowledge_id: matchedKnowledgeId,
+      confidence,
+      intent,
+      metadata,
+      metadata_json: JSON.stringify(metadata),
+      created_at: now
+    };
+    this.messages.push(msg);
+    const c = this.conversations.get(conversationId);
+    if (c) {
+      c.total_messages += 1;
+      c.updated_at = now;
+      if (!c.messages) c.messages = [];
+      c.messages.push(msg);
+    }
+    return msg;
+  }
+
+  recordUnansweredQuestion(rawQuestion, normalizedQuestion, matchReason = 'no_match') {
+    const existing = Array.from(this.unanswered.values()).find(u => u.normalized_question === normalizedQuestion && u.status === 'new');
+    if (existing) {
+      existing.count += 1;
+      existing.last_seen = Date.now();
+      return existing;
+    }
+    const id = `unans-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const item = {
+      id,
+      raw_question: rawQuestion,
+      normalized_question: normalizedQuestion,
+      count: 1,
+      first_seen: Date.now(),
+      last_seen: Date.now(),
+      status: 'new',
+      match_reason: matchReason,
+      admin_notes: null,
+      linked_knowledge_id: null
+    };
+    this.unanswered.set(id, item);
+    return item;
+  }
+
+  listUnansweredQuestions({ page = 1, limit = 20, status = 'all', search = '' } = {}) {
+    let list = Array.from(this.unanswered.values());
+    if (status !== 'all') {
+      list = list.filter(u => u.status === status);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(u => u.raw_question.toLowerCase().includes(q) || u.normalized_question.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => b.last_seen - a.last_seen);
+    const total = list.length;
+    const paginated = list.slice((page - 1) * limit, page * limit);
+    return { questions: paginated, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  updateUnansweredQuestion(id, updates) {
+    const item = this.unanswered.get(id);
+    if (!item) return null;
+    if (updates.status !== undefined) item.status = updates.status;
+    if (updates.admin_notes !== undefined) item.admin_notes = updates.admin_notes;
+    if (updates.linked_knowledge_id !== undefined) item.linked_knowledge_id = updates.linked_knowledge_id;
+    return item;
+  }
+
+  addFeedback(messageId, rating, comment = '') {
+    const id = `fb-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const fb = { id, message_id: messageId, rating, comment, created_at: Date.now() };
+    this.feedback.push(fb);
+    return fb;
+  }
+
+  getAnalytics() {
+    const totalConversations = this.conversations.size;
+    const totalMessages = this.messages.filter(m => m.sender === 'user').length;
+    const answeredMessages = this.messages.filter(m => m.sender === 'assistant' && m.matched_knowledge_id).length;
+    const fallbackMessages = this.messages.filter(m => m.sender === 'assistant' && m.intent === 'fallback').length;
+    const totalUnanswered = this.unanswered.size;
+    const newUnanswered = Array.from(this.unanswered.values()).filter(u => u.status === 'new').length;
+    const totalKnowledge = Array.from(this.knowledgeEntries.values()).filter(e => e.is_active).length;
+
+    let positive = 0;
+    let negative = 0;
+    for (const f of this.feedback) {
+      if (f.rating === 1) positive++;
+      if (f.rating === -1) negative++;
+    }
+
+    return {
+      totalConversations,
+      totalMessages,
+      answeredMessages,
+      fallbackMessages,
+      fallbackRate: totalMessages > 0 ? Number(((fallbackMessages / totalMessages) * 100).toFixed(1)) : 0,
+      totalUnanswered,
+      newUnanswered,
+      totalKnowledge,
+      topQuestions: [],
+      topAnswers: [],
+      feedback: { positive, negative }
+    };
+  }
+
+  addAuditLog(action, details = '') {
+    this.auditLogs.push({ id: this.auditLogs.length + 1, action, details, created_at: Date.now() });
+  }
+
+  recordPageView(entry) {
+    const id = `pv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const pv = {
+      id,
+      sessionId: entry.sessionId || 'anonymous-session',
+      visitorId: entry.visitorId || 'anonymous-visitor',
+      path: entry.path || '/',
+      title: entry.title || '',
+      referrer: entry.referrer || '',
+      deviceType: entry.deviceType || 'Desktop',
+      browser: entry.browser || 'Unknown',
+      os: entry.os || 'Unknown',
+      country: entry.country || 'Unknown',
+      region: entry.region || '',
+      city: entry.city || 'Unknown',
+      ipHash: entry.ipHash || '',
+      created_at: Date.now()
+    };
+    this.pageViews.push(pv);
+    return pv;
+  }
+
+  getVisitorAnalytics(range = '7d') {
+    const days = range === '30d' ? 30 : range === '24h' ? 1 : 7;
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const views = this.pageViews.filter(v => 
+      v.created_at >= cutoff && 
+      !v.city?.toLowerCase().includes('local') && 
+      !v.country?.toLowerCase().includes('local') && 
+      !v.ipHash?.toLowerCase().includes('local')
+    );
+
+    const totalViews = views.length;
+    const uniqueVisitors = new Set(views.map(v => v.visitorId)).size;
+    const uniqueSessions = new Set(views.map(v => v.sessionId)).size;
+
+    return {
+      range,
+      totalViews,
+      uniqueVisitors,
+      uniqueSessions,
+      recentViews: views.slice(-50).reverse(),
+      topPages: [],
+      topReferrers: [],
+      devices: [],
+      browsers: [],
+      locations: []
+    };
+  }
+
+  getPortfolioContent() {
+    const result = {};
+    for (const [k, v] of this.portfolioContent) {
+      try {
+        result[k] = JSON.parse(v.data_json);
+      } catch {
+        result[k] = v.data_json;
+      }
+    }
+    return result;
+  }
+
+  getPortfolioSection(section) {
+    const s = this.portfolioContent.get(section);
+    if (!s) return null;
+    try {
+      return JSON.parse(s.data_json);
+    } catch {
+      return s.data_json;
+    }
+  }
+
+  updatePortfolioSection(section, data) {
+    this.portfolioContent.set(section, { section, data_json: JSON.stringify(data), updated_at: Date.now() });
+    return data;
+  }
+}
+
 // Instantiate storage
 let dbInstance = null;
 
@@ -819,8 +1250,12 @@ if (DatabaseSync) {
     dbInstance = new SqliteStorage(DB_PATH);
     dbInstance.seedInitialData();
   } catch (e) {
-    console.error('Failed to init SqliteStorage:', e.message);
+    console.warn('Failed to init SqliteStorage, falling back to MemoryStorage:', e.message);
   }
+}
+
+if (!dbInstance) {
+  dbInstance = new MemoryStorage();
 }
 
 export default dbInstance;

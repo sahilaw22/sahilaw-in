@@ -74,7 +74,29 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       }
     }
 
-    function handleScroll() {
+    let rafId = null;
+    let cachedOffsets = null;
+    let lastCacheTime = 0;
+
+    function getSectionOffsets() {
+      const now = performance.now();
+      if (!cachedOffsets || now - lastCacheTime > 1200) {
+        const aboutEl = document.getElementById('section-about');
+        const journeyEl = document.getElementById('section-journey');
+        const skillsEl = document.getElementById('section-skills');
+        const contactEl = document.getElementById('section-contact');
+        cachedOffsets = {
+          about: aboutEl?.offsetTop || 0,
+          journey: journeyEl?.offsetTop || 0,
+          skills: skillsEl?.offsetTop || 0,
+          contact: contactEl?.offsetTop || 0,
+        };
+        lastCacheTime = now;
+      }
+      return cachedOffsets;
+    }
+
+    function updateScrollState() {
       // Reveal notch on mobile when user scrolls; hide after 1 second of inactivity
       if (typeof window !== 'undefined' && window.innerWidth <= 768) {
         setIsMobileVisible(true);
@@ -91,25 +113,30 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       if (!isHome) return;
 
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
+      const offsets = getSectionOffsets();
 
-      const aboutEl = document.getElementById('section-about');
-      const journeyEl = document.getElementById('section-journey');
-      const skillsEl = document.getElementById('section-skills');
-      const contactEl = document.getElementById('section-contact');
+      let targetSlug = 'about';
+      if (offsets.contact && scrollPos >= offsets.contact) {
+        targetSlug = 'contact';
+      } else if (offsets.skills && scrollPos >= offsets.skills) {
+        targetSlug = 'skills';
+      } else if (offsets.journey && scrollPos >= offsets.journey) {
+        targetSlug = 'experience';
+      }
 
-      if (contactEl && scrollPos >= contactEl.offsetTop) {
-        setActiveSlug('contact');
-      } else if (skillsEl && scrollPos >= skillsEl.offsetTop) {
-        setActiveSlug('skills');
-      } else if (journeyEl && scrollPos >= journeyEl.offsetTop) {
-        setActiveSlug('experience');
-      } else {
-        setActiveSlug('about');
+      setActiveSlug((prev) => (prev === targetSlug ? prev : targetSlug));
+    }
+
+    function handleScroll() {
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          updateScrollState();
+          rafId = null;
+        });
       }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    document.addEventListener('touchmove', handleScroll, { passive: true });
 
     let attachedLenis = null;
     const checkLenis = () => {
@@ -124,11 +151,11 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       }
     };
     checkLenis();
-    const lenisInterval = setInterval(checkLenis, 250);
+    const lenisInterval = setInterval(checkLenis, 500);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('touchmove', handleScroll);
       clearInterval(lenisInterval);
       if (attachedLenis) {
         try {

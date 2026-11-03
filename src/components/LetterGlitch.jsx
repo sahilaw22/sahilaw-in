@@ -936,11 +936,16 @@ const LetterGlitch = ({
       }
     });
     intersection.observe(container);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
-    window.addEventListener('pointercancel', onPointerUp, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+
+    const isInteractive = Boolean(interactive);
+    if (isInteractive) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerdown', onPointerDown, { passive: true });
+      window.addEventListener('pointerup', onPointerUp, { passive: true });
+      window.addEventListener('pointercancel', onPointerUp, { passive: true });
+      document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    }
+
     document.addEventListener('visibilitychange', onVisibility);
     document.fonts?.addEventListener?.('loadingdone', onFonts);
     resize();
@@ -953,11 +958,13 @@ const LetterGlitch = ({
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
-      document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      if (isInteractive) {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      }
       document.removeEventListener('visibilitychange', onVisibility);
       document.fonts?.removeEventListener?.('loadingdone', onFonts);
       if (!gl.isContextLost()) {
@@ -968,11 +975,11 @@ const LetterGlitch = ({
         gl.deleteProgram(program.program);
       }
     };
-  }, []);
+  }, [interactive]);
 
   useEffect(() => {
     wakeRef.current?.();
-  });
+  }, [glitchAmount, speed, flow]);
 
   return (
     <div ref={containerRef} className={`letter-glitch${className ? ` ${className}` : ''}`} style={style} {...rest}>

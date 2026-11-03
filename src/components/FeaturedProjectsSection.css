@@ -143,28 +143,40 @@
   color: rgba(255, 255, 255, 0.75);
 }
 
-/* Visit Arrow Link: Borderless and Transparent as requested */
-.scroll-stack-arrow-link {
-  color: rgba(255, 255, 255, 0.72);
+/* Visit Button: White background button matching project page style */
+.scroll-stack-visit-btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: auto;
-  height: auto;
-  padding: 0.35rem;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  border-radius: 0;
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+  gap: 0.3rem;
+  padding: 0.38rem 0.95rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid #ffffff;
+  color: #0b0c0f;
+  font-family: 'Plus Jakarta Sans', var(--font-secondary), -apple-system, sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
   z-index: 10;
 }
 
-.scroll-stack-arrow-link:hover {
-  color: #ffffff !important;
-  background: transparent !important;
-  transform: translate(3px, -3px) scale(1.18);
+.scroll-stack-visit-btn:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.scroll-stack-visit-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.scroll-stack-visit-btn:hover svg {
+  transform: translate(1px, -1px);
 }
 
 .projects-more-section {

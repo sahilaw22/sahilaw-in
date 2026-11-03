@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react';
 import { PORTFOLIO_EMAIL, openGmailDirect, copyToClipboard } from '../lib/emailHelper.js';
+import { usePortfolioData } from '../data/usePortfolioData.js';
 
 export default function ContactSection({ play }) {
   const [localTime, setLocalTime] = useState('');
   const [copied, setCopied] = useState(false);
-  const email = PORTFOLIO_EMAIL;
+  const { meta } = usePortfolioData();
+
+  const email = meta?.email || PORTFOLIO_EMAIL;
+  const contactStatus = meta?.contact_status || 'OPEN TO PRODUCT DESIGN ROLES';
+  const locationCity = meta?.location || 'JAMMU, INDIA';
+  const linkedinUrl = meta?.linkedin || 'https://www.linkedin.com/in/sahil-a-057a0231a';
+  const threadsUrl = meta?.threads || 'https://www.threads.com/@sahilaw2';
+  const githubUrl = meta?.github || 'https://github.com/sahilaw22';
 
   useEffect(() => {
     const updateTime = () => {
@@ -64,7 +72,7 @@ export default function ContactSection({ play }) {
             <span className="contact-radar-dot" aria-hidden="true">
               <span className="contact-radar-core" />
             </span>
-            <span className="contact-meta-text">OPEN TO PRODUCT DESIGN ROLES</span>
+            <span className="contact-meta-text">{contactStatus}</span>
           </div>
 
           <div className="contact-meta-row">
@@ -83,7 +91,7 @@ export default function ContactSection({ play }) {
               <circle cx="12" cy="10" r="3" />
             </svg>
             <span className="contact-meta-text">
-              {localTime ? `${localTime} IN JAMMU, INDIA` : 'JAMMU, INDIA'}
+              {localTime ? `${localTime} IN ${locationCity}` : locationCity}
             </span>
           </div>
         </div>
@@ -142,7 +150,7 @@ export default function ContactSection({ play }) {
         {/* Secondary Socials: 3D Mechanical Keycaps Row */}
         <div className="contact-keycaps-row">
           <a
-            href="https://www.linkedin.com/in/sahil-a-057a0231a"
+            href={linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="contact-keycap-btn cursor-target" data-cursor-label="LinkedIn" aria-label="LinkedIn"
@@ -156,7 +164,7 @@ export default function ContactSection({ play }) {
           </a>
 
           <a
-            href="https://www.threads.com/@sahilaw2"
+            href={threadsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="contact-keycap-btn cursor-target" data-cursor-label="Threads" aria-label="Threads"
@@ -168,7 +176,7 @@ export default function ContactSection({ play }) {
           </a>
 
           <a
-            href="https://github.com/sahilaw22"
+            href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="contact-keycap-btn cursor-target" data-cursor-label="GitHub" aria-label="GitHub"

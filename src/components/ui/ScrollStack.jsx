@@ -143,7 +143,7 @@ export function ScrollStack({ children, header, footer, className = '' }) {
       clearTimeout(timer);
       ctx.revert();
     };
-  }, []);
+  }, [React.Children.count(children)]);
 
   return (
     <div ref={containerRef} className={`scroll-stack-wrapper ${className}`}>

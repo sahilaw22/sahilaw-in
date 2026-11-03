@@ -80,28 +80,8 @@ function getLinkIcon(label, url) {
 }
 
 function ChatCredentialCard({ credentials }) {
-  const [copiedField, setCopiedField] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState('');
-
-  const copyToClipboard = async (field, value) => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(value);
-      } else {
-        const ta = document.createElement('textarea');
-        ta.value = value;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-      }
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch {
-      setCopiedField(null);
-    }
-  };
 
   const handleAutoLogin = async () => {
     if (isLoggingIn) return;
@@ -113,8 +93,8 @@ function ChatCredentialCard({ credentials }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: credentials.username,
-          password: credentials.password,
+          username: credentials?.username || 'admin',
+          password: credentials?.password || 'sahil@admin',
         }),
       });
 
@@ -138,77 +118,16 @@ function ChatCredentialCard({ credentials }) {
 
   return (
     <div className="chat-credential-card">
-      <div className="chat-cred-header">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <polyline points="9 12 11 14 15 10" />
-        </svg>
-        <span className="chat-cred-badge">ADMINISTRATOR CREDENTIALS</span>
-      </div>
-
-      <div className="chat-cred-fields">
-        {/* Username field */}
-        <div className="chat-cred-field-row">
-          <div className="chat-cred-meta">
-            <span className="chat-cred-label">Username</span>
-            <code className="chat-cred-value">{credentials.username}</code>
-          </div>
-          <button
-            type="button"
-            className="chat-cred-copy-btn"
-            onClick={() => copyToClipboard('username', credentials.username)}
-            aria-label="Copy username"
-          >
-            {copiedField === 'username' ? (
-              <span className="copied-tag">Copied!</span>
-            ) : (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <span>Copy</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Password field */}
-        <div className="chat-cred-field-row">
-          <div className="chat-cred-meta">
-            <span className="chat-cred-label">Password</span>
-            <code className="chat-cred-value">{credentials.password}</code>
-          </div>
-          <button
-            type="button"
-            className="chat-cred-copy-btn"
-            onClick={() => copyToClipboard('password', credentials.password)}
-            aria-label="Copy password"
-          >
-            {copiedField === 'password' ? (
-              <span className="copied-tag">Copied!</span>
-            ) : (
-              <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                <span>Copy</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
       {loginError && (
         <div className="chat-cred-error" role="alert">{loginError}</div>
       )}
 
-      {/* Action buttons */}
+      {/* Prominent Auto Login Action */}
       <div className="chat-cred-actions">
         <button
           type="button"
-          className="chat-cred-auto-btn"
+          className="chat-cred-auto-btn cursor-target"
+          data-cursor-label="Login"
           onClick={handleAutoLogin}
           disabled={isLoggingIn}
         >
@@ -216,7 +135,7 @@ function ChatCredentialCard({ credentials }) {
             <span>Authenticating...</span>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                 <polyline points="10 17 15 12 10 7" />
                 <line x1="15" y1="12" x2="3" y2="12" />
@@ -227,8 +146,9 @@ function ChatCredentialCard({ credentials }) {
         </button>
 
         <a
-          href={credentials.portalUrl || '#/chatbot-response'}
-          className="chat-cred-portal-btn"
+          href={credentials?.portalUrl || '#/chatbot-response'}
+          className="chat-cred-portal-btn cursor-target"
+          data-cursor-label="Portal"
         >
           Open Portal
         </a>
@@ -256,8 +176,8 @@ function assistantReply(question, pendingAuth = false) {
 
   if (has2006 && (pendingAuth || isDobMention)) {
     return {
-      plainText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- Username: admin\n- Password: sahil@admin\n- Portal: Access Admin Console (#/chatbot-response)",
-      formattedText: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:",
+      plainText: "Identity confirmed. Welcome back, Sahil. You can access the administration dashboard directly.",
+      formattedText: "Identity confirmed. Welcome back, Sahil. You can access the administration dashboard directly.",
       step: 'verified',
       credentials: {
         username: 'admin',

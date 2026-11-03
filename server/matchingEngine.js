@@ -343,12 +343,19 @@ export function selectAnswer({
       normalizedText.includes('dob 2006'))
   ) {
     return {
-      answer: "Identity confirmed. Welcome back, Sahil.\n\nHere are your administrator credentials:\n- **Portal**: [Access Admin Console](#/chatbot-response)\n- **Username**: `admin`\n- **Password**: `sahil@admin`",
+      answer: "Identity confirmed. Welcome back, Sahil. You can access the administration dashboard directly.",
       intent: 'admin_auth_success',
       confidence: 1.0,
       matchedKnowledgeId: 'admin_credentials',
       links: [{ label: 'Access Admin Console', url: '#/chatbot-response' }],
-      metadata: { verified: true },
+      metadata: {
+        verified: true,
+        credentials: {
+          username: 'admin',
+          password: 'sahil@admin',
+          portalUrl: '#/chatbot-response',
+        },
+      },
     };
   }
 

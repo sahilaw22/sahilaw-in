@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useHashRouter } from './hooks/useHashRouter.js';
 import { useVisitorTracking } from './hooks/useVisitorTracking.js';
 import { useSoundEngine } from './hooks/useSoundEngine.js';
@@ -9,13 +9,15 @@ import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
 import Ribbons from './components/ui/Ribbons.jsx';
 import HomePage from './pages/HomePage.jsx';
-import BlogPage from './pages/BlogPage.jsx';
-import PostPage from './pages/PostPage.jsx';
-import ResumePage from './pages/ResumePage.jsx';
-import ExperiencePage from './pages/ExperiencePage.jsx';
-import ChatPage from './pages/ChatPage.jsx';
-import ProjectsPage from './pages/ProjectsPage.jsx';
-import AdminPage from './pages/AdminPage.jsx';
+
+// Code-split secondary routes for rapid initial page load
+const BlogPage = lazy(() => import('./pages/BlogPage.jsx'));
+const PostPage = lazy(() => import('./pages/PostPage.jsx'));
+const ResumePage = lazy(() => import('./pages/ResumePage.jsx'));
+const ExperiencePage = lazy(() => import('./pages/ExperiencePage.jsx'));
+const ChatPage = lazy(() => import('./pages/ChatPage.jsx'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage.jsx'));
+const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
 
 // Determine which "view name" maps to each route for the bottom nav active state
 function routeToView(route) {
@@ -120,7 +122,9 @@ export default function App() {
       )}
       <div key={route} className="page-transition-wrapper">
         <ErrorBoundary>
-          {renderPage()}
+          <Suspense fallback={<div className="page-route-fallback" style={{ minHeight: '60vh' }} />}>
+            {renderPage()}
+          </Suspense>
         </ErrorBoundary>
       </div>
       {isHome && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}

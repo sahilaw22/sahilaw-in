@@ -26,7 +26,7 @@ export default function ExperienceSection() {
               <ExperienceCard
                 key={item.company || idx}
                 experience={item}
-                defaultOpen={idx === 0}
+                defaultOpen={false}
                 isFeatured={true}
                 isLast={idx === featuredList.length - 1}
               />
@@ -39,6 +39,11 @@ export default function ExperienceSection() {
               href="#/experience"
               className="sleek-exp-view-all-btn cursor-target"
               data-cursor-label="Explore"
+              onClick={() => {
+                try {
+                  sessionStorage.setItem('scroll_target', 'section-journey');
+                } catch {}
+              }}
             >
               <span>Show all work experiences</span>
             </a>

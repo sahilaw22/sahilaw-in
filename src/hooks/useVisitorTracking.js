@@ -17,8 +17,34 @@ export function useVisitorTracking(route) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Ignore tracking for admin management routes to avoid polluting visitor stats
+    // 1. Ignore tracking for admin management routes to avoid polluting visitor stats
     if (route === '/chatbot-response' || route === '/admin') return;
+
+    // 2. Ignore tracking when running locally on computer (localhost, 127.0.0.1, or local IP)
+    const hostname = window.location.hostname || '';
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.endsWith('.local')
+    ) {
+      return;
+    }
+
+    // 3. Exclude admin's personal computer and mobile devices
+    try {
+      if (
+        localStorage.getItem('portfolio_admin_device') === 'true' ||
+        localStorage.getItem('portfolio_admin_token') ||
+        sessionStorage.getItem('portfolio_admin_token') ||
+        localStorage.getItem('portfolio_is_admin') === 'true'
+      ) {
+        return;
+      }
+    } catch {
+      // Storage access check
+    }
 
     const visitorId = getOrSetId(localStorage, 'portfolio_vid', 'vid');
     const sessionId = getOrSetId(sessionStorage, 'portfolio_sid', 'sid');
@@ -58,4 +84,3 @@ export function useVisitorTracking(route) {
     }
   }, [route]);
 }
-

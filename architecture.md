@@ -14,7 +14,7 @@ The platform is designed as an interactive, performant web portfolio with zero e
 - **Visuals & Graphics**: WebGL2 ribbon cursor on desktop, HTML5 Canvas matrix background, and inline vector SVGs
 - **Audio Synthesis**: Native Web Audio API procedural synthesizer (`src/hooks/useSoundEngine.js`)
 - **Client Routing**: Hash-based router (`src/hooks/useHashRouter.js`) without server rewrite requirements
-- **Analytics & Content**: SQLite backend API (`server/`) with local browser fallback in `src/data/`
+- **Backend & Serverless API**: Express-based API mounted via `api/index.js` as a Vercel Serverless Function with `vercel.json` rewrites, backed by SQLite in local/serverless `/tmp` and an in-memory fallback store (`server/db.js`)
 
 ---
 
@@ -25,8 +25,12 @@ Avara/
 ├── index.html                     # HTML5 entry shell, font preloads, and metadata
 ├── package.json                   # Project dependencies and script declarations
 ├── vite.config.js                 # Vite bundler configuration
+├── vercel.json                    # Vercel deployment configuration & /api rewrites
 ├── architecture.md                # System engineering guide and directory map
 ├── readme.md                      # Human-friendly project overview and setup instructions
+│
+├── api/                           # Serverless functions
+│   └── index.js                   # Vercel Serverless Function entrypoint for Express API
 │
 ├── public/                        # Static assets served at root
 │   ├── fonts/                     # Custom typography assets
@@ -57,7 +61,6 @@ Avara/
     │   ├── InteractiveAvatar.css  # Avatar sizing, lens clips, and pupil styles
     │   ├── HeroHeader.jsx         # Hero greeting title, inline avatar, and rotating role badge
     │   ├── AboutSection.jsx       # Bio text reveal and career timeline
-    │   ├── CareerTimeline.jsx     # Vector career progression step-graph
     │   ├── ExperienceSection.jsx  # Connected timeline with company nodes & live working tag
     │   ├── ExperienceCard.jsx     # Accordion card with role details & tech chips
     │   ├── FeaturedProjectsSection.jsx # Pinned cascading card deck

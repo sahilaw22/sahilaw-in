@@ -257,7 +257,7 @@ export default function ResumePage() {
   }
 
   return (
-    <main className="resume-page">
+    <main className="resume-page" data-lenis-prevent="true">
       <div className="resume-toolbar">
         <div>
           <p className="resume-eyebrow">Resume builder</p>
@@ -269,7 +269,7 @@ export default function ResumePage() {
         </button>
       </div>
 
-      <div className="resume-workspace">
+      <div className="resume-workspace" data-lenis-prevent="true">
         <form className="resume-editor" onSubmit={(event) => event.preventDefault()}>
           <h2>Edit content</h2>
           <Field label="Full name" value={resume.name} onChange={(value) => updateField('name', value)} />
@@ -432,7 +432,7 @@ export default function ResumePage() {
         {savedHtml ? (
           <article
             ref={resumeRef}
-            className={`resume-preview${isEditing ? ' is-editing' : ''}`}
+            className={`resume-preview${isEditing ? ' is-editing' : ''}`} data-lenis-prevent="true"
             aria-label="Resume preview"
             contentEditable={isEditing}
             suppressContentEditableWarning
@@ -456,7 +456,7 @@ export default function ResumePage() {
         ) : (
           <article
             ref={resumeRef}
-            className={`resume-preview${isEditing ? ' is-editing' : ''}`}
+            className={`resume-preview${isEditing ? ' is-editing' : ''}`} data-lenis-prevent="true"
             aria-label="Resume preview"
             contentEditable={isEditing}
             suppressContentEditableWarning

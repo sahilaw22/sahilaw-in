@@ -1,48 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollStack, ScrollStackItem } from './ui/ScrollStack.jsx';
 import { TechIcon } from './TechIcons.jsx';
+import DetailModal from './DetailModal.jsx';
+import { usePortfolioData } from '../data/usePortfolioData.js';
+import { PROJECTS as DEFAULT_PROJECTS } from '../data/portfolioData.jsx';
 import './FeaturedProjectsSection.css';
 
-const FEATURED_PROJECTS = [
-  {
-    id: 1,
-    title: 'Sahil Recreation',
-    details: 'Interactive 3D portfolio & spatial Web Audio engine with physics-driven mechanics and fluid motion.',
-    tech: ['React', 'GSAP', 'CSS3', 'Node.js', 'Canvas'],
-    image: '/projects/sahil-recreation.jpg',
-    link: '#/projects',
-    website: 'https://github.com/sahilaw22',
-  },
-  {
-    id: 4,
-    title: 'Lurian AI',
-    details: 'Real-time conversational companion featuring streaming responses, suggested query prompts, and context grounding.',
-    tech: ['React', 'AI Engine', 'TypeScript', 'Node.js', 'Figma'],
-    image: '/projects/lurian-ai.png',
-    link: '#/chat',
-    website: '#/chat',
-  },
-  {
-    id: 2,
-    title: 'Web Audio Synth',
-    details: 'Browser audio workstation exploring oscillator synthesis, filter resonance, and real-time canvas visualizer.',
-    tech: ['Web Audio', 'JavaScript', 'Canvas', 'CSS3', 'TypeScript'],
-    image: '/projects/audio-synth.png',
-    link: '#/projects',
-    website: 'https://github.com/sahilaw22',
-  },
-  {
-    id: 3,
-    title: 'ConnectKit Theme',
-    details: 'Polished design system for Web3 connect flows, accessible modal transitions, and state management.',
-    tech: ['React', 'UI/UX', 'Figma', 'TypeScript', 'CSS3'],
-    image: '/projects/connectkit.png',
-    link: '#/projects',
-    website: 'https://github.com/sahilaw22',
-  },
-];
-
 export default function FeaturedProjectsSection({ play }) {
+  const [selectedProject, setSelectedProject] = useState(null);
+  const { projects: dynamicProjects } = usePortfolioData();
+  const projectsList = (dynamicProjects && dynamicProjects.length > 0 ? dynamicProjects : DEFAULT_PROJECTS).filter(
+    (item) => item.isFeatured !== false
+  );
+
+  function handleNextProject() {
+    if (!selectedProject) return;
+    const currentIdx = projectsList.findIndex((p) => p.id === selectedProject.id);
+    const nextIdx = (currentIdx + 1) % projectsList.length;
+    setSelectedProject(projectsList[nextIdx]);
+  }
+
+  function handlePrevProject() {
+    if (!selectedProject) return;
+    const currentIdx = projectsList.findIndex((p) => p.id === selectedProject.id);
+    const prevIdx = (currentIdx - 1 + projectsList.length) % projectsList.length;
+    setSelectedProject(projectsList[prevIdx]);
+  }
+
   return (
     <section id="section-featured-projects" className="portfolio-section portfolio-featured-projects-section">
       {/* Cascading Card Stack matching reference diagram with pinned header */}
@@ -70,79 +54,104 @@ export default function FeaturedProjectsSection({ play }) {
           </div>
         }
       >
-        {FEATURED_PROJECTS.map((project, idx) => (
-          <ScrollStackItem
-            key={project.id}
-            index={idx}
-          >
-            <div
-              className="scroll-stack-card cursor-target" data-cursor-label="View"
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                play?.('click');
-                window.location.hash = project.link;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  play?.('click');
-                  window.location.hash = project.link;
-                }
-              }}
-              aria-label={`View ${project.title}`}
-            >
-              {/* Image banner with gradient overlay */}
-              <div className="scroll-stack-image-box">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="scroll-stack-img"
-                  loading="lazy"
-                />
-                <div className="scroll-stack-image-gradient" />
-              </div>
+        {projectsList.map((project, idx) => {
+          const externalUrl = project.website || project.github || project.link;
+          const techList = Array.isArray(project.tech) ? project.tech : (Array.isArray(project.technologies) ? project.technologies : []);
 
-              {/* Card body matching project pages */}
-              <div className="scroll-stack-body">
-                <div>
-                  <h3 className="scroll-stack-title">{project.title}</h3>
-                  <p className="scroll-stack-details">{project.details}</p>
+          return (
+            <ScrollStackItem
+              key={project.id || idx}
+              index={idx}
+            >
+              <div
+                className="scroll-stack-card cursor-target" data-cursor-label="Details"
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  play?.('click');
+                  setSelectedProject(project);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    play?.('click');
+                    setSelectedProject(project);
+                  }
+                }}
+                aria-label={`View details for ${project.title}`}
+              >
+                {/* Image banner with gradient overlay */}
+                <div className="scroll-stack-image-box">
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="scroll-stack-img"
+                    loading="lazy"
+                  />
+                  <div className="scroll-stack-image-gradient" />
                 </div>
 
-                <div className="scroll-stack-bottom-row">
-                  <div className="scroll-stack-tech-dotted">
-                    {project.tech.map((t) => (
-                      <span key={t} className="scroll-stack-chip">
-                        <TechIcon name={t} />
-                        <span>{t}</span>
-                      </span>
-                    ))}
+                {/* Card body matching project pages */}
+                <div className="scroll-stack-body">
+                  <div>
+                    <h3 className="scroll-stack-title">{project.title}</h3>
+                    <p className="scroll-stack-details">{project.details || project.description}</p>
                   </div>
 
-                  <a
-                    href={project.website || project.link}
-                    target={project.website?.startsWith('http') ? '_blank' : undefined}
-                    rel={project.website?.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="scroll-stack-arrow-link cursor-target" data-cursor-label="Open"
-                    title={`Visit ${project.title}`}
-                    aria-label={`Visit ${project.title}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      play?.('click');
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <line x1="7" y1="17" x2="17" y2="7" />
-                      <polyline points="7 7 17 7 17 17" />
-                    </svg>
-                  </a>
+                  <div className="scroll-stack-bottom-row">
+                    <div className="scroll-stack-tech-dotted">
+                      {techList.map((t) => (
+                        <span key={t} className="scroll-stack-chip">
+                          <TechIcon name={t} />
+                          <span>{t}</span>
+                        </span>
+                      ))}
+                    </div>
+
+                    {externalUrl && (
+                      <a
+                        href={externalUrl}
+                        target={externalUrl.startsWith('http') ? '_blank' : undefined}
+                        rel={externalUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+                        className="od-visit-btn scroll-stack-visit-btn cursor-target"
+                        data-cursor-label="Visit"
+                        aria-label={`Visit ${project.title}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          play?.('click');
+                        }}
+                      >
+                        <span>Visit</span>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="11"
+                          height="11"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </ScrollStackItem>
-        ))}
+            </ScrollStackItem>
+          );
+        })}
       </ScrollStack>
+
+      <DetailModal
+        project={selectedProject}
+        projectsList={projectsList}
+        onClose={() => setSelectedProject(null)}
+        onNext={handleNextProject}
+        onPrev={handlePrevProject}
+      />
     </section>
   );
 }

@@ -1,146 +1,187 @@
-# Sahil Ahmed Wani — Portfolio & Engineering Showcase
+<div align="center">
 
-A personal portfolio and interactive web platform built with React, Vite, and GSAP. Features custom micro-interactions, procedural Web Audio feedback, an interactive 3D project carousel, and an in-browser management panel with visitor analytics and ZIP export.
+<img src="public/images/avatar-head.png" alt="Sahil's Portfolio Logo" width="100" height="100" />
 
-**Live site:** [sahilaw.in](https://sahilaw.in)
+# Sahil's Portfolio
 
----
+A performant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
 
-## Highlights
+[Live Demo](https://sahilaw.in) &bull; [Key Features](#key-features) &bull; [Architecture](#architecture) &bull; [Quickstart](#quickstart) &bull; [Project Structure](#project-structure) &bull; [Credits](#credits) &bull; [License](#license)
 
-- **Interactive Avatar**: Vector-based character in the hero greeting with pupils that track cursor movement via spring physics, natural double-blinking, and low-power tab suspension.
-- **ScrollStack Project Deck**: Pinned cascading card deck built with GSAP ScrollTrigger. Cards dock sequentially as the user scrolls, finishing with a gliding "Explore all projects" action that unpins smoothly into subsequent sections.
-- **3D OrbitDeck Carousel**: Cylindrical perspective ring powered by CSS 3D transforms, with mouse drag and touch scrubbing.
-- **Work Experience & Education**: Vertical connected timeline with company logos, animated working indicators, and a dedicated distraction-free route (`#/experience`).
-- **Procedural Audio Engine**: Lightweight sound feedback synthesized directly in the browser via the Web Audio API without loading external audio files.
-- **Ribbon Cursor**: GPU-accelerated WebGL cursor trail on desktop pointers, completely disabled on touch and mobile screens to preserve battery and frame rates.
-- **Admin Workspace & Visitor Analytics**: In-browser content editor with real-time updates, local storage sync, visitor tracking, and one-click ZIP archive backup.
-- **Client-Side Hash Routing**: Lightweight router without server rewrite requirements, deployable to GitHub Pages, Vercel, or Netlify.
+</div>
 
 ---
 
-## Tech Stack
+## Overview
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend Framework** | React 18, Vite 5 |
-| **Animation & Motion** | GSAP 3 (ScrollTrigger), Lenis Smooth Scroll |
-| **Graphics & Audio** | Canvas API, WebGL2, Web Audio API |
-| **Styling** | Vanilla CSS, CSS Grid/Flexbox, Tailwind utility classes |
-| **Icons & Media** | SkillIcons, inline SVGs, TechIcon vectors |
-| **Data & Storage** | Local Storage, SQLite backend (`portfolio.db`) |
+Sahil's Portfolio is an open engineering showcase designed around fluid micro-interactions, low-latency audio feedback, and modular content architecture. Built without bulky component libraries or extraneous runtimes, it balances tactile visual polish with strict 60 FPS performance budgets across desktop and mobile devices.
+
+The application includes an in-browser management workspace, dynamic SQLite-backed content synchronization, and serverless deployment readiness for modern edge platforms.
+
+> [!NOTE]
+> The site operates entirely on client-side hash routing (`#/`), allowing static hosting on platforms like Vercel or GitHub Pages while maintaining direct deep linking to projects, career timelines, and interactive tools.
+
+---
+
+## Key Features
+
+- **Spring-Physics Eye Tracking**: Vector avatar in the hero greeting with cursor-following pupils constrained within circular eyewear, organic double-blinks, and background tab idle suspension.
+- **GSAP ScrollStack Deck**: Cascading card deck with pin-spacing that docks projects sequentially as the user scrolls, finishing with a gliding action before unlocking subsequent sections.
+- **3D OrbitDeck Perspective Ring**: Cylindrical 3D project ring powered by CSS 3D transforms, supporting pointer drag and touch scrubbing.
+- **Synthesized Audio Engine**: Procedural sound feedback generated in real time using the browser Web Audio API with zero external audio assets.
+- **GPU-Accelerated Ribbon Trail**: Smooth WebGL cursor ribbon on desktop pointers, automatically disabled on mobile screens and touch devices to conserve power.
+- **Dynamic Content Management (CRUD)**: SQLite-backed management dashboard allowing real-time edits to projects, work experience, education, skills, narrative text, and contact links without rebuilds.
+- **Lightweight Route Chunking**: Code-split route architecture using `React.lazy()` and Rollup manual chunking, delivering an initial entry bundle under 130 kB.
 
 ---
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    Shell["index.html Entry Shell"] --> Boot["main.jsx Bootstrapper"]
+    Boot --> App["App.jsx Root Coordinator"]
+
+    subgraph GlobalEngines["Global Runtime Engines"]
+        App -.-> Ribbon["Ribbon Cursor (WebGL2)"]
+        App -.-> Audio["Web Audio Synthesis Hook"]
+        App -.-> Scroll["Smooth Scroll Engine (Lenis + GSAP)"]
+        App -.-> Router["Hash-Based Route Dispatcher"]
+    end
+
+    subgraph Views["Lazy-Loaded Route Views"]
+        App --> Home["HomePage (Hero, ScrollStack Deck, Skills, Contact)"]
+        App --> Projects["ProjectsPage (3D OrbitDeck & Modals)"]
+        App --> Career["ExperiencePage (Career Timeline)"]
+        App --> Chat["ChatPage (AI Portfolio Assistant)"]
+        App --> Admin["AdminPage (Real-Time CRUD Workspace)"]
+    end
+
+    subgraph DataStore["Data & Persistence Layer"]
+        Home & Projects & Career & Admin --> CacheHook["usePortfolioData (Reactive Cache & CustomEvents)"]
+        CacheHook <--> SQLite["SQLite Database (/api/portfolio-content)"]
+    end
 ```
-                                  [ index.html ]
-                                        │
-                                        ▼
-                                   [ main.jsx ]
-                                        │
-                                        ▼
-                                   [ App.jsx ]
-            (Desktop Ribbons, Sound Engine, Hash Router, Smooth Scroll)
-                                        │
-      ┌──────────────┬──────────────────┴──────────────────┬──────────────┐
-      ▼              ▼                                     ▼              ▼
- [ HomePage ]   [ ExperiencePage ]                  [ ProjectsPage ] [ AdminPage ]
- - Hero & Avatar - Full Timeline Deck               - 3D OrbitDeck   - Content Editor
- - About Me      - Distraction-Free View            - Archive Grid   - Visitor Stats
- - ScrollStack   - Working Status Indicators        - Project Modals - ZIP Backup Export
- - Education
- - Skills
- - Certifications
- - Contact
-```
+
+> [!TIP]
+> The dynamic data layer in `src/data/usePortfolioData.js` provides automatic local caching (`portfolio_content_cache_v13`) and broadcasts real-time cross-tab synchronization via CustomEvents whenever content is updated in the Admin workspace.
 
 ---
 
-## Directory Structure
+## Tech Stack
 
-```
-├── public/                 # Static assets served at root
-│   ├── images/             # Visual assets and navigation icons
-│   │   ├── avatar-head.png # Vector avatar line art
-│   │   └── navigation/     # Navigation pills
-│   ├── projects/           # Featured project thumbnails
-│   └── styles/             # Base stylesheets
-│
-├── src/                    # Source code
-│   ├── components/         # UI components
-│   │   ├── InteractiveAvatar.jsx   # Cursor-following eye physics
-│   │   ├── HeroHeader.jsx          # Hero greeting & rotating role
-│   │   ├── FeaturedProjectsSection.jsx # Cascading project deck
-│   │   ├── ExperienceSection.jsx   # Timeline with company logos
-│   │   ├── AboutSection.jsx        # Bio & skill highlights
-│   │   ├── ContactSection.jsx      # Contact buttons & social links
-│   │   └── ui/                     # Reusable widgets (ScrollStack, Ribbons)
-│   │
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useHashRouter.js        # Client-side hash router
-│   │   ├── useSoundEngine.js       # Procedural audio generator
-│   │   ├── useSmoothScroll.js      # Lenis scroll controller
-│   │   └── useVisitorTracking.js   # Analytics logger
-│   │
-│   ├── pages/              # Route views
-│   │   ├── HomePage.jsx            # Main scrollable single-page layout
-│   │   ├── ExperiencePage.jsx      # Extended career experience view
-│   │   ├── ProjectsPage.jsx        # Project gallery & 3D carousel
-│   │   ├── ResumePage.jsx          # Interactive CV preview
-│   │   ├── ChatPage.jsx            # Interactive assistant
-│   │   └── AdminPage.jsx           # Management workspace
-│   │
-│   └── data/               # Structured content & data hooks
-│
-└── server/                 # Local Node.js API and analytics server
-```
+| Layer | Tools and Technologies |
+| :--- | :--- |
+| **Frontend Framework** | React 18, Vite 5 |
+| **Animation & Motion** | GSAP 3 (ScrollTrigger), Lenis Smooth Scroll |
+| **Graphics & Audio** | HTML5 Canvas, WebGL2, Web Audio API |
+| **Styles & Layout** | Vanilla CSS, CSS Grid/Flexbox, Custom Properties |
+| **Icons & Typography** | SkillIcons, inline SVG systems, Disket Mono |
+| **Backend & Storage** | Node.js Express API, SQLite (`portfolio.db`), Vercel Serverless |
 
 ---
 
-## Local Setup
+## Quickstart
 
 ### Prerequisites
 
-- Node.js 18 or later
-- npm or pnpm
+- Node.js 18.0 or higher
+- npm 9.0 or higher (or pnpm / yarn)
 
 ### Installation
 
+Clone the repository and install dependencies:
+
 ```bash
-# Clone the repository
 git clone https://github.com/sahilaw22/sahilaw-in.git
-
-# Navigate into the project directory
 cd sahilaw-in
-
-# Install dependencies
 npm install
 ```
 
 ### Running Locally
 
-```bash
-# Start the Vite development server
-npm run dev
+To start the Vite development server with hot module replacement:
 
-# Start the optional backend API server
+```bash
+npm run dev
+```
+
+To run the local backend API server alongside the frontend:
+
+```bash
 npm run server
+```
+
+> [!IMPORTANT]
+> The development server runs on `http://localhost:5173`. When accessing the chatbot or admin portal locally, ensure the backend server is running on `http://localhost:3001` or run `npm run dev` with the integrated Vite proxy plugin.
+
+### Running Tests
+
+Execute the deterministic bot matching engine test suite:
+
+```bash
+npm run test:bot
 ```
 
 ### Production Build
 
-```bash
-# Compile and optimize production assets to dist/
-npm run build
+Compile and optimize client assets with automatic route chunking:
 
-# Preview the production build locally
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
 npm run preview
 ```
 
 ---
 
+## Project Structure
+
+| Directory / File | Type | Purpose & Contents |
+| :--- | :--- | :--- |
+| `api/index.js` | Serverless Function | Vercel Serverless entrypoint exporting the Express API router. |
+| `public/company/` | Static Brand Media | Organization and company partner brand logos. |
+| `public/fonts/` | Typography Assets | Custom brand font files including Disket Mono variants. |
+| `public/icons/` | Vector Library | Local SkillIcon badges, favicon, and system vectors. |
+| `public/images/` | Static Artwork | Vector avatar line art (`avatar-head.png`) and navigation dock graphics. |
+| `public/projects/` | Media Thumbnails | Project cover assets and demo preview posters. |
+| `server/api.js` | Backend API | Express REST endpoints for visitor analytics, chat bot, and content CRUD. |
+| `server/db.js` | Database Layer | SQLite connection, table schemas, and persistence operations. |
+| `server/matchingEngine.js` | NLP Query Engine | Fast, deterministic matching engine powering the assistant. |
+| `src/components/ui/` | Core UI Primitives | Reusable components: `ScrollStack.jsx`, `OrbitDeck.jsx`, `Ribbons.jsx`. |
+| `src/components/` | Section Views | `InteractiveAvatar.jsx`, `HeroHeader.jsx`, `ExperienceSection.jsx`, `ContactSection.jsx`. |
+| `src/data/` | Content Store | Centralized schema (`portfolioData.jsx`) and reactive hook (`usePortfolioData.js`). |
+| `src/hooks/` | Custom Hooks | Audio engine (`useSoundEngine.js`), hash routing, and smooth scrolling. |
+| `src/pages/` | Code-Split Views | Route pages: `HomePage`, `ProjectsPage`, `ExperiencePage`, `ResumePage`, `ChatPage`, `AdminPage`. |
+| `src/index.css` | Global Styling | Central stylesheet containing design tokens, animations, and responsive media rules. |
+| `vercel.json` | Deployment Config | Vercel edge rewrite configurations for `/api/*` routing. |
+
+---
+
+## Content Management & Administration
+
+The portfolio includes an integrated management portal accessible via `#/admin`.
+
+- **Work Experience**: Add, edit, or delete roles, dates, company logos, and skill tags.
+- **Projects Showcase**: Create, update, reorder (up/down), and feature projects on the homepage deck.
+- **Identity & Links**: Update hero titles, bio narrative, verified email, and social profiles.
+- **Visitor Analytics**: View geographic distribution, device types, and page impression metrics.
+- **Data Portability**: Download a full JSON and asset archive in a single ZIP file at any time.
+
+---
+
+## Credits
+
+Designed and built by Sahil Ahmed Wani.
+
+Technologies & Tools: React 18, Next.js, Three.js, WebGL, Web Audio, Vite, GSAP, Claude, Gemini.
+
+---
+
 ## License
 
-MIT © [Sahil Ahmed Wani](https://github.com/sahilaw22)
+This project is open-source and available under the terms of the [MIT License](LICENSE).

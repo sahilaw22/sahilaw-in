@@ -3,7 +3,16 @@ import JSZip from 'jszip';
 import MarkdownContent from '../components/MarkdownContent.jsx';
 import AnswerTextEditor from '../components/AnswerTextEditor.jsx';
 import { TechIcon } from '../components/TechIcons.jsx';
-import { CERTIFICATIONS, ACHIEVEMENTS } from '../data/portfolioData.jsx';
+import {
+  HERO_ROLES,
+  ABOUT_PARAGRAPHS,
+  EXPERIENCES,
+  PROJECTS,
+  EDUCATION_ITEMS,
+  SKILL_CATEGORIES,
+  CERTIFICATIONS,
+  ACHIEVEMENTS,
+} from '../data/portfolioData.jsx';
 import './AdminPage.css';
 
 const QUICK_ABOUT_ICONS = [
@@ -251,6 +260,7 @@ export default function AdminPage() {
   const [portfolioContent, setPortfolioContent] = useState({
     about: [],
     experiences: [],
+    projects: [],
     education: [],
     skills: [],
     certifications: [],
@@ -269,6 +279,23 @@ export default function AdminPage() {
   });
   const [contentSubtab, setContentSubtab] = useState('experiences');
   const [contentSaveMsg, setContentSaveMsg] = useState('');
+
+  // Projects modal/editing state
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [editingProjectIndex, setEditingProjectIndex] = useState(null);
+  const [projectForm, setProjectForm] = useState({
+    id: '',
+    title: '',
+    category: 'Web App',
+    year: '2026',
+    details: '',
+    longDetails: '',
+    tech: '',
+    image: '',
+    link: '',
+    github: '',
+    isFeatured: true,
+  });
 
   // Experience modal/editing state
   const [showExpModal, setShowExpModal] = useState(false);
@@ -328,6 +355,8 @@ export default function AdminPage() {
   const [editingAboutList, setEditingAboutList] = useState([]);
   const [metaRolesText, setMetaRolesText] = useState('');
   const [metaEmailText, setMetaEmailText] = useState('sahilaw502@gmail.com');
+  const [metaContactStatusText, setMetaContactStatusText] = useState('OPEN TO PRODUCT DESIGN ROLES');
+  const [metaLocationText, setMetaLocationText] = useState('JAMMU, INDIA');
   const [metaNameText, setMetaNameText] = useState('Sahil Wani');
   const [metaPitchText, setMetaPitchText] = useState(
     'Hey, I am Sahil Wani, a 20yo guy building things for the web. Crafting sleek digital experiences, experimenting with code, design, and ideas that feel right.'
@@ -420,7 +449,7 @@ export default function AdminPage() {
     if (!authToken) return;
     setVisitorLoading(true);
     fetch(`/api/admin/visitor-analytics?range=${range}`, {
-      headers: { Authorization: `Bearer ${authToken}` },
+      headers: { Authorization: `Bearer ${authToken}`, 'x-admin-device': 'true' },
     })
       .then((r) => r.json())
       .then((data) => {
@@ -478,9 +507,20 @@ export default function AdminPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d && d.success && d.content) {
-          setPortfolioContent(d.content);
-          if (Array.isArray(d.content.skills)) {
-            const cleaned = d.content.skills
+          const fresh = {
+            about: Array.isArray(d.content.about) && d.content.about.length > 0 ? d.content.about : (ABOUT_PARAGRAPHS || []),
+            experiences: Array.isArray(d.content.experiences) && d.content.experiences.length > 0 ? d.content.experiences : (EXPERIENCES || []),
+            projects: Array.isArray(d.content.projects) && d.content.projects.length > 0 ? d.content.projects : (PROJECTS || []),
+            education: Array.isArray(d.content.education) && d.content.education.length > 0 ? d.content.education : (EDUCATION_ITEMS || []),
+            skills: Array.isArray(d.content.skills) && d.content.skills.length > 0 ? d.content.skills : (SKILL_CATEGORIES || []),
+            certifications: Array.isArray(d.content.certifications) && d.content.certifications.length > 0 ? d.content.certifications : (CERTIFICATIONS || []),
+            achievements: Array.isArray(d.content.achievements) && d.content.achievements.length > 0 ? d.content.achievements : (ACHIEVEMENTS || []),
+            custom_icons: Array.isArray(d.content.custom_icons) ? d.content.custom_icons : [],
+            meta: d.content.meta || { hero_roles: HERO_ROLES },
+          };
+          setPortfolioContent(fresh);
+          if (Array.isArray(fresh.skills)) {
+            const cleaned = fresh.skills
               .filter((cat) => cat && (cat.category || '').trim().toLowerCase() !== 'new category')
               .map((cat) => {
                 const filteredSkills = (cat.skills || []).filter((s) => {
@@ -495,16 +535,18 @@ export default function AdminPage() {
               });
             setEditingSkillsList(cleaned);
           }
-          if (Array.isArray(d.content.about)) setEditingAboutList(d.content.about);
-          if (d.content.meta) {
-            setMetaRolesText(Array.isArray(d.content.meta.hero_roles) ? d.content.meta.hero_roles.join(', ') : '');
-            setMetaEmailText(d.content.meta.email || 'sahilaw502@gmail.com');
-            if (d.content.meta.name) setMetaNameText(d.content.meta.name);
-            if (d.content.meta.pitch) setMetaPitchText(d.content.meta.pitch);
-            if (d.content.meta.github) setMetaGithubText(d.content.meta.github);
-            if (d.content.meta.linkedin) setMetaLinkedinText(d.content.meta.linkedin);
-            if (d.content.meta.threads) setMetaThreadsText(d.content.meta.threads);
-            if (d.content.meta.x || d.content.meta.twitter) setMetaXText(d.content.meta.x || d.content.meta.twitter);
+          if (Array.isArray(fresh.about)) setEditingAboutList(fresh.about);
+          if (fresh.meta) {
+            setMetaRolesText(Array.isArray(fresh.meta.hero_roles) ? fresh.meta.hero_roles.join(', ') : '');
+            setMetaEmailText(fresh.meta.email || 'sahilaw502@gmail.com');
+            if (fresh.meta.contact_status) setMetaContactStatusText(fresh.meta.contact_status);
+            if (fresh.meta.location) setMetaLocationText(fresh.meta.location);
+            if (fresh.meta.name) setMetaNameText(fresh.meta.name);
+            if (fresh.meta.pitch) setMetaPitchText(fresh.meta.pitch);
+            if (fresh.meta.github) setMetaGithubText(fresh.meta.github);
+            if (fresh.meta.linkedin) setMetaLinkedinText(fresh.meta.linkedin);
+            if (fresh.meta.threads) setMetaThreadsText(fresh.meta.threads);
+            if (fresh.meta.x || fresh.meta.twitter) setMetaXText(fresh.meta.x || fresh.meta.twitter);
           }
         }
       })
@@ -529,6 +571,7 @@ export default function AdminPage() {
       .then((data) => {
         setToken(data.token);
         localStorage.setItem('portfolio_admin_token', data.token);
+        localStorage.setItem('portfolio_admin_device', 'true');
         setAdminUser(data.admin);
         loadDashboardData(data.token);
       })
@@ -724,32 +767,50 @@ export default function AdminPage() {
   }
 
   // --- Portfolio Content Handlers (Real-time updates) ---
-  function handleSavePortfolioSection(section, data) {
+  async function handleSavePortfolioSection(section, data) {
     setContentSaveMsg('');
-    return fetch(`/api/admin/portfolio-content/${section}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ data }),
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        if (!res.success) throw new Error(res.error || 'Failed to update section');
-        setPortfolioContent((prev) => ({ ...prev, [section]: data }));
-        setContentSaveMsg('Your website has been updated successfully.');
-        setTimeout(() => setContentSaveMsg(''), 4000);
+    const activeToken = token || localStorage.getItem('portfolio_admin_token') || '';
+    if (!activeToken) {
+      alert('You must be logged in as admin to save changes. Please log in.');
+      throw new Error('Not authenticated');
+    }
 
-        // Notify other windows/components
-        window.dispatchEvent(new CustomEvent('portfolio-content-updated', { detail: { [section]: data } }));
-        try {
-          const cached = JSON.parse(localStorage.getItem('portfolio_content_cache') || '{}');
-          cached[section] = data;
-          localStorage.setItem('portfolio_content_cache', JSON.stringify(cached));
-        } catch {}
-      })
-      .catch((err) => alert('Save failed: ' + err.message));
+    try {
+      const r = await fetch(`/api/admin/portfolio-content/${section}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${activeToken}`,
+        },
+        body: JSON.stringify({ data }),
+      });
+
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.success) {
+        throw new Error(res.error || `HTTP ${r.status}: Failed to update section`);
+      }
+
+      setPortfolioContent((prev) => ({ ...prev, [section]: data }));
+      setContentSaveMsg('Your website has been updated successfully.');
+      setTimeout(() => setContentSaveMsg(''), 4000);
+
+      // Notify other windows/components
+      window.dispatchEvent(new CustomEvent('portfolio-content-updated', { detail: { [section]: data } }));
+      try {
+        const cached = JSON.parse(localStorage.getItem('portfolio_content_cache') || '{}');
+        cached[section] = data;
+        localStorage.setItem('portfolio_content_cache', JSON.stringify(cached));
+      } catch {}
+      try {
+        const cached13 = JSON.parse(localStorage.getItem('portfolio_content_cache_v13') || '{}');
+        cached13[section] = data;
+        localStorage.setItem('portfolio_content_cache_v13', JSON.stringify(cached13));
+      } catch {}
+      return res;
+    } catch (err) {
+      alert('Save failed: ' + err.message);
+      throw err;
+    }
   }
 
   async function handleExportZip() {
@@ -846,17 +907,111 @@ export default function AdminPage() {
     }
   }
 
+  function handleOpenAddProject() {
+    setEditingProjectIndex(null);
+    setProjectForm({
+      id: `project-${Date.now()}`,
+      title: '',
+      category: 'Web App',
+      year: '2026',
+      details: '',
+      longDetails: '',
+      tech: '',
+      image: '',
+      link: '',
+      github: '',
+      isFeatured: true,
+    });
+    setShowProjectModal(true);
+  }
+
+  function handleOpenEditProject(item, index) {
+    setEditingProjectIndex(index);
+    const techStr = Array.isArray(item.tech)
+      ? item.tech.join(', ')
+      : (Array.isArray(item.technologies) ? item.technologies.join(', ') : (item.tech || ''));
+    setProjectForm({
+      id: item.id || `project-${Date.now()}`,
+      title: item.title || '',
+      category: item.category || 'Web App',
+      year: item.year || '2026',
+      details: item.details || item.description || '',
+      longDetails: item.longDetails || item.details || item.description || '',
+      tech: techStr,
+      image: item.image || item.videoThumb || '',
+      link: item.link || item.website || '',
+      github: item.github || '',
+      isFeatured: item.isFeatured !== false,
+    });
+    setShowProjectModal(true);
+  }
+
+  function handleSaveProject(e) {
+    e.preventDefault();
+    const techArray = projectForm.tech
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const updatedItem = {
+      id: projectForm.id || `project-${Date.now()}`,
+      title: projectForm.title.trim(),
+      category: projectForm.category.trim() || 'Web App',
+      year: projectForm.year.trim() || '2026',
+      details: projectForm.details.trim(),
+      description: projectForm.details.trim(),
+      longDetails: projectForm.longDetails.trim() || projectForm.details.trim(),
+      tech: techArray,
+      technologies: techArray,
+      techFull: techArray,
+      image: projectForm.image.trim(),
+      videoThumb: projectForm.image.trim(),
+      link: projectForm.link.trim(),
+      website: projectForm.link.trim(),
+      github: projectForm.github.trim(),
+      isFeatured: projectForm.isFeatured,
+      isWorking: true,
+    };
+
+    let updatedList = [...(portfolioContent.projects || [])];
+    if (editingProjectIndex !== null && editingProjectIndex >= 0) {
+      updatedList[editingProjectIndex] = updatedItem;
+    } else {
+      updatedList.unshift(updatedItem);
+    }
+
+    handleSavePortfolioSection('projects', updatedList).then(() => {
+      setShowProjectModal(false);
+    });
+  }
+
+  function handleDeleteProject(index) {
+    if (!window.confirm('Are you sure you want to delete this project?')) return;
+    const updated = (portfolioContent.projects || []).filter((_, idx) => idx !== index);
+    handleSavePortfolioSection('projects', updated);
+  }
+
+  function handleMoveProject(index, direction) {
+    const list = [...(portfolioContent.projects || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    handleSavePortfolioSection('projects', list);
+  }
+
   function handleOpenAddExp() {
     setEditingExpIndex(null);
     setExpForm({
       id: `exp-${Date.now()}`,
       company: '',
       role: '',
-      period: 'JUL 2026 - PRESENT',
-      startDate: 'JUL 2026',
-      endDate: 'PRESENT',
-      location: 'India',
-      isCurrent: true,
+      period: '',
+      startDate: '',
+      endDate: '',
+      location: '',
+      isCurrent: false,
       desc: '',
       skills: '',
       logo: '',
@@ -872,17 +1027,36 @@ export default function AdminPage() {
   function handleOpenEditExp(exp, index) {
     setEditingExpIndex(index);
     const logoVal = typeof exp.image === 'string' && exp.image ? exp.image : (typeof exp.logo === 'string' ? exp.logo : '');
+    const isCurrent = Boolean(
+      exp.isCurrent ||
+      (typeof exp.period === 'string' && /present/i.test(exp.period)) ||
+      (typeof exp.endDate === 'string' && /present/i.test(exp.endDate))
+    );
+
+    let start = exp.startDate || '';
+    let end = exp.endDate || '';
+    if (!start && exp.period) {
+      const parts = exp.period.split(/[-–—]/);
+      start = parts[0]?.trim() || '';
+      end = parts[1]?.trim() || '';
+    }
+    if (isCurrent && (!end || !/present/i.test(end))) {
+      end = 'Present';
+    }
+
+    const initialPeriod = exp.period || (start && end ? `${start} - ${end}` : (start || ''));
+
     setExpForm({
       id: exp.id || `exp-${Date.now()}`,
       company: exp.company || '',
       role: exp.role || exp.position || '',
-      period: exp.period || '',
-      startDate: exp.startDate || (exp.period ? exp.period.split('-')[0].trim() : ''),
-      endDate: exp.endDate || (exp.period ? exp.period.split('-')[1]?.trim() : ''),
+      period: initialPeriod,
+      startDate: start,
+      endDate: end,
       location: exp.location || '',
-      isCurrent: !!exp.isCurrent,
+      isCurrent,
       desc: Array.isArray(exp.description) ? exp.description.join('\n') : (exp.desc || ''),
-      skills: Array.isArray(exp.skills) ? exp.skills.join(', ') : (exp.skills || ''),
+      skills: Array.isArray(exp.skills) ? exp.skills.join(', ') : (Array.isArray(exp.technologies) ? exp.technologies.join(', ') : (exp.skills || '')),
       logo: logoVal,
       image: logoVal,
       website: exp.website || '',
@@ -906,21 +1080,32 @@ export default function AdminPage() {
       .filter(Boolean);
 
     const logoImg = (expForm.image || expForm.logo || '').trim();
-    const periodStr = expForm.period.trim() || `${expForm.startDate} - ${expForm.isCurrent ? 'Present' : expForm.endDate}`;
+
+    let finalPeriod = expForm.period.trim();
+    if (!finalPeriod) {
+      const startPart = expForm.startDate.trim();
+      const endPart = expForm.isCurrent ? 'Present' : expForm.endDate.trim();
+      if (startPart && endPart) {
+        finalPeriod = `${startPart} - ${endPart}`;
+      } else {
+        finalPeriod = startPart || endPart;
+      }
+    }
 
     const updatedItem = {
       id: expForm.id || `exp-${Date.now()}`,
       company: expForm.company.trim(),
       role: expForm.role.trim(),
       position: expForm.role.trim(),
-      period: periodStr,
+      period: finalPeriod,
       startDate: expForm.startDate.trim(),
       endDate: expForm.isCurrent ? 'Present' : expForm.endDate.trim(),
       location: expForm.location.trim(),
-      isCurrent: expForm.isCurrent,
+      isCurrent: Boolean(expForm.isCurrent),
       desc: expForm.desc.trim(),
       description: descBullets.length > 0 ? descBullets : [expForm.desc.trim()],
       skills: skillsArray,
+      technologies: skillsArray,
       logo: logoImg,
       image: logoImg,
       website: expForm.website.trim(),
@@ -930,15 +1115,17 @@ export default function AdminPage() {
     };
 
     let updatedExperiences = [...(portfolioContent.experiences || [])];
-    if (editingExpIndex !== null && editingExpIndex >= 0) {
+    if (editingExpIndex !== null && editingExpIndex >= 0 && editingExpIndex < updatedExperiences.length) {
       updatedExperiences[editingExpIndex] = updatedItem;
     } else {
       updatedExperiences.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection('experiences', updatedExperiences).then(() => {
-      setShowExpModal(false);
-    });
+    handleSavePortfolioSection('experiences', updatedExperiences)
+      .then(() => {
+        setShowExpModal(false);
+      })
+      .catch(() => {});
   }
 
   function handleDeleteExp(index) {
@@ -947,14 +1134,24 @@ export default function AdminPage() {
     handleSavePortfolioSection('experiences', updated);
   }
 
+  function handleMoveExp(index, direction) {
+    const list = [...(portfolioContent.experiences || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    handleSavePortfolioSection('experiences', list);
+  }
+
   function handleOpenAddEdu() {
     setEditingEduIndex(null);
     setEduForm({
       id: `edu-${Date.now()}`,
       degree: '',
       institution: '',
-      period: '2024 - 2028',
-      isCurrent: true,
+      period: '',
+      isCurrent: false,
       desc: '',
       courses: '',
       logo: '',
@@ -994,7 +1191,7 @@ export default function AdminPage() {
       degree: eduForm.degree.trim(),
       institution: eduForm.institution.trim(),
       period: eduForm.period.trim(),
-      isCurrent: eduForm.isCurrent,
+      isCurrent: Boolean(eduForm.isCurrent),
       desc: eduForm.desc.trim(),
       description: eduForm.desc.trim(),
       courses: coursesArray,
@@ -1003,21 +1200,33 @@ export default function AdminPage() {
     };
 
     let updatedEducation = [...(portfolioContent.education || [])];
-    if (editingEduIndex !== null && editingEduIndex >= 0) {
+    if (editingEduIndex !== null && editingEduIndex >= 0 && editingEduIndex < updatedEducation.length) {
       updatedEducation[editingEduIndex] = updatedItem;
     } else {
       updatedEducation.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection('education', updatedEducation).then(() => {
-      setShowEduModal(false);
-    });
+    handleSavePortfolioSection('education', updatedEducation)
+      .then(() => {
+        setShowEduModal(false);
+      })
+      .catch(() => {});
   }
 
   function handleDeleteEdu(index) {
     if (!window.confirm('Are you sure you want to delete this education entry?')) return;
     const updated = (portfolioContent.education || []).filter((_, idx) => idx !== index);
     handleSavePortfolioSection('education', updated);
+  }
+
+  function handleMoveEdu(index, direction) {
+    const list = [...(portfolioContent.education || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    handleSavePortfolioSection('education', list);
   }
 
   // --- Certifications & Achievements Handlers ---
@@ -1078,15 +1287,17 @@ export default function AdminPage() {
     };
 
     let updatedList = [...existingList];
-    if (editingCertIndex !== null && editingCertIndex >= 0) {
+    if (editingCertIndex !== null && editingCertIndex >= 0 && editingCertIndex < updatedList.length) {
       updatedList[editingCertIndex] = updatedItem;
     } else {
       updatedList.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection(sectionName, updatedList).then(() => {
-      setShowCertModal(false);
-    });
+    handleSavePortfolioSection(sectionName, updatedList)
+      .then(() => {
+        setShowCertModal(false);
+      })
+      .catch(() => {});
   }
 
   function handleDeleteCert(index, type = 'certification') {
@@ -1102,6 +1313,22 @@ export default function AdminPage() {
 
     const updated = existingList.filter((_, idx) => idx !== index);
     handleSavePortfolioSection(sectionName, updated);
+  }
+
+  function handleMoveCert(index, direction, type = 'certification') {
+    const isCert = type === 'certification';
+    const sectionName = isCert ? 'certifications' : 'achievements';
+    const fallbackList = isCert ? CERTIFICATIONS : ACHIEVEMENTS;
+    const existingList = Array.isArray(portfolioContent[sectionName]) && portfolioContent[sectionName].length > 0
+      ? portfolioContent[sectionName]
+      : fallbackList;
+    const list = [...existingList];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    handleSavePortfolioSection(sectionName, list);
   }
 
   // --- Custom Icon Handlers ---
@@ -1281,6 +1508,8 @@ export default function AdminPage() {
       name: metaNameText.trim() || 'Sahil Wani',
       pitch: metaPitchText.trim(),
       email: metaEmailText.trim() || 'sahilaw502@gmail.com',
+      contact_status: metaContactStatusText.trim() || 'OPEN TO PRODUCT DESIGN ROLES',
+      location: metaLocationText.trim() || 'JAMMU, INDIA',
       github: metaGithubText.trim() || 'https://github.com/sahil-wani',
       linkedin: metaLinkedinText.trim() || 'https://linkedin.com/in/sahil-wani',
       threads: metaThreadsText.trim() || 'https://threads.net/@sahilwani',
@@ -1812,7 +2041,9 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="admin-recent-visitors-list">
-                    {visitorAnalytics.recentVisitors.map((v, idx) => {
+                    {visitorAnalytics.recentVisitors
+                      .filter((v) => !((v.city || '') + ' ' + (v.country || '')).toLowerCase().includes('local'))
+                      .map((v, idx) => {
                       const locText = v.city && v.country ? `${v.city}, ${v.country}` : (v.city || v.country || 'Location Unknown');
                       const timeAgo = formatRelativeTime(v.last_active);
                       return (
@@ -2010,6 +2241,13 @@ export default function AdminPage() {
                 </button>
                 <button
                   type="button"
+                  className={`portfolio-subtab-btn ${contentSubtab === 'projects' ? 'is-active' : ''}`}
+                  onClick={() => setContentSubtab('projects')}
+                >
+                  Projects & Work ({portfolioContent.projects?.length || 0})
+                </button>
+                <button
+                  type="button"
                   className={`portfolio-subtab-btn ${contentSubtab === 'education' ? 'is-active' : ''}`}
                   onClick={() => setContentSubtab('education')}
                 >
@@ -2095,7 +2333,29 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveExp(idx, 'up')}
+                                disabled={idx === 0}
+                                title="Move Up"
+                                aria-label="Move experience up"
+                              >
+                                &uarr;
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveExp(idx, 'down')}
+                                disabled={idx === (portfolioContent.experiences.length - 1)}
+                                title="Move Down"
+                                aria-label="Move experience down"
+                              >
+                                &darr;
+                              </button>
                               <button type="button" className="admin-btn admin-btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => handleOpenEditExp(exp, idx)}>
                                 Edit
                               </button>
@@ -2120,6 +2380,110 @@ export default function AdminPage() {
                           )}
                         </div>
                       ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* SUBTAB: PROJECTS */}
+              {contentSubtab === 'projects' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '14px', color: '#9ca3af' }}>
+                      Add, edit, reorder, or feature projects shown in your portfolio showcase and cascading deck.
+                    </div>
+                    <button type="button" className="admin-btn admin-btn-accent" onClick={handleOpenAddProject}>
+                      + Add New Project
+                    </button>
+                  </div>
+
+                  <div className="portfolio-items-list">
+                    {(!portfolioContent.projects || portfolioContent.projects.length === 0) ? (
+                      <div className="admin-card" style={{ textAlign: 'center', padding: '32px', color: '#6b7280' }}>
+                        No projects added yet. Click &quot;+ Add New Project&quot; to showcase your work.
+                      </div>
+                    ) : (
+                      portfolioContent.projects.map((proj, idx) => {
+                        const projTech = Array.isArray(proj.tech) ? proj.tech : (Array.isArray(proj.technologies) ? proj.technologies : []);
+                        const projImg = proj.image || proj.videoThumb || '';
+                        return (
+                          <div key={proj.id || idx} className="portfolio-item-card">
+                            <div className="portfolio-item-header">
+                              <div className="portfolio-item-title-col">
+                                <div className="portfolio-logo-thumb" style={{ width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden' }}>
+                                  {projImg ? (
+                                    <img src={projImg} alt={proj.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  ) : (
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <rect width="18" height="18" x="3" y="3" rx="2" />
+                                      <path d="m3 9 2.45-3" />
+                                      <path d="M11 3v6" />
+                                    </svg>
+                                  )}
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>{proj.title}</span>
+                                    {proj.isFeatured && (
+                                      <span style={{ fontSize: '10px', background: 'rgba(236, 72, 153, 0.2)', color: '#f472b6', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
+                                        FEATURED
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
+                                    {proj.category || 'Project'} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{proj.year || '2026'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn-secondary"
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                  onClick={() => handleMoveProject(idx, 'up')}
+                                  disabled={idx === 0}
+                                  title="Move Up"
+                                  aria-label="Move project up"
+                                >
+                                  &uarr;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="admin-btn admin-btn-secondary"
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                  onClick={() => handleMoveProject(idx, 'down')}
+                                  disabled={idx === (portfolioContent.projects.length - 1)}
+                                  title="Move Down"
+                                  aria-label="Move project down"
+                                >
+                                  &darr;
+                                </button>
+                                <button type="button" className="admin-btn admin-btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => handleOpenEditProject(proj, idx)}>
+                                  Edit
+                                </button>
+                                <button type="button" className="admin-btn admin-btn-danger" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => handleDeleteProject(idx)}>
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+
+                            <p style={{ margin: '8px 0 0 0', fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.75)', lineHeight: '1.5' }}>
+                              {proj.details || proj.description}
+                            </p>
+
+                            {projTech.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+                                {projTech.map((t) => (
+                                  <span key={t} style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'rgba(255, 255, 255, 0.8)', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontFamily: "'Disket Mono', monospace" }}>
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -2172,7 +2536,29 @@ export default function AdminPage() {
                               </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveEdu(idx, 'up')}
+                                disabled={idx === 0}
+                                title="Move Up"
+                                aria-label="Move education up"
+                              >
+                                &uarr;
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveEdu(idx, 'down')}
+                                disabled={idx === (portfolioContent.education.length - 1)}
+                                title="Move Down"
+                                aria-label="Move education down"
+                              >
+                                &darr;
+                              </button>
                               <button type="button" className="admin-btn admin-btn-secondary" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => handleOpenEditEdu(edu, idx)}>
                                 Edit
                               </button>
@@ -2296,7 +2682,29 @@ export default function AdminPage() {
                                       </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                                        onClick={() => handleMoveCert(idx, 'up', 'certification')}
+                                        disabled={idx === 0}
+                                        title="Move Up"
+                                        aria-label="Move certification up"
+                                      >
+                                        &uarr;
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                                        onClick={() => handleMoveCert(idx, 'down', 'certification')}
+                                        disabled={idx === (certList.length - 1)}
+                                        title="Move Down"
+                                        aria-label="Move certification down"
+                                      >
+                                        &darr;
+                                      </button>
                                       {c.link && (
                                         <a
                                           href={c.link}
@@ -2371,7 +2779,29 @@ export default function AdminPage() {
                                       </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                                        onClick={() => handleMoveCert(idx, 'up', 'achievement')}
+                                        disabled={idx === 0}
+                                        title="Move Up"
+                                        aria-label="Move achievement up"
+                                      >
+                                        &uarr;
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="admin-btn admin-btn-secondary"
+                                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                                        onClick={() => handleMoveCert(idx, 'down', 'achievement')}
+                                        disabled={idx === (achieveList.length - 1)}
+                                        title="Move Down"
+                                        aria-label="Move achievement down"
+                                      >
+                                        &darr;
+                                      </button>
                                       {a.link && (
                                         <a
                                           href={a.link}
@@ -2897,6 +3327,27 @@ export default function AdminPage() {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }} className="admin-modal-grid">
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">Contact Status Availability</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={metaContactStatusText}
+                          onChange={(e) => setMetaContactStatusText(e.target.value)}
+                          placeholder="OPEN TO PRODUCT DESIGN ROLES"
+                        />
+                      </div>
+
+                      <div className="admin-field-group">
+                        <label className="admin-field-label">Current City & Country</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={metaLocationText}
+                          onChange={(e) => setMetaLocationText(e.target.value)}
+                          placeholder="JAMMU, INDIA"
+                        />
+                      </div>
                       <div className="admin-field-group">
                         <label className="admin-field-label">GitHub Profile URL</label>
                         <input
@@ -3688,6 +4139,146 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* MODAL: ADD / EDIT PROJECT */}
+      {showProjectModal && (
+        <div className="admin-modal-backdrop" onClick={() => setShowProjectModal(false)}>
+          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>
+              {editingProjectIndex !== null ? 'Edit Project' : 'Add New Project'}
+            </div>
+
+            <form onSubmit={handleSaveProject} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Project Title</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={projectForm.title}
+                    onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                    placeholder="e.g. Modern Web Engine"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">Category</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={projectForm.category}
+                    onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                    placeholder="e.g. Web App"
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">Year</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={projectForm.year}
+                    onChange={(e) => setProjectForm({ ...projectForm, year: e.target.value })}
+                    placeholder="e.g. 2026"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="admin-field-label">Summary Details (Shown on cards & previews)</label>
+                <textarea
+                  className="admin-textarea"
+                  rows={2}
+                  value={projectForm.details}
+                  onChange={(e) => setProjectForm({ ...projectForm, details: e.target.value })}
+                  placeholder="Short summary highlighting purpose and key technical achievements..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="admin-field-label">In-Depth Case Study / Long Details (Modal view)</label>
+                <textarea
+                  className="admin-textarea"
+                  rows={4}
+                  value={projectForm.longDetails}
+                  onChange={(e) => setProjectForm({ ...projectForm, longDetails: e.target.value })}
+                  placeholder="Full project description, architecture overview, and design choices..."
+                />
+              </div>
+
+              <div>
+                <label className="admin-field-label">Tech Stack Tags (Comma-Separated)</label>
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={projectForm.tech}
+                  onChange={(e) => setProjectForm({ ...projectForm, tech: e.target.value })}
+                  placeholder="React, TypeScript, CSS3, GSAP, Node.js"
+                />
+                <span className="admin-field-helper">
+                  Matched icons will automatically display in the tag preview.
+                </span>
+              </div>
+
+              <AdminImageUploadField
+                label="Project Screenshot / Cover Image"
+                value={projectForm.image}
+                onChange={(img) => setProjectForm({ ...projectForm, image: img })}
+                placeholder="/projects/my-project.jpg or upload below"
+                idPrefix="project-cover"
+                helperText="Displayed on portfolio cards and cascading deck."
+              />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Live Demo / Website URL</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={projectForm.link}
+                    onChange={(e) => setProjectForm({ ...projectForm, link: e.target.value })}
+                    placeholder="https://example.com or #/chat"
+                  />
+                </div>
+                <div>
+                  <label className="admin-field-label">GitHub Repository URL</label>
+                  <input
+                    type="url"
+                    className="admin-input"
+                    value={projectForm.github}
+                    onChange={(e) => setProjectForm({ ...projectForm, github: e.target.value })}
+                    placeholder="https://github.com/..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={projectForm.isFeatured}
+                    onChange={(e) => setProjectForm({ ...projectForm, isFeatured: e.target.checked })}
+                  />
+                  <span>Feature on Home Page Cascading Deck</span>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  onClick={() => setShowProjectModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn admin-btn-accent">
+                  {editingProjectIndex !== null ? 'Save Changes' : 'Create Project'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: ADD / EDIT WORK EXPERIENCE */}
       {showExpModal && (
         <div className="admin-modal-backdrop" onClick={() => setShowExpModal(false)}>
@@ -3722,6 +4313,31 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              <div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={expForm.isCurrent}
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      const endVal = isChecked ? 'Present' : (expForm.endDate === 'Present' ? '' : expForm.endDate);
+                      const periodVal = expForm.startDate
+                        ? (isChecked ? `${expForm.startDate} - Present` : (endVal ? `${expForm.startDate} - ${endVal}` : expForm.startDate))
+                        : (isChecked ? 'Present' : endVal);
+                      setExpForm({
+                        ...expForm,
+                        isCurrent: isChecked,
+                        endDate: endVal,
+                        period: periodVal,
+                      });
+                    }}
+                  />
+                  <span style={{ fontWeight: '600', color: expForm.isCurrent ? '#34d399' : '#e5e7eb' }}>
+                    Currently working here (displays &quot;Working&quot; live badge and sets End Date to &quot;Present&quot;)
+                  </span>
+                </label>
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
                   <label className="admin-field-label">Start Date</label>
@@ -3729,8 +4345,13 @@ export default function AdminPage() {
                     type="text"
                     className="admin-input"
                     value={expForm.startDate}
-                    onChange={(e) => setExpForm({ ...expForm, startDate: e.target.value })}
-                    placeholder="e.g. JUL 2026"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const endPart = expForm.isCurrent ? 'Present' : (expForm.endDate || '');
+                      const newPeriod = val && endPart ? `${val} - ${endPart}` : (val || endPart);
+                      setExpForm({ ...expForm, startDate: val, period: newPeriod });
+                    }}
+                    placeholder="e.g. DEC 2025"
                   />
                 </div>
                 <div>
@@ -3738,9 +4359,13 @@ export default function AdminPage() {
                   <input
                     type="text"
                     className="admin-input"
-                    value={expForm.endDate}
-                    onChange={(e) => setExpForm({ ...expForm, endDate: e.target.value })}
-                    placeholder="e.g. PRESENT"
+                    value={expForm.isCurrent ? 'Present' : expForm.endDate}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const newPeriod = expForm.startDate && val ? `${expForm.startDate} - ${val}` : (val || expForm.startDate || '');
+                      setExpForm({ ...expForm, endDate: val, period: newPeriod });
+                    }}
+                    placeholder={expForm.isCurrent ? 'Present' : 'e.g. MAR 2025'}
                     disabled={expForm.isCurrent}
                   />
                 </div>
@@ -3757,14 +4382,17 @@ export default function AdminPage() {
               </div>
 
               <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={expForm.isCurrent}
-                    onChange={(e) => setExpForm({ ...expForm, isCurrent: e.target.checked })}
-                  />
-                  <span>Currently Active Role (displays NOW / Working badge)</span>
-                </label>
+                <label className="admin-field-label">Time Period / Timeline</label>
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={expForm.period}
+                  onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
+                  placeholder="e.g. DEC 2025 - PRESENT or JAN 2025 - MAR 2025"
+                />
+                <span className="admin-field-helper" style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
+                  Auto-formatted from start and end dates. You can also customize or edit this timeline manually.
+                </span>
               </div>
 
               <AdminImageUploadField
