@@ -4,9 +4,9 @@
 
 # Sahil's Portfolio
 
-A performant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
+ Aperformant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
 
-[Live Demo](https://sahilaw.in) &bull; [Key Features](#key-features) &bull; [Architecture](#architecture) &bull; [Quickstart](#quickstart) &bull; [Project Structure](#project-structure) &bull; [Credits](#credits) &bull; [License](#license)
+**Visit:** [sahilaw.in](https://sahilawww.vercel.app)
 
 </div>
 
@@ -32,39 +32,6 @@ The application includes an in-browser management workspace, dynamic SQLite-back
 - **GPU-Accelerated Ribbon Trail**: Smooth WebGL cursor ribbon on desktop pointers, automatically disabled on mobile screens and touch devices to conserve power.
 - **Dynamic Content Management (CRUD)**: SQLite-backed management dashboard allowing real-time edits to projects, work experience, education, skills, narrative text, and contact links without rebuilds.
 - **Lightweight Route Chunking**: Code-split route architecture using `React.lazy()` and Rollup manual chunking, delivering an initial entry bundle under 130 kB.
-
----
-
-## Architecture
-
-```mermaid
-flowchart TD
-    Shell["index.html Entry Shell"] --> Boot["main.jsx Bootstrapper"]
-    Boot --> App["App.jsx Root Coordinator"]
-
-    subgraph GlobalEngines["Global Runtime Engines"]
-        App -.-> Ribbon["Ribbon Cursor (WebGL2)"]
-        App -.-> Audio["Web Audio Synthesis Hook"]
-        App -.-> Scroll["Smooth Scroll Engine (Lenis + GSAP)"]
-        App -.-> Router["Hash-Based Route Dispatcher"]
-    end
-
-    subgraph Views["Lazy-Loaded Route Views"]
-        App --> Home["HomePage (Hero, ScrollStack Deck, Skills, Contact)"]
-        App --> Projects["ProjectsPage (3D OrbitDeck & Modals)"]
-        App --> Career["ExperiencePage (Career Timeline)"]
-        App --> Chat["ChatPage (AI Portfolio Assistant)"]
-        App --> Admin["AdminPage (Real-Time CRUD Workspace)"]
-    end
-
-    subgraph DataStore["Data & Persistence Layer"]
-        Home & Projects & Career & Admin --> CacheHook["usePortfolioData (Reactive Cache & CustomEvents)"]
-        CacheHook <--> SQLite["SQLite Database (/api/portfolio-content)"]
-    end
-```
-
-> [!TIP]
-> The dynamic data layer in `src/data/usePortfolioData.js` provides automatic local caching (`portfolio_content_cache_v13`) and broadcasts real-time cross-tab synchronization via CustomEvents whenever content is updated in the Admin workspace.
 
 ---
 
