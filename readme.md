@@ -4,9 +4,9 @@
 
 # Sahil's Portfolio
 
- Aperformant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
+ An interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
 
-**Visit:** [sahilaw.in](https://sahilawww.vercel.app)
+**Visit:** [sahilaw.in](https://sahilawww-mu.vercel.app)
 
 </div>
 
