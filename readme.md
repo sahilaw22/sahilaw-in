@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="public/images/avatar-head.png" alt="Sahil's Portfolio Logo" width="100" height="100" />
+<img width="100" height="100" alt="1000160337" src="https://github.com/user-attachments/assets/b9029659-8193-4495-b8ad-94ef505500f7" />
+
+
 
 # Sahil's Portfolio
 
