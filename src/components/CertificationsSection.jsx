@@ -1,9 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { usePortfolioData } from '../data/usePortfolioData.js';
 import { CERTIFICATIONS, ACHIEVEMENTS } from '../data/portfolioData.jsx';
 import './CertificationsSection.css';
 
 const INITIAL_LIMIT = 4;
+
+function getHoverPosition(rect) {
+  if (!rect || typeof window === 'undefined') return { top: 0, left: 0 };
+  const approxWidth = 420;
+  const approxHeight = 280;
+  const padding = 16;
+
+  const centerX = rect.left + rect.width / 2;
+  const left = Math.max(padding, Math.min(centerX - approxWidth / 2, window.innerWidth - approxWidth - padding));
+
+  const spaceAbove = rect.top >= approxHeight + padding;
+  const top = spaceAbove
+    ? rect.top - approxHeight - 12
+    : Math.min(rect.bottom + 12, window.innerHeight - approxHeight - padding);
+
+  return { top, left };
+}
 
 function renderCertIcon(item) {
   const logoSrc = item.image || item.logo;
@@ -115,11 +133,93 @@ function renderCertIcon(item) {
 export default function CertificationsSection({ play }) {
   const [activeTab, setActiveTab] = useState('certifications');
   const [showAll, setShowAll] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // { item, images, activeIdx }
+  const [hoverPreview, setHoverPreview] = useState(null); // { item, images, currentIdx, rect }
   const switcherRef = useRef(null);
   const { certifications, achievements } = usePortfolioData();
 
   const certList = certifications && certifications.length > 0 ? certifications : CERTIFICATIONS;
   const achieveList = achievements && achievements.length > 0 ? achievements : ACHIEVEMENTS;
+
+  // Lock background scroll when preview modal is open, exit on Escape key
+  useEffect(() => {
+    if (!activeModal) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.classList.add('cert-preview-active');
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setActiveModal(null);
+    };
+
+    const handleWheelOrTouch = (e) => {
+      const card = document.getElementById('cert-preview-modal-card');
+      if (card && card.contains(e.target)) {
+        if (card.scrollHeight > card.clientHeight) return;
+      }
+      e.preventDefault();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('wheel', handleWheelOrTouch, { passive: false });
+    window.addEventListener('touchmove', handleWheelOrTouch, { passive: false });
+
+    return () => {
+      document.body.classList.remove('cert-preview-active');
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('wheel', handleWheelOrTouch);
+      window.removeEventListener('touchmove', handleWheelOrTouch);
+    };
+  }, [activeModal]);
+
+  // Dismiss hover preview on window scroll or resize
+  useEffect(() => {
+    if (!hoverPreview) return;
+    const handleDismiss = () => setHoverPreview(null);
+    window.addEventListener('scroll', handleDismiss, { passive: true });
+    window.addEventListener('resize', handleDismiss, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleDismiss);
+      window.removeEventListener('resize', handleDismiss);
+    };
+  }, [hoverPreview]);
+
+  const handleOpenPreview = (e, item, images, activeIdx = 0) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHoverPreview(null);
+    play?.('click');
+    setActiveModal({ item, images, activeIdx });
+  };
+
+  const handleThumbMouseEnter = (e, item, images, currentIdx = 0) => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (activeModal) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoverPreview({
+      item,
+      images,
+      currentIdx,
+      rect: {
+        top: rect.top,
+        bottom: rect.bottom,
+        left: rect.left,
+        right: rect.right,
+        width: rect.width,
+        height: rect.height,
+      },
+    });
+  };
+
+  const handleThumbMouseLeave = () => {
+    setHoverPreview(null);
+  };
 
   const handleTabSwitch = (tab) => {
     if (tab === activeTab) return;
@@ -160,7 +260,6 @@ export default function CertificationsSection({ play }) {
               onClick={() => handleTabSwitch('certifications')}
             >
               <span>Certifications</span>
-              <span className="cert-tab-counter">{certList.length}</span>
             </button>
 
             <button
@@ -171,56 +270,107 @@ export default function CertificationsSection({ play }) {
               onClick={() => handleTabSwitch('achievements')}
             >
               <span>Achievements</span>
-              <span className="cert-tab-counter">{achieveList.length}</span>
             </button>
           </div>
         </div>
 
         {/* Clean Minimal List for Both Tabs */}
         <div className="certifications-clean-list" role="tabpanel" aria-label={activeTab}>
-          {visibleItems.map((item, idx) => (
-            <a
-              key={item.id || item.title || idx}
-              href={item.link || '#'}
-              target={item.link ? '_blank' : undefined}
-              rel={item.link ? 'noopener noreferrer' : undefined}
-              className="cert-clean-row cursor-target" data-cursor-label="Verify"
-              title={`View ${item.title}`}
-              onClick={() => play?.('click')}
-            >
-              <div className="cert-row-left">
-                <div className="cert-clean-icon">
-                  {renderCertIcon(item)}
-                </div>
-                <div className="cert-clean-text">
-                  <span className="cert-clean-title">{item.title}</span>
-                  <span className="cert-clean-issuer">{item.issuer}</span>
-                  {item.description && (
-                    <p className="cert-clean-desc">{item.description}</p>
-                  )}
-                </div>
-              </div>
+          {visibleItems.map((item, idx) => {
+            const certImg = activeTab === 'certifications'
+              ? (item.certificateImage || item.certificate_image_url || (item.image && typeof item.image === 'string' && (item.image.includes('cert') || item.image.includes('supabase.co')) ? item.image : null))
+              : null;
+            const photos = activeTab === 'achievements'
+              ? (Array.isArray(item.photos) && item.photos.length > 0
+                  ? item.photos
+                  : (item.photo || item.certificateImage || (item.image && typeof item.image === 'string' && item.image.includes('supabase.co')) ? [item.photo || item.certificateImage || item.image].filter(Boolean) : []))
+              : [];
+            const images = activeTab === 'certifications' ? (certImg ? [certImg] : []) : photos.filter(Boolean);
+            const hasMedia = images.length > 0;
+            const issueDateDisplay = activeTab === 'certifications' ? (item.issueDate || item.year) : item.year;
 
-              <div className="cert-row-right">
-                <span className="cert-clean-year">{activeTab === 'certifications' ? (item.issueDate || item.year) : item.year}</span>
-                <svg
-                  className="cert-row-arrow"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <line x1="7" y1="17" x2="17" y2="7" />
-                  <polyline points="7 7 17 7 17 17" />
-                </svg>
-              </div>
-            </a>
-          ))}
+            return (
+              <a
+                key={item.id || item.title || idx}
+                href={item.link || '#'}
+                target={item.link ? '_blank' : undefined}
+                rel={item.link ? 'noopener noreferrer' : undefined}
+                className="cert-clean-row cursor-target"
+                data-cursor-label="Verify"
+                title={`View ${item.title}`}
+                onClick={() => play?.('click')}
+              >
+                {/* Header Row: Left is Icon in its old location + Title & Issuer; Right is Date & Link Arrow */}
+                <div className="cert-row-top">
+                  <div className="cert-row-left">
+                    <div className="cert-clean-icon">
+                      {renderCertIcon(item)}
+                    </div>
+
+                    <div className="cert-clean-text">
+                      <span className="cert-clean-title">{item.title}</span>
+                      <span className="cert-clean-issuer">{item.issuer}</span>
+                    </div>
+                  </div>
+
+                  {/* Right Side: Issued Date and External Link Arrow */}
+                  <div className="cert-row-right">
+                    <span className="cert-clean-year">{issueDateDisplay}</span>
+                    <svg
+                      className="cert-row-arrow"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Preview Image: Appears ABOVE description only, NOT in icon place */}
+                {hasMedia && (
+                  <div className="cert-row-thumbs-wrap">
+                    {images.map((imgUrl, iIdx) => (
+                      <div
+                        key={iIdx}
+                        role="button"
+                        tabIndex={0}
+                        className="cert-preview-btn-thumb cursor-target"
+                        data-cursor-label="Preview"
+                        title="Click to view full preview"
+                        onClick={(e) => handleOpenPreview(e, item, images, iIdx)}
+                        onMouseEnter={(e) => handleThumbMouseEnter(e, item, images, iIdx)}
+                        onMouseLeave={handleThumbMouseLeave}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            handleOpenPreview(e, item, images, iIdx);
+                          }
+                        }}
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`${item.title} ${images.length > 1 ? `Photo ${iIdx + 1}` : 'Certificate'}`}
+                          onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Description: Expands full width across the right area, indented below title and company */}
+                {item.description && (
+                  <p className="cert-clean-desc">{item.description}</p>
+                )}
+              </a>
+            );
+          })}
         </div>
 
         {/* See All / Show Less Button when items exceed limit */}
@@ -254,6 +404,113 @@ export default function CertificationsSection({ play }) {
           </div>
         )}
       </div>
+
+      {/* Desktop Hover Floating Preview: ONLY image in full dimension without any border */}
+      {hoverPreview && typeof document !== 'undefined' && createPortal(
+        <div
+          className="cert-hover-preview-card"
+          style={{
+            position: 'fixed',
+            top: `${getHoverPosition(hoverPreview.rect).top}px`,
+            left: `${getHoverPosition(hoverPreview.rect).left}px`,
+            zIndex: 999999,
+            pointerEvents: 'none',
+          }}
+          aria-hidden="true"
+        >
+          <img
+            src={hoverPreview.images[hoverPreview.currentIdx || 0]}
+            alt=""
+            className="cert-hover-preview-img"
+          />
+        </div>,
+        document.body
+      )}
+
+      {/* Full Modal Preview Card: Rendered in portal outside section for clean isolation */}
+      {activeModal && typeof document !== 'undefined' && createPortal(
+        <div
+          className="cert-preview-modal-backdrop"
+          onClick={() => setActiveModal(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${activeModal.item.title} preview`}
+        >
+          <div
+            id="cert-preview-modal-card"
+            className="cert-preview-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Main Image Display Area */}
+            <div className="cert-modal-media-wrap">
+              <img
+                src={activeModal.images[activeModal.activeIdx || 0]}
+                alt={`${activeModal.item.title} preview`}
+                className="cert-modal-main-image"
+                loading="eager"
+              />
+            </div>
+
+            {/* Multiple Photos Selector if more than 1 image */}
+            {activeModal.images.length > 1 && (
+              <div className="cert-modal-gallery-strip">
+                {activeModal.images.map((imgUrl, gIdx) => (
+                  <button
+                    key={gIdx}
+                    type="button"
+                    className={`cert-modal-gallery-thumb cursor-target ${gIdx === (activeModal.activeIdx || 0) ? 'is-active' : ''}`}
+                    data-cursor-label={`Photo ${gIdx + 1}`}
+                    onClick={() => setActiveModal({ ...activeModal, activeIdx: gIdx })}
+                    aria-label={`View photo ${gIdx + 1}`}
+                  >
+                    <img src={imgUrl} alt="" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Minimal Content Area Below Image */}
+            <div className="cert-modal-content">
+              <div className="cert-modal-row-main">
+                <div className="cert-modal-title-group">
+                  <h3 className="cert-modal-title">{activeModal.item.title}</h3>
+                  <div className="cert-modal-subtitle">
+                    <span className="cert-modal-issuer">{activeModal.item.issuer}</span>
+                  </div>
+                </div>
+
+                {(activeModal.item.issueDate || activeModal.item.year) && (
+                  <span className="cert-modal-year">{activeModal.item.issueDate || activeModal.item.year}</span>
+                )}
+              </div>
+
+              {activeModal.item.description && (
+                <p className="cert-modal-desc">{activeModal.item.description}</p>
+              )}
+
+              {activeModal.item.link && (
+                <div className="cert-modal-action-row">
+                  <a
+                    href={activeModal.item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cert-modal-verify-link cursor-target"
+                    data-cursor-label="Verify"
+                    onClick={() => play?.('click')}
+                  >
+                    <span>Verify credentials</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <line x1="7" y1="17" x2="17" y2="7" />
+                      <polyline points="7 7 17 7 17 17" />
+                    </svg>
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </section>
   );
 }

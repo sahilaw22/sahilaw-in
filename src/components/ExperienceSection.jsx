@@ -39,11 +39,6 @@ export default function ExperienceSection() {
               href="#/experience"
               className="sleek-exp-view-all-btn cursor-target"
               data-cursor-label="Explore"
-              onClick={() => {
-                try {
-                  sessionStorage.setItem('scroll_target', 'section-journey');
-                } catch {}
-              }}
             >
               <span>Show all work experiences</span>
             </a>

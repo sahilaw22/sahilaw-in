@@ -33,9 +33,7 @@ export default function FeaturedProjectsSection({ play }) {
       <ScrollStack
         header={
           <div className="featured-work-center-header">
-            <div className="contact-image-tag">
-              <span>FEATURED WORK</span>
-            </div>
+            <h2 className="featured-projects-title">Featured Projects</h2>
           </div>
         }
         footer={

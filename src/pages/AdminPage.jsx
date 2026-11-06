@@ -3,6 +3,8 @@ import JSZip from 'jszip';
 import MarkdownContent from '../components/MarkdownContent.jsx';
 import AnswerTextEditor from '../components/AnswerTextEditor.jsx';
 import { TechIcon } from '../components/TechIcons.jsx';
+import { ExperienceCard } from '../components/ExperienceCard.jsx';
+import { supabase, isSupabaseConfigured, uploadPortfolioAsset } from '../lib/supabaseClient.js';
 import {
   HERO_ROLES,
   ABOUT_PARAGRAPHS,
@@ -83,6 +85,57 @@ function compressImage(file, maxDimension = 360, quality = 0.88) {
   });
 }
 
+const ONLINE_SKILL_ICONS = [
+  { name: 'React', slug: 'react' },
+  { name: 'TypeScript', slug: 'ts' },
+  { name: 'JavaScript', slug: 'js' },
+  { name: 'Next.js', slug: 'nextjs' },
+  { name: 'Node.js', slug: 'nodejs' },
+  { name: 'Python', slug: 'py' },
+  { name: 'Tailwind CSS', slug: 'tailwind' },
+  { name: 'Supabase', slug: 'supabase' },
+  { name: 'PostgreSQL', slug: 'postgres' },
+  { name: 'MongoDB', slug: 'mongodb' },
+  { name: 'Redis', slug: 'redis' },
+  { name: 'Docker', slug: 'docker' },
+  { name: 'AWS', slug: 'aws' },
+  { name: 'GCP', slug: 'gcp' },
+  { name: 'Figma', slug: 'figma' },
+  { name: 'Git', slug: 'git' },
+  { name: 'GitHub', slug: 'github' },
+  { name: 'GraphQL', slug: 'graphql' },
+  { name: 'Vue.js', slug: 'vue' },
+  { name: 'Angular', slug: 'angular' },
+  { name: 'Svelte', slug: 'svelte' },
+  { name: 'HTML5', slug: 'html' },
+  { name: 'CSS3', slug: 'css' },
+  { name: 'C++', slug: 'cpp' },
+  { name: 'Java', slug: 'java' },
+  { name: 'Kotlin', slug: 'kotlin' },
+  { name: 'Swift', slug: 'swift' },
+  { name: 'Flutter', slug: 'flutter' },
+  { name: 'Dart', slug: 'dart' },
+  { name: 'Rust', slug: 'rust' },
+  { name: 'Go', slug: 'go' },
+  { name: 'Linux', slug: 'linux' },
+  { name: 'Postman', slug: 'postman' },
+  { name: 'Vercel', slug: 'vercel' },
+  { name: 'Firebase', slug: 'firebase' },
+  { name: 'Vite', slug: 'vite' },
+  { name: 'Sass', slug: 'sass' },
+  { name: 'Express', slug: 'express' },
+  { name: 'VS Code', slug: 'vscode' },
+  { name: 'Bun', slug: 'bun' },
+  { name: 'Redux', slug: 'redux' },
+  { name: 'Kafka', slug: 'kafka' },
+  { name: 'Kubernetes', slug: 'kubernetes' },
+  { name: 'Django', slug: 'django' },
+  { name: 'FastAPI', slug: 'fastapi' },
+  { name: 'Spring', slug: 'spring' },
+  { name: 'MySQL', slug: 'mysql' },
+  { name: 'Electron', slug: 'electron' }
+];
+
 function AdminImageUploadField({
   label,
   value,
@@ -90,6 +143,8 @@ function AdminImageUploadField({
   placeholder = 'Paste image URL or browse image...',
   idPrefix = 'img-field',
   helperText = '',
+  isLogo = false,
+  storageFolder = 'logos',
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const inputId = `${idPrefix}-file`;
@@ -99,10 +154,15 @@ function AdminImageUploadField({
     if (!file) return;
     setIsProcessing(true);
     try {
-      const dataUrl = await compressImage(file, 400, 0.9);
-      onChange(dataUrl);
+      if (isSupabaseConfigured()) {
+        const publicUrl = await uploadPortfolioAsset(file, storageFolder);
+        onChange(publicUrl);
+      } else {
+        const dataUrl = await compressImage(file, 400, 0.9);
+        onChange(dataUrl);
+      }
     } catch (err) {
-      alert('Failed to process image: ' + err.message);
+      alert('Failed to process image: ' + (err.message || 'Error occurred'));
     } finally {
       setIsProcessing(false);
       e.target.value = '';
@@ -130,7 +190,7 @@ function AdminImageUploadField({
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span>{isProcessing ? 'Optimizing...' : 'Upload Image'}</span>
+          <span>{isProcessing ? 'Uploading...' : 'Upload Image'}</span>
           <input
             id={inputId}
             type="file"
@@ -156,10 +216,36 @@ function AdminImageUploadField({
 
       {(isDataUrl || isHttpUrl) && (
         <div className="admin-upload-preview-box">
-          <div className="admin-upload-thumb">
+          <div
+            className="admin-upload-thumb"
+            style={
+              isLogo
+                ? {
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '14px',
+                    border: 'none',
+                    background: 'transparent',
+                    boxShadow: 'none',
+                    overflow: 'hidden',
+                  }
+                : undefined
+            }
+          >
             <img
               src={value}
               alt="Logo Preview"
+              style={
+                isLogo
+                  ? {
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '14px',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }
+                  : undefined
+              }
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -167,11 +253,115 @@ function AdminImageUploadField({
           </div>
           <div className="admin-upload-meta">
             <span className="admin-upload-status">
-              {isDataUrl ? 'Custom Compressed Image' : 'External Image Link'}
+              {isSupabaseConfigured() && typeof value === 'string' && value.includes('supabase.co')
+                ? 'Supabase Storage CDN'
+                : isDataUrl
+                ? 'Local Compressed Image'
+                : 'External Image Link'}
             </span>
             <span className="admin-upload-sub">
-              {isDataUrl ? `${Math.round(value.length / 1024)} KB stored locally` : value.slice(0, 42) + '...'}
+              {isLogo ? 'Rounded-square logo (14px radius, no border)' : value.slice(0, 42) + '...'}
             </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminVideoUploadField({
+  label = 'Project Demo Video (MP4 / WebM / QuickTime)',
+  value,
+  onChange,
+  placeholder = 'Paste video URL or upload MP4 / WebM...',
+  idPrefix = 'video-field',
+  helperText = 'Stored in Supabase Storage under portfolio-assets/videos or paste an external video link',
+  storageFolder = 'videos',
+}) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const inputId = `${idPrefix}-file`;
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsProcessing(true);
+    try {
+      if (isSupabaseConfigured()) {
+        const publicUrl = await uploadPortfolioAsset(file, storageFolder);
+        onChange(publicUrl);
+      } else {
+        alert('Supabase is not configured for video file storage. Please enter a public video URL.');
+      }
+    } catch (err) {
+      alert('Failed to upload video: ' + (err.message || 'Error occurred'));
+    } finally {
+      setIsProcessing(false);
+      e.target.value = '';
+    }
+  };
+
+  const hasVideo = typeof value === 'string' && value.trim().length > 0;
+
+  return (
+    <div className="admin-image-upload-control">
+      {label && <label className="admin-field-label">{label}</label>}
+      <div className="admin-image-upload-inputs">
+        <input
+          type="text"
+          className="admin-input"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          style={{ flex: 1 }}
+        />
+        <label htmlFor={inputId} className="admin-btn admin-btn-secondary admin-btn-upload">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>{isProcessing ? 'Uploading...' : 'Upload Video'}</span>
+          <input
+            id={inputId}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime,video/*"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+            disabled={isProcessing}
+          />
+        </label>
+        {hasVideo ? (
+          <button
+            type="button"
+            className="admin-btn admin-btn-danger admin-upload-clear-btn"
+            onClick={() => onChange('')}
+            title="Remove video"
+          >
+            Clear
+          </button>
+        ) : null}
+      </div>
+
+      {helperText && <span className="admin-field-helper">{helperText}</span>}
+
+      {hasVideo && (
+        <div className="admin-upload-preview-box" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+          <div style={{ position: 'relative', width: '100%', borderRadius: '10px', overflow: 'hidden', background: '#000' }}>
+            <video
+              src={value}
+              controls
+              playsInline
+              preload="metadata"
+              style={{ width: '100%', maxHeight: '200px', display: 'block' }}
+            />
+          </div>
+          <div className="admin-upload-meta" style={{ marginTop: '6px' }}>
+            <span className="admin-upload-status">
+              {isSupabaseConfigured() && value.includes('supabase.co')
+                ? 'Supabase Storage Video'
+                : 'Project Demo Video Link'}
+            </span>
+            <span className="admin-upload-sub">{value.slice(0, 60)}{value.length > 60 ? '...' : ''}</span>
           </div>
         </div>
       )}
@@ -292,9 +482,11 @@ export default function AdminPage() {
     longDetails: '',
     tech: '',
     image: '',
+    videoUrl: '',
     link: '',
     github: '',
     isFeatured: true,
+    isPublished: true,
   });
 
   // Experience modal/editing state
@@ -304,11 +496,14 @@ export default function AdminPage() {
     id: '',
     company: '',
     role: '',
+    employmentType: 'Internship',
     period: '',
     startDate: '',
     endDate: '',
     location: '',
     isCurrent: false,
+    paragraph: '',
+    bullets: [''],
     desc: '',
     skills: '',
     logo: '',
@@ -317,6 +512,7 @@ export default function AdminPage() {
     github: '',
     linkedin: '',
     x: '',
+    isPublished: true,
   });
 
   // Education modal/editing state
@@ -326,12 +522,19 @@ export default function AdminPage() {
     id: '',
     degree: '',
     institution: '',
+    branch: '',
+    location: '',
     period: '',
+    startDate: '',
+    endDate: '',
     isCurrent: false,
+    paragraph: '',
+    bullets: [''],
     desc: '',
     courses: '',
     logo: '',
     image: '',
+    isPublished: true,
   });
 
   // Certifications & Achievements modal/editing state
@@ -348,6 +551,8 @@ export default function AdminPage() {
     link: '',
     description: '',
     image: '',
+    certificateImage: '',
+    photos: '',
   });
 
   // Skills & narrative state
@@ -377,6 +582,8 @@ export default function AdminPage() {
     name: '',
     logoUrl: '',
     logoPreview: '',
+    tab: 'online',
+    filterQuery: '',
   });
 
   const [isExportingZip, setIsExportingZip] = useState(false);
@@ -424,6 +631,101 @@ export default function AdminPage() {
 
   const [kbSearch, setKbSearch] = useState('');
   const [kbCategoryFilter, setKbCategoryFilter] = useState('all');
+
+  // Supabase live connectivity status
+  const [supabaseStatus, setSupabaseStatus] = useState({
+    state: 'checking',
+    latencyMs: null,
+    error: null,
+    lastChecked: null,
+  });
+
+  // Real backend operation active state and feedback notifications
+  const [backendOp, setBackendOp] = useState({
+    active: false,
+    action: '',
+    sectionName: '',
+    itemTitle: '',
+    message: '',
+  });
+  const [opToast, setOpToast] = useState(null);
+
+  const checkSupabaseHealth = useCallback(async (isUserTriggered = false) => {
+    if (isUserTriggered) {
+      setSupabaseStatus((prev) => ({ ...prev, state: 'checking' }));
+    }
+    const startTime = Date.now();
+    try {
+      const res = await fetch('/api/health/supabase');
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setSupabaseStatus({
+          state: 'connected',
+          latencyMs: data.latencyMs || (Date.now() - startTime),
+          error: null,
+          lastChecked: new Date().toLocaleTimeString(),
+        });
+        return;
+      }
+      if (supabase) {
+        const { error: supaErr } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+        if (!supaErr) {
+          setSupabaseStatus({
+            state: 'connected',
+            latencyMs: Date.now() - startTime,
+            error: null,
+            lastChecked: new Date().toLocaleTimeString(),
+          });
+          return;
+        }
+      }
+      setSupabaseStatus({
+        state: 'disconnected',
+        latencyMs: null,
+        error: data.error || 'Connection failed',
+        lastChecked: new Date().toLocaleTimeString(),
+      });
+    } catch (err) {
+      if (supabase) {
+        try {
+          const { error: supaErr } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+          if (!supaErr) {
+            setSupabaseStatus({
+              state: 'connected',
+              latencyMs: Date.now() - startTime,
+              error: null,
+              lastChecked: new Date().toLocaleTimeString(),
+            });
+            return;
+          }
+        } catch {}
+      }
+      setSupabaseStatus({
+        state: 'disconnected',
+        latencyMs: null,
+        error: err.message,
+        lastChecked: new Date().toLocaleTimeString(),
+      });
+    }
+  }, []);
+
+  // Periodic heartbeat for Supabase status
+  useEffect(() => {
+    checkSupabaseHealth();
+    const interval = setInterval(() => {
+      checkSupabaseHealth();
+    }, 45000);
+    return () => clearInterval(interval);
+  }, [checkSupabaseHealth]);
+
+  // Auto-dismiss operation toast after 5 seconds
+  useEffect(() => {
+    if (!opToast) return;
+    const t = setTimeout(() => {
+      setOpToast(null);
+    }, 5000);
+    return () => clearTimeout(t);
+  }, [opToast]);
 
   // Verify token on mount
   useEffect(() => {
@@ -508,13 +810,13 @@ export default function AdminPage() {
       .then((d) => {
         if (d && d.success && d.content) {
           const fresh = {
-            about: Array.isArray(d.content.about) && d.content.about.length > 0 ? d.content.about : (ABOUT_PARAGRAPHS || []),
-            experiences: Array.isArray(d.content.experiences) && d.content.experiences.length > 0 ? d.content.experiences : (EXPERIENCES || []),
-            projects: Array.isArray(d.content.projects) && d.content.projects.length > 0 ? d.content.projects : (PROJECTS || []),
-            education: Array.isArray(d.content.education) && d.content.education.length > 0 ? d.content.education : (EDUCATION_ITEMS || []),
-            skills: Array.isArray(d.content.skills) && d.content.skills.length > 0 ? d.content.skills : (SKILL_CATEGORIES || []),
-            certifications: Array.isArray(d.content.certifications) && d.content.certifications.length > 0 ? d.content.certifications : (CERTIFICATIONS || []),
-            achievements: Array.isArray(d.content.achievements) && d.content.achievements.length > 0 ? d.content.achievements : (ACHIEVEMENTS || []),
+            about: Array.isArray(d.content.about) ? d.content.about : (ABOUT_PARAGRAPHS || []),
+            experiences: Array.isArray(d.content.experiences) ? d.content.experiences : (EXPERIENCES || []),
+            projects: Array.isArray(d.content.projects) ? d.content.projects : (PROJECTS || []),
+            education: Array.isArray(d.content.education) ? d.content.education : (EDUCATION_ITEMS || []),
+            skills: Array.isArray(d.content.skills) ? d.content.skills : (SKILL_CATEGORIES || []),
+            certifications: Array.isArray(d.content.certifications) ? d.content.certifications : (CERTIFICATIONS || []),
+            achievements: Array.isArray(d.content.achievements) ? d.content.achievements : (ACHIEVEMENTS || []),
             custom_icons: Array.isArray(d.content.custom_icons) ? d.content.custom_icons : [],
             meta: d.content.meta || { hero_roles: HERO_ROLES },
           };
@@ -553,11 +855,62 @@ export default function AdminPage() {
       .catch(console.error);
   }
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setLoginLoading(true);
     setLoginError('');
 
+    // If Supabase is configured and username resembles an email, attempt Supabase Auth
+    if (isSupabaseConfigured() && supabase && loginUsername.includes('@')) {
+      try {
+        const { data: supaAuth, error: supaErr } = await supabase.auth.signInWithPassword({
+          email: loginUsername.trim(),
+          password: loginPassword,
+        });
+
+        if (!supaErr && supaAuth?.user) {
+          // Check admin allowlist
+          const { data: allowed, error: allowErr } = await supabase
+            .from('admin_allowlist')
+            .select('email, role')
+            .eq('email', supaAuth.user.email)
+            .maybeSingle();
+
+          if (!allowErr && allowed) {
+            let tokenVal = supaAuth.session?.access_token || `supa-${Date.now()}`;
+            try {
+              const verifyRes = await fetch('/api/admin/supabase-verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: supaAuth.user.email, accessToken: tokenVal }),
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyData && verifyData.token) {
+                tokenVal = verifyData.token;
+              }
+            } catch {
+              // Use Supabase access token directly
+            }
+
+            setToken(tokenVal);
+            localStorage.setItem('portfolio_admin_token', tokenVal);
+            localStorage.setItem('portfolio_admin_device', 'true');
+            setAdminUser({
+              username: supaAuth.user.email,
+              role: allowed.role || 'admin',
+              provider: 'supabase',
+            });
+            loadDashboardData(tokenVal);
+            setLoginLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        // Fall back to server login
+      }
+    }
+
+    // Server-side admin verification with SQLite fallback
     fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -576,7 +929,7 @@ export default function AdminPage() {
         loadDashboardData(data.token);
       })
       .catch((err) => {
-        setLoginError(err.message);
+        setLoginError(err.message || 'Invalid credentials');
       })
       .finally(() => setLoginLoading(false));
   }
@@ -766,8 +1119,8 @@ export default function AdminPage() {
       .catch((err) => setPwdMsg('Error: ' + err.message));
   }
 
-  // --- Portfolio Content Handlers (Real-time updates) ---
-  async function handleSavePortfolioSection(section, data) {
+  // Portfolio content handlers
+  async function handleSavePortfolioSection(section, data, opMeta = {}) {
     setContentSaveMsg('');
     const activeToken = token || localStorage.getItem('portfolio_admin_token') || '';
     if (!activeToken) {
@@ -775,7 +1128,41 @@ export default function AdminPage() {
       throw new Error('Not authenticated');
     }
 
+    const action = opMeta.action || 'save';
+    const sectionName = opMeta.sectionName || section;
+    const itemTitle = opMeta.itemTitle || '';
+
+    let actionVerb = 'Saving';
+    if (action === 'delete') actionVerb = 'Deleting';
+    else if (action === 'create') actionVerb = 'Creating';
+    else if (action === 'update') actionVerb = 'Updating';
+    else if (action === 'reorder') actionVerb = 'Reordering';
+
+    const busyMessage = `${actionVerb} ${itemTitle ? `"${itemTitle}"` : sectionName} in Supabase and database...`;
+
+    setBackendOp({
+      active: true,
+      action,
+      sectionName,
+      itemTitle,
+      message: busyMessage,
+    });
+
     try {
+      // If an explicit deleteId was provided, also call DELETE endpoint
+      if (action === 'delete' && opMeta.deleteId) {
+        try {
+          await fetch(`/api/admin/portfolio-content/${section}/${encodeURIComponent(opMeta.deleteId)}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${activeToken}`,
+            },
+          });
+        } catch (e) {
+          console.warn(`Direct delete endpoint notice: ${e.message}`);
+        }
+      }
+
       const r = await fetch(`/api/admin/portfolio-content/${section}`, {
         method: 'PUT',
         headers: {
@@ -791,7 +1178,26 @@ export default function AdminPage() {
       }
 
       setPortfolioContent((prev) => ({ ...prev, [section]: data }));
-      setContentSaveMsg('Your website has been updated successfully.');
+
+      let successMsg = '';
+      if (action === 'delete') {
+        successMsg = `Deleted ${itemTitle ? `"${itemTitle}"` : sectionName} permanently from Supabase and database.`;
+      } else if (action === 'create') {
+        successMsg = `Added ${itemTitle ? `"${itemTitle}"` : sectionName} to Supabase and database successfully.`;
+      } else if (action === 'update') {
+        successMsg = `Updated ${itemTitle ? `"${itemTitle}"` : sectionName} in Supabase and database successfully.`;
+      } else if (action === 'reorder') {
+        successMsg = `Reordered ${sectionName} in Supabase and database successfully.`;
+      } else {
+        successMsg = `${sectionName} saved to Supabase and database successfully.`;
+      }
+
+      setContentSaveMsg(successMsg);
+      setOpToast({
+        type: 'success',
+        message: successMsg,
+        timestamp: Date.now(),
+      });
       setTimeout(() => setContentSaveMsg(''), 4000);
 
       // Notify other windows/components
@@ -806,10 +1212,22 @@ export default function AdminPage() {
         cached13[section] = data;
         localStorage.setItem('portfolio_content_cache_v13', JSON.stringify(cached13));
       } catch {}
+
+      // Refresh live Supabase status
+      checkSupabaseHealth();
+
       return res;
     } catch (err) {
+      setOpToast({
+        type: 'error',
+        message: `Operation failed: ${err.message}`,
+        timestamp: Date.now(),
+      });
+      checkSupabaseHealth();
       alert('Save failed: ' + err.message);
       throw err;
+    } finally {
+      setBackendOp({ active: false, action: '', sectionName: '', itemTitle: '', message: '' });
     }
   }
 
@@ -918,9 +1336,11 @@ export default function AdminPage() {
       longDetails: '',
       tech: '',
       image: '',
+      videoUrl: '',
       link: '',
       github: '',
       isFeatured: true,
+      isPublished: true,
     });
     setShowProjectModal(true);
   }
@@ -939,9 +1359,11 @@ export default function AdminPage() {
       longDetails: item.longDetails || item.details || item.description || '',
       tech: techStr,
       image: item.image || item.videoThumb || '',
+      videoUrl: item.videoUrl || item.video || item.video_url || item.metrics?.videoUrl || '',
       link: item.link || item.website || '',
       github: item.github || '',
       isFeatured: item.isFeatured !== false,
+      isPublished: item.isPublished !== false,
     });
     setShowProjectModal(true);
   }
@@ -953,6 +1375,7 @@ export default function AdminPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const videoVal = (projectForm.videoUrl || '').trim();
     const updatedItem = {
       id: projectForm.id || `project-${Date.now()}`,
       title: projectForm.title.trim(),
@@ -966,29 +1389,52 @@ export default function AdminPage() {
       techFull: techArray,
       image: projectForm.image.trim(),
       videoThumb: projectForm.image.trim(),
+      videoUrl: videoVal,
+      video: videoVal,
+      video_url: videoVal,
       link: projectForm.link.trim(),
       website: projectForm.link.trim(),
       github: projectForm.github.trim(),
       isFeatured: projectForm.isFeatured,
+      isPublished: projectForm.isPublished !== false,
       isWorking: true,
+      metrics: {
+        ...(editingProjectIndex !== null && portfolioContent.projects?.[editingProjectIndex]?.metrics
+          ? portfolioContent.projects[editingProjectIndex].metrics
+          : {}),
+        videoUrl: videoVal,
+      },
     };
 
     let updatedList = [...(portfolioContent.projects || [])];
-    if (editingProjectIndex !== null && editingProjectIndex >= 0) {
+    const isEditing = editingProjectIndex !== null && editingProjectIndex >= 0;
+    if (isEditing) {
       updatedList[editingProjectIndex] = updatedItem;
     } else {
       updatedList.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection('projects', updatedList).then(() => {
+    handleSavePortfolioSection('projects', updatedList, {
+      action: isEditing ? 'update' : 'create',
+      sectionName: 'Project',
+      itemTitle: updatedItem.title || 'Project entry',
+    }).then(() => {
       setShowProjectModal(false);
-    });
+    }).catch(() => {});
   }
 
   function handleDeleteProject(index) {
-    if (!window.confirm('Are you sure you want to delete this project?')) return;
+    const target = (portfolioContent.projects || [])[index];
+    if (!target) return;
+    const confirmTitle = target.title || 'this project';
+    if (!window.confirm(`Are you sure you want to delete ${confirmTitle}? This will permanently remove it from Supabase and the portfolio.`)) return;
     const updated = (portfolioContent.projects || []).filter((_, idx) => idx !== index);
-    handleSavePortfolioSection('projects', updated);
+    handleSavePortfolioSection('projects', updated, {
+      action: 'delete',
+      sectionName: 'Project',
+      itemTitle: confirmTitle,
+      deleteId: target.id,
+    });
   }
 
   function handleMoveProject(index, direction) {
@@ -998,7 +1444,11 @@ export default function AdminPage() {
     const temp = list[index];
     list[index] = list[targetIndex];
     list[targetIndex] = temp;
-    handleSavePortfolioSection('projects', list);
+    handleSavePortfolioSection('projects', list, {
+      action: 'reorder',
+      sectionName: 'Projects',
+      itemTitle: temp?.title || 'Projects',
+    });
   }
 
   function handleOpenAddExp() {
@@ -1007,11 +1457,14 @@ export default function AdminPage() {
       id: `exp-${Date.now()}`,
       company: '',
       role: '',
+      employmentType: 'Internship',
       period: '',
       startDate: '',
       endDate: '',
       location: '',
       isCurrent: false,
+      paragraph: '',
+      bullets: [''],
       desc: '',
       skills: '',
       logo: '',
@@ -1020,6 +1473,7 @@ export default function AdminPage() {
       github: '',
       linkedin: '',
       x: '',
+      isPublished: true,
     });
     setShowExpModal(true);
   }
@@ -1046,16 +1500,30 @@ export default function AdminPage() {
 
     const initialPeriod = exp.period || (start && end ? `${start} - ${end}` : (start || ''));
 
+    const rawParagraph = exp.description_paragraph || (typeof exp.desc === 'string' && !Array.isArray(exp.description) ? exp.desc : '');
+    let rawBullets = [];
+    if (Array.isArray(exp.description_bullets) && exp.description_bullets.length > 0) {
+      rawBullets = [...exp.description_bullets];
+    } else if (Array.isArray(exp.description) && exp.description.length > 0) {
+      rawBullets = [...exp.description];
+    } else if (typeof exp.desc === 'string' && exp.desc) {
+      rawBullets = exp.desc.split('\n').map((s) => s.trim()).filter(Boolean);
+    }
+    if (rawBullets.length === 0) rawBullets = [''];
+
     setExpForm({
       id: exp.id || `exp-${Date.now()}`,
       company: exp.company || '',
       role: exp.role || exp.position || '',
+      employmentType: exp.employmentType || exp.type || 'Internship',
       period: initialPeriod,
       startDate: start,
       endDate: end,
       location: exp.location || '',
       isCurrent,
-      desc: Array.isArray(exp.description) ? exp.description.join('\n') : (exp.desc || ''),
+      paragraph: rawParagraph,
+      bullets: rawBullets,
+      desc: rawParagraph || rawBullets.join('\n'),
       skills: Array.isArray(exp.skills) ? exp.skills.join(', ') : (Array.isArray(exp.technologies) ? exp.technologies.join(', ') : (exp.skills || '')),
       logo: logoVal,
       image: logoVal,
@@ -1063,8 +1531,40 @@ export default function AdminPage() {
       github: exp.github || '',
       linkedin: exp.linkedin || '',
       x: exp.x || '',
+      isPublished: exp.isPublished !== false,
     });
     setShowExpModal(true);
+  }
+
+  function addExpBullet() {
+    setExpForm((prev) => ({ ...prev, bullets: [...(prev.bullets || []), ''] }));
+  }
+
+  function updateExpBullet(bIndex, val) {
+    setExpForm((prev) => {
+      const next = [...(prev.bullets || [])];
+      next[bIndex] = val;
+      return { ...prev, bullets: next };
+    });
+  }
+
+  function removeExpBullet(bIndex) {
+    setExpForm((prev) => {
+      const next = (prev.bullets || []).filter((_, i) => i !== bIndex);
+      return { ...prev, bullets: next.length > 0 ? next : [''] };
+    });
+  }
+
+  function moveExpBullet(bIndex, dir) {
+    setExpForm((prev) => {
+      const list = [...(prev.bullets || [])];
+      const target = dir === 'up' ? bIndex - 1 : bIndex + 1;
+      if (target < 0 || target >= list.length) return prev;
+      const tmp = list[bIndex];
+      list[bIndex] = list[target];
+      list[target] = tmp;
+      return { ...prev, bullets: list };
+    });
   }
 
   function handleSaveExp(e) {
@@ -1074,9 +1574,8 @@ export default function AdminPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
-    const descBullets = expForm.desc
-      .split('\n')
-      .map((s) => s.trim())
+    const cleanedBullets = (Array.isArray(expForm.bullets) ? expForm.bullets : [])
+      .map((s) => (typeof s === 'string' ? s.trim() : ''))
       .filter(Boolean);
 
     const logoImg = (expForm.image || expForm.logo || '').trim();
@@ -1092,18 +1591,23 @@ export default function AdminPage() {
       }
     }
 
+    const paragraphText = (expForm.paragraph || '').trim();
+
     const updatedItem = {
       id: expForm.id || `exp-${Date.now()}`,
       company: expForm.company.trim(),
       role: expForm.role.trim(),
       position: expForm.role.trim(),
+      employmentType: expForm.employmentType || 'Internship',
       period: finalPeriod,
       startDate: expForm.startDate.trim(),
       endDate: expForm.isCurrent ? 'Present' : expForm.endDate.trim(),
       location: expForm.location.trim(),
       isCurrent: Boolean(expForm.isCurrent),
-      desc: expForm.desc.trim(),
-      description: descBullets.length > 0 ? descBullets : [expForm.desc.trim()],
+      description_paragraph: paragraphText,
+      description_bullets: cleanedBullets,
+      desc: paragraphText || cleanedBullets.join('\n'),
+      description: cleanedBullets.length > 0 ? cleanedBullets : (paragraphText ? [paragraphText] : []),
       skills: skillsArray,
       technologies: skillsArray,
       logo: logoImg,
@@ -1112,16 +1616,22 @@ export default function AdminPage() {
       github: expForm.github.trim(),
       linkedin: expForm.linkedin.trim(),
       x: expForm.x.trim(),
+      isPublished: expForm.isPublished !== false,
     };
 
     let updatedExperiences = [...(portfolioContent.experiences || [])];
-    if (editingExpIndex !== null && editingExpIndex >= 0 && editingExpIndex < updatedExperiences.length) {
+    const isEditing = editingExpIndex !== null && editingExpIndex >= 0 && editingExpIndex < updatedExperiences.length;
+    if (isEditing) {
       updatedExperiences[editingExpIndex] = updatedItem;
     } else {
       updatedExperiences.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection('experiences', updatedExperiences)
+    handleSavePortfolioSection('experiences', updatedExperiences, {
+      action: isEditing ? 'update' : 'create',
+      sectionName: 'Experience',
+      itemTitle: updatedItem.company || updatedItem.role || 'Experience entry',
+    })
       .then(() => {
         setShowExpModal(false);
       })
@@ -1129,9 +1639,17 @@ export default function AdminPage() {
   }
 
   function handleDeleteExp(index) {
-    if (!window.confirm('Are you sure you want to delete this experience?')) return;
+    const target = (portfolioContent.experiences || [])[index];
+    if (!target) return;
+    const confirmName = target.company || target.role || 'this experience';
+    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
     const updated = (portfolioContent.experiences || []).filter((_, idx) => idx !== index);
-    handleSavePortfolioSection('experiences', updated);
+    handleSavePortfolioSection('experiences', updated, {
+      action: 'delete',
+      sectionName: 'Experience',
+      itemTitle: confirmName,
+      deleteId: target.id,
+    });
   }
 
   function handleMoveExp(index, direction) {
@@ -1141,7 +1659,11 @@ export default function AdminPage() {
     const temp = list[index];
     list[index] = list[targetIndex];
     list[targetIndex] = temp;
-    handleSavePortfolioSection('experiences', list);
+    handleSavePortfolioSection('experiences', list, {
+      action: 'reorder',
+      sectionName: 'Experiences',
+      itemTitle: temp?.company || 'Experiences',
+    });
   }
 
   function handleOpenAddEdu() {
@@ -1150,12 +1672,19 @@ export default function AdminPage() {
       id: `edu-${Date.now()}`,
       degree: '',
       institution: '',
+      branch: '',
+      location: '',
       period: '',
+      startDate: '',
+      endDate: '',
       isCurrent: false,
+      paragraph: '',
+      bullets: [''],
       desc: '',
       courses: '',
       logo: '',
       image: '',
+      isPublished: true,
     });
     setShowEduModal(true);
   }
@@ -1163,18 +1692,67 @@ export default function AdminPage() {
   function handleOpenEditEdu(edu, index) {
     setEditingEduIndex(index);
     const logoVal = typeof edu.image === 'string' && edu.image ? edu.image : (typeof edu.logo === 'string' ? edu.logo : '');
+    const rawParagraph = edu.description_paragraph || edu.desc || (typeof edu.description === 'string' ? edu.description : '');
+    let rawBullets = [];
+    if (Array.isArray(edu.highlights) && edu.highlights.length > 0) {
+      rawBullets = [...edu.highlights];
+    } else if (Array.isArray(edu.courses) && edu.courses.length > 0) {
+      rawBullets = [...edu.courses];
+    } else if (Array.isArray(edu.description) && edu.description.length > 0) {
+      rawBullets = [...edu.description];
+    }
+    if (rawBullets.length === 0) rawBullets = [''];
+
     setEduForm({
       id: edu.id || `edu-${Date.now()}`,
       degree: edu.degree || '',
       institution: edu.institution || '',
+      branch: edu.branch || edu.specialization || '',
+      location: edu.location || '',
       period: edu.period || '',
+      startDate: edu.startDate || '',
+      endDate: edu.endDate || '',
       isCurrent: !!edu.isCurrent,
-      desc: edu.desc || (Array.isArray(edu.description) ? edu.description.join('\n') : edu.description || ''),
+      paragraph: rawParagraph,
+      bullets: rawBullets,
+      desc: rawParagraph,
       courses: Array.isArray(edu.courses) ? edu.courses.join(', ') : (edu.courses || ''),
       logo: logoVal,
       image: logoVal,
+      isPublished: edu.isPublished !== false,
     });
     setShowEduModal(true);
+  }
+
+  function addEduBullet() {
+    setEduForm((prev) => ({ ...prev, bullets: [...(prev.bullets || []), ''] }));
+  }
+
+  function updateEduBullet(bIndex, val) {
+    setEduForm((prev) => {
+      const next = [...(prev.bullets || [])];
+      next[bIndex] = val;
+      return { ...prev, bullets: next };
+    });
+  }
+
+  function removeEduBullet(bIndex) {
+    setEduForm((prev) => {
+      const next = (prev.bullets || []).filter((_, i) => i !== bIndex);
+      return { ...prev, bullets: next.length > 0 ? next : [''] };
+    });
+  }
+
+  function moveEduBullet(bIndex, dir) {
+    setEduForm((prev) => {
+      const list = [...(prev.bullets || [])];
+      const target = dir === 'up' ? bIndex - 1 : bIndex + 1;
+      if (target < 0 || target >= list.length) return prev;
+      const tmp = list[bIndex];
+      list[bIndex] = list[target];
+      list[target] = tmp;
+      return { ...prev, bullets: list };
+    });
   }
 
   function handleSaveEdu(e) {
@@ -1184,29 +1762,46 @@ export default function AdminPage() {
       .map((c) => c.trim())
       .filter(Boolean);
 
+    const cleanedBullets = (Array.isArray(eduForm.bullets) ? eduForm.bullets : [])
+      .map((b) => (typeof b === 'string' ? b.trim() : ''))
+      .filter(Boolean);
+
     const logoImg = (eduForm.image || eduForm.logo || '').trim();
+    const paragraphText = (eduForm.paragraph || '').trim() || (eduForm.desc || '').trim();
 
     const updatedItem = {
       id: eduForm.id || `edu-${Date.now()}`,
       degree: eduForm.degree.trim(),
       institution: eduForm.institution.trim(),
+      branch: (eduForm.branch || '').trim(),
+      location: (eduForm.location || '').trim(),
       period: eduForm.period.trim(),
+      startDate: (eduForm.startDate || '').trim(),
+      endDate: (eduForm.endDate || '').trim(),
       isCurrent: Boolean(eduForm.isCurrent),
-      desc: eduForm.desc.trim(),
-      description: eduForm.desc.trim(),
-      courses: coursesArray,
+      description_paragraph: paragraphText,
+      desc: paragraphText,
+      description: paragraphText,
+      courses: coursesArray.length > 0 ? coursesArray : cleanedBullets,
+      highlights: cleanedBullets,
       logo: logoImg,
       image: logoImg,
+      isPublished: eduForm.isPublished !== false,
     };
 
     let updatedEducation = [...(portfolioContent.education || [])];
-    if (editingEduIndex !== null && editingEduIndex >= 0 && editingEduIndex < updatedEducation.length) {
+    const isEditing = editingEduIndex !== null && editingEduIndex >= 0 && editingEduIndex < updatedEducation.length;
+    if (isEditing) {
       updatedEducation[editingEduIndex] = updatedItem;
     } else {
       updatedEducation.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection('education', updatedEducation)
+    handleSavePortfolioSection('education', updatedEducation, {
+      action: isEditing ? 'update' : 'create',
+      sectionName: 'Education',
+      itemTitle: updatedItem.institution || updatedItem.degree || 'Education entry',
+    })
       .then(() => {
         setShowEduModal(false);
       })
@@ -1214,9 +1809,17 @@ export default function AdminPage() {
   }
 
   function handleDeleteEdu(index) {
-    if (!window.confirm('Are you sure you want to delete this education entry?')) return;
+    const target = (portfolioContent.education || [])[index];
+    if (!target) return;
+    const confirmName = target.institution || target.degree || 'this education entry';
+    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
     const updated = (portfolioContent.education || []).filter((_, idx) => idx !== index);
-    handleSavePortfolioSection('education', updated);
+    handleSavePortfolioSection('education', updated, {
+      action: 'delete',
+      sectionName: 'Education',
+      itemTitle: confirmName,
+      deleteId: target.id,
+    });
   }
 
   function handleMoveEdu(index, direction) {
@@ -1226,10 +1829,14 @@ export default function AdminPage() {
     const temp = list[index];
     list[index] = list[targetIndex];
     list[targetIndex] = temp;
-    handleSavePortfolioSection('education', list);
+    handleSavePortfolioSection('education', list, {
+      action: 'reorder',
+      sectionName: 'Education',
+      itemTitle: temp?.institution || 'Education',
+    });
   }
 
-  // --- Certifications & Achievements Handlers ---
+  // Certifications and achievements handlers
   function handleOpenAddCert(type = 'certification') {
     setCertModalType(type);
     setEditingCertIndex(null);
@@ -1243,6 +1850,8 @@ export default function AdminPage() {
       link: '',
       description: '',
       image: '',
+      certificateImage: '',
+      photos: '',
     });
     setShowCertModal(true);
   }
@@ -1251,15 +1860,21 @@ export default function AdminPage() {
     setCertModalType(type);
     setEditingCertIndex(index);
     const logoVal = item.image || item.logo || '';
+    const certImgVal = item.certificateImage || item.certificate_image_url || '';
+    const photosVal = Array.isArray(item.photos)
+      ? item.photos.join(', ')
+      : (typeof item.photos === 'string' ? item.photos : '');
     setCertForm({
       id: item.id || `${type}-${Date.now()}`,
-      title: item.title || '',
-      issuer: item.issuer || '',
+      title: item.title || item.name || '',
+      issuer: item.issuer || item.issuing_organization || '',
       year: item.year || (item.issueDate ? item.issueDate.replace(/^Issued\s+/i, '') : ''),
       issueDate: item.issueDate || `Issued ${item.year || ''}`,
-      link: item.link || '',
+      link: item.link || item.credentialUrl || '',
       description: item.description || '',
       image: typeof logoVal === 'string' ? logoVal : '',
+      certificateImage: typeof certImgVal === 'string' ? certImgVal : '',
+      photos: photosVal,
     });
     setShowCertModal(true);
   }
@@ -1274,6 +1889,12 @@ export default function AdminPage() {
       : fallbackList;
 
     const logoImg = certForm.image.trim();
+    const certDocImg = (certForm.certificateImage || '').trim();
+    const photosArr = (certForm.photos || '')
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean);
+
     const updatedItem = {
       id: certForm.id || `${certModalType}-${Date.now()}`,
       title: certForm.title.trim(),
@@ -1281,19 +1902,28 @@ export default function AdminPage() {
       year: certForm.year.trim(),
       issueDate: certForm.issueDate.trim() || `Issued ${certForm.year.trim()}`,
       link: certForm.link.trim(),
+      credentialUrl: certForm.link.trim(),
       description: certForm.description.trim(),
       image: logoImg,
       logo: logoImg,
+      certificateImage: certDocImg,
+      certificate_image_url: certDocImg,
+      photos: photosArr.length > 0 ? photosArr : (certDocImg ? [certDocImg] : []),
     };
 
     let updatedList = [...existingList];
-    if (editingCertIndex !== null && editingCertIndex >= 0 && editingCertIndex < updatedList.length) {
+    const isEditing = editingCertIndex !== null && editingCertIndex >= 0 && editingCertIndex < updatedList.length;
+    if (isEditing) {
       updatedList[editingCertIndex] = updatedItem;
     } else {
       updatedList.unshift(updatedItem);
     }
 
-    handleSavePortfolioSection(sectionName, updatedList)
+    handleSavePortfolioSection(sectionName, updatedList, {
+      action: isEditing ? 'update' : 'create',
+      sectionName: isCert ? 'Certification' : 'Achievement',
+      itemTitle: updatedItem.title || `${certModalType} entry`,
+    })
       .then(() => {
         setShowCertModal(false);
       })
@@ -1303,16 +1933,24 @@ export default function AdminPage() {
   function handleDeleteCert(index, type = 'certification') {
     const isCert = type === 'certification';
     const label = isCert ? 'certification' : 'achievement';
-    if (!window.confirm(`Are you sure you want to delete this ${label}?`)) return;
-
     const sectionName = isCert ? 'certifications' : 'achievements';
     const fallbackList = isCert ? CERTIFICATIONS : ACHIEVEMENTS;
     const existingList = Array.isArray(portfolioContent[sectionName]) && portfolioContent[sectionName].length > 0
       ? portfolioContent[sectionName]
       : fallbackList;
 
+    const target = existingList[index];
+    if (!target) return;
+    const confirmName = target.title || target.name || `this ${label}`;
+    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
+
     const updated = existingList.filter((_, idx) => idx !== index);
-    handleSavePortfolioSection(sectionName, updated);
+    handleSavePortfolioSection(sectionName, updated, {
+      action: 'delete',
+      sectionName: isCert ? 'Certification' : 'Achievement',
+      itemTitle: confirmName,
+      deleteId: target.id,
+    });
   }
 
   function handleMoveCert(index, direction, type = 'certification') {
@@ -1328,10 +1966,14 @@ export default function AdminPage() {
     const temp = list[index];
     list[index] = list[targetIndex];
     list[targetIndex] = temp;
-    handleSavePortfolioSection(sectionName, list);
+    handleSavePortfolioSection(sectionName, list, {
+      action: 'reorder',
+      sectionName: isCert ? 'Certifications' : 'Achievements',
+      itemTitle: temp?.title || (isCert ? 'Certifications' : 'Achievements'),
+    });
   }
 
-  // --- Custom Icon Handlers ---
+  // Custom icon handlers
   function handleAddCustomIcon(e) {
     e.preventDefault();
     const name = newCustomIconName.trim();
@@ -1372,7 +2014,11 @@ export default function AdminPage() {
           return { name: (s.name || '').trim(), logo: s.logo || s.iconUrl || '' };
         }).filter((s) => (typeof s === 'string' ? Boolean(s) : Boolean(s.name))),
       }));
-    handleSavePortfolioSection('skills', cleaned);
+    handleSavePortfolioSection('skills', cleaned, {
+      action: 'save',
+      sectionName: 'Skills',
+      itemTitle: 'Skill Categories',
+    });
   }
 
   function handleAddSkillCategory() {
@@ -1453,7 +2099,11 @@ export default function AdminPage() {
 
   function handleSaveAllAbout(e) {
     e.preventDefault();
-    handleSavePortfolioSection('about', editingAboutList);
+    handleSavePortfolioSection('about', editingAboutList, {
+      action: 'save',
+      sectionName: 'About',
+      itemTitle: 'Narrative Paragraphs',
+    });
   }
 
   function handleAddAboutParagraph() {
@@ -1516,10 +2166,14 @@ export default function AdminPage() {
       x: metaXText.trim() || 'https://x.com/sahilwani',
       twitter: metaXText.trim() || 'https://x.com/sahilwani',
     };
-    handleSavePortfolioSection('meta', updatedMeta);
+    handleSavePortfolioSection('meta', updatedMeta, {
+      action: 'update',
+      sectionName: 'Profile Meta',
+      itemTitle: 'Roles & Contact Info',
+    });
   }
 
-  // --- Filter Knowledge Entries ---
+  // Filter knowledge entries
   const filteredKnowledge = knowledge.filter((item) => {
     const matchesSearch =
       kbSearch === '' ||
@@ -1539,6 +2193,20 @@ export default function AdminPage() {
           <div className="admin-login-card">
             <div className="admin-login-header">
               <h1 className="admin-login-title">Admin Access</h1>
+              <div
+                className={`admin-supabase-status-badge is-${supabaseStatus.state} admin-login-status-pill`}
+                title={`Supabase: ${supabaseStatus.state === 'connected' ? `Connected (${supabaseStatus.latencyMs ? `${supabaseStatus.latencyMs}ms` : 'healthy'})` : supabaseStatus.state === 'checking' ? 'Checking connection...' : `Disconnected: ${supabaseStatus.error || 'Check credentials'}`}`}
+                onClick={() => checkSupabaseHealth(true)}
+              >
+                <span className="admin-status-dot" />
+                <span className="admin-status-label">
+                  {supabaseStatus.state === 'connected'
+                    ? `Supabase Connected${supabaseStatus.latencyMs ? ` (${supabaseStatus.latencyMs}ms)` : ''}`
+                    : supabaseStatus.state === 'checking'
+                    ? 'Checking Supabase...'
+                    : 'Supabase Disconnected'}
+                </span>
+              </div>
             </div>
 
             {loginError && (
@@ -1600,6 +2268,32 @@ export default function AdminPage() {
       <header className="admin-navbar">
         <div className="admin-brand">
           <div className="admin-brand-title">Admin Dashboard</div>
+          <div
+            className={`admin-supabase-status-badge is-${supabaseStatus.state}`}
+            title={`Supabase: ${supabaseStatus.state === 'connected' ? `Connected (${supabaseStatus.latencyMs ? `${supabaseStatus.latencyMs}ms` : 'healthy'})` : supabaseStatus.state === 'checking' ? 'Checking connection...' : `Disconnected: ${supabaseStatus.error || 'Check credentials'}`}`}
+            onClick={() => checkSupabaseHealth(true)}
+          >
+            <span className="admin-status-dot" />
+            <span className="admin-status-label">
+              {supabaseStatus.state === 'connected'
+                ? `Supabase Connected${supabaseStatus.latencyMs ? ` (${supabaseStatus.latencyMs}ms)` : ''}`
+                : supabaseStatus.state === 'checking'
+                ? 'Checking Supabase...'
+                : 'Supabase Disconnected'}
+            </span>
+            {supabaseStatus.state === 'disconnected' && (
+              <button
+                type="button"
+                className="admin-status-retry-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  checkSupabaseHealth(true);
+                }}
+              >
+                Retry
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="admin-nav-actions">
@@ -1633,6 +2327,53 @@ export default function AdminPage() {
           </button>
         </div>
       </header>
+
+      {/* Real Backend Operation Active Floating Banner */}
+      {backendOp.active && (
+        <div className="admin-backend-op-banner" role="status" aria-live="polite">
+          <div className="admin-op-spinner" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="admin-spin-svg">
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div className="admin-op-details">
+            <span className="admin-op-title">Backend Operation In Progress</span>
+            <span className="admin-op-msg">{backendOp.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Backend Operation Toast Notification */}
+      {opToast && (
+        <div className={`admin-op-toast is-${opToast.type}`} role="alert">
+          <div className="admin-toast-icon">
+            {opToast.type === 'success' ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            )}
+          </div>
+          <div className="admin-toast-text">{opToast.message}</div>
+          <button
+            type="button"
+            className="admin-toast-close"
+            onClick={() => setOpToast(null)}
+            aria-label="Dismiss notification"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Main Dashboard Layout */}
       <div className="admin-layout">
@@ -1717,7 +2458,7 @@ export default function AdminPage() {
               </svg>
               <span>Knowledge Base</span>
             </div>
-            <span style={{ fontSize: '11px', color: '#6b7280', fontFamily: 'monospace' }}>{knowledge.length}</span>
+            <span style={{ fontSize: '11px', color: '#6b7280', fontFamily: "'Disket Mono', monospace" }}>{knowledge.length}</span>
           </button>
 
           <button
@@ -1773,6 +2514,27 @@ export default function AdminPage() {
               <span>Settings</span>
             </div>
           </button>
+
+          <div className={`admin-sidebar-db-status is-${supabaseStatus.state}`}>
+            <div className="admin-sidebar-db-header">
+              <span className="admin-sidebar-db-dot" />
+              <span className="admin-sidebar-db-title">Database Sync</span>
+            </div>
+            <div className="admin-sidebar-db-body">
+              <div className="admin-sidebar-db-item">
+                <span>Supabase</span>
+                <span className="admin-sidebar-db-val">
+                  {supabaseStatus.state === 'connected' ? 'Connected' : supabaseStatus.state === 'checking' ? 'Checking' : 'Offline'}
+                </span>
+              </div>
+              {supabaseStatus.latencyMs && (
+                <div className="admin-sidebar-db-item">
+                  <span>Latency</span>
+                  <span className="admin-sidebar-db-val">{supabaseStatus.latencyMs}ms</span>
+                </div>
+              )}
+            </div>
+          </div>
         </aside>
 
         {/* Dynamic Content Panel */}
@@ -1794,6 +2556,7 @@ export default function AdminPage() {
                       { label: '24h', value: '24h' },
                       { label: '7d', value: '7d' },
                       { label: '30d', value: '30d' },
+                      { label: '90d', value: '90d' },
                       { label: 'All', value: 'all' },
                     ].map((r) => (
                       <button
@@ -1831,6 +2594,73 @@ export default function AdminPage() {
                       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                     </svg>
                     <span>{visitorLoading ? 'Refreshing...' : 'Refresh'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Supabase Observability & Keep-Alive Banner */}
+              <div className="admin-supabase-banner" style={{
+                background: 'rgba(97, 220, 163, 0.05)',
+                border: '1px solid rgba(97, 220, 163, 0.2)',
+                borderRadius: '12px',
+                padding: '14px 18px',
+                marginBottom: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: isSupabaseConfigured() ? '#34d399' : '#f59e0b',
+                    boxShadow: isSupabaseConfigured() ? '0 0 10px #34d399' : '0 0 10px #f59e0b'
+                  }} />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>
+                      {isSupabaseConfigured() ? 'Supabase PostgreSQL & Realtime Connected' : 'Local SQLite Fallback Active'}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: '#9ca3af' }}>
+                      {isSupabaseConfigured()
+                        ? 'Realtime subscriptions active. Analytics and portfolio edits stream live to visitors.'
+                        : 'Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to switch to Supabase.'}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <a
+                    href="https://supabase.com/dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-btn admin-btn-secondary"
+                    style={{ fontSize: '12px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                  >
+                    <span>Supabase Dashboard</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </a>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/health/supabase');
+                        const data = await res.json();
+                        alert(`Keep-alive Ping Status: ${data.status} | Latency: ${data.latencyMs}ms | Engine: ${data.engine}`);
+                      } catch (err) {
+                        alert('Keep-alive ping failed: ' + err.message);
+                      }
+                    }}
+                  >
+                    Ping Database
                   </button>
                 </div>
               </div>
@@ -2176,7 +3006,7 @@ export default function AdminPage() {
                       {analytics.topQuestions.map((q, i) => (
                         <tr key={i}>
                           <td style={{ fontWeight: '600' }}>"{q.text}"</td>
-                          <td style={{ fontFamily: 'monospace', color: '#10b981' }}>{q.frequency}x</td>
+                          <td style={{ fontFamily: "'Disket Mono', monospace", color: '#10b981' }}>{q.frequency}x</td>
                         </tr>
                       ))}
                     </tbody>
@@ -2429,6 +3259,11 @@ export default function AdminPage() {
                                         FEATURED
                                       </span>
                                     )}
+                                    {(proj.videoUrl || proj.video || proj.video_url || proj.metrics?.videoUrl) && (
+                                      <span style={{ fontSize: '10px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
+                                        VIDEO DEMO
+                                      </span>
+                                    )}
                                   </div>
                                   <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
                                     {proj.category || 'Project'} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{proj.year || '2026'}</span>
@@ -2673,8 +3508,13 @@ export default function AdminPage() {
                                         )}
                                       </div>
                                       <div>
-                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff' }}>
-                                          {c.title}
+                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                          <span>{c.title}</span>
+                                          {(c.certificateImage || c.certificate_image_url) && (
+                                            <span style={{ fontSize: '10px', background: 'rgba(96, 165, 250, 0.15)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
+                                              LINKEDIN PREVIEW
+                                            </span>
+                                          )}
                                         </div>
                                         <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
                                           {c.issuer} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{c.issueDate || c.year}</span>
@@ -2770,8 +3610,13 @@ export default function AdminPage() {
                                         )}
                                       </div>
                                       <div>
-                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff' }}>
-                                          {a.title}
+                                        <div style={{ fontSize: '15px', fontWeight: '700', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                          <span>{a.title}</span>
+                                          {((Array.isArray(a.photos) && a.photos.length > 0) || a.photo || a.certificateImage) && (
+                                            <span style={{ fontSize: '10px', background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
+                                              PHOTOS
+                                            </span>
+                                          )}
                                         </div>
                                         <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
                                           {a.issuer} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{a.year}</span>
@@ -2908,10 +3753,12 @@ export default function AdminPage() {
                                   name: '',
                                   logoUrl: '',
                                   logoPreview: '',
+                                  tab: 'online',
+                                  filterQuery: '',
                                 });
                               }}
                             >
-                              + Add Custom Skill (with Logo)
+                              + Add Skill Icon (Online Library or Upload)
                             </button>
                           </div>
                           <input
@@ -3440,14 +4287,14 @@ export default function AdminPage() {
                                 <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>Note: {u.admin_notes}</div>
                               )}
                             </td>
-                            <td style={{ fontFamily: 'monospace', color: '#10b981' }}>{u.count}x</td>
+                            <td style={{ fontFamily: "'Disket Mono', monospace", color: '#10b981' }}>{u.count}x</td>
                             <td>
                               <span
                                 style={{
                                   padding: '3px 8px',
                                   borderRadius: '999px',
                                   fontSize: '11px',
-                                  fontFamily: 'monospace',
+                                  fontFamily: "'Disket Mono', monospace",
                                   background: u.status === 'new' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
                                   color: u.status === 'new' ? '#f87171' : '#10b981',
                                 }}
@@ -3584,7 +4431,7 @@ export default function AdminPage() {
                             </div>
                           </td>
                           <td>
-                            <span style={{ color: item.is_active ? '#10b981' : '#9ca3af', fontSize: '12px', fontFamily: 'monospace' }}>
+                            <span style={{ color: item.is_active ? '#10b981' : '#9ca3af', fontSize: '12px', fontFamily: "'Disket Mono', monospace" }}>
                               {item.is_active ? '● Active' : '○ Inactive'}
                             </span>
                           </td>
@@ -3729,7 +4576,7 @@ export default function AdminPage() {
                     </div>
 
                     {sandboxResult.metadata && (
-                      <div style={{ fontSize: '12px', color: '#9ca3af', fontFamily: 'monospace' }}>
+                      <div style={{ fontSize: '12px', color: '#9ca3af', fontFamily: "'Disket Mono', monospace" }}>
                         Matching Diagnostics: {JSON.stringify(sandboxResult.metadata, null, 2)}
                       </div>
                     )}
@@ -3787,7 +4634,7 @@ export default function AdminPage() {
                                   {new Date(c.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
                               </td>
-                              <td style={{ fontFamily: 'monospace' }}>{c.total_messages}</td>
+                              <td style={{ fontFamily: "'Disket Mono', monospace" }}>{c.total_messages}</td>
                               <td>
                                 <span style={{ fontSize: '11px', color: '#10b981' }}>{c.status}</span>
                               </td>
@@ -3839,7 +4686,7 @@ export default function AdminPage() {
                             )}
                           </div>
                           {m.matched_knowledge_id && (
-                            <div style={{ fontSize: '11px', marginTop: '6px', opacity: 0.8, fontFamily: 'monospace' }}>
+                            <div style={{ fontSize: '11px', marginTop: '6px', opacity: 0.8, fontFamily: "'Disket Mono', monospace" }}>
                               KB: {m.matched_knowledge_id} ({(m.confidence * 100).toFixed(0)}%)
                             </div>
                           )}
@@ -3981,8 +4828,12 @@ export default function AdminPage() {
                 className="admin-btn admin-btn-secondary"
                 style={{ padding: '4px 10px', fontSize: '12px' }}
                 onClick={() => setShowKbModal(false)}
+                aria-label="Close modal"
               >
-                ✕
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
@@ -4142,7 +4993,7 @@ export default function AdminPage() {
       {/* MODAL: ADD / EDIT PROJECT */}
       {showProjectModal && (
         <div className="admin-modal-backdrop" onClick={() => setShowProjectModal(false)}>
-          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>
               {editingProjectIndex !== null ? 'Edit Project' : 'Add New Project'}
             </div>
@@ -4180,6 +5031,27 @@ export default function AdminPage() {
                     placeholder="e.g. 2026"
                   />
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={projectForm.isPublished !== false}
+                    onChange={(e) => setProjectForm({ ...projectForm, isPublished: e.target.checked })}
+                  />
+                  <span style={{ fontWeight: '600', color: projectForm.isPublished !== false ? '#34d399' : '#9ca3af' }}>
+                    {projectForm.isPublished !== false ? 'Published (Visible publicly)' : 'Draft (Hidden from public)'}
+                  </span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={projectForm.isFeatured}
+                    onChange={(e) => setProjectForm({ ...projectForm, isFeatured: e.target.checked })}
+                  />
+                  <span>Feature on Home Page Cascading Deck</span>
+                </label>
               </div>
 
               <div>
@@ -4225,7 +5097,18 @@ export default function AdminPage() {
                 onChange={(img) => setProjectForm({ ...projectForm, image: img })}
                 placeholder="/projects/my-project.jpg or upload below"
                 idPrefix="project-cover"
-                helperText="Displayed on portfolio cards and cascading deck."
+                helperText="Stored in Supabase Storage under portfolio-assets/projects"
+                storageFolder="projects"
+              />
+
+              <AdminVideoUploadField
+                label="Project Demo Video (Playable in Details Modal)"
+                value={projectForm.videoUrl}
+                onChange={(vid) => setProjectForm({ ...projectForm, videoUrl: vid })}
+                placeholder="Paste direct MP4/WebM URL or upload to Supabase..."
+                idPrefix="project-video"
+                helperText="Stored in Supabase Storage under portfolio-assets/videos. Visitors can play this video directly in the project details modal."
+                storageFolder="videos"
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
@@ -4251,15 +5134,67 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
-                  <input
-                    type="checkbox"
-                    checked={projectForm.isFeatured}
-                    onChange={(e) => setProjectForm({ ...projectForm, isFeatured: e.target.checked })}
-                  />
-                  <span>Feature on Home Page Cascading Deck</span>
-                </label>
+              {/* LIVE COMPONENT PREVIEW FOR PROJECTS */}
+              <div className="admin-live-preview-section">
+                <div className="admin-preview-title">Live Project Showcase Preview</div>
+                <div className="admin-preview-wrapper" style={{ padding: '16px' }}>
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}>
+                    {projectForm.videoUrl ? (
+                      <div style={{ position: 'relative', width: '100%', borderRadius: '10px', overflow: 'hidden', background: '#000' }}>
+                        <video
+                          src={projectForm.videoUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          poster={projectForm.image || undefined}
+                          style={{ width: '100%', maxHeight: '180px', display: 'block', objectFit: 'cover' }}
+                        />
+                      </div>
+                    ) : projectForm.image ? (
+                      <img
+                        src={projectForm.image}
+                        alt={projectForm.title || 'Project'}
+                        style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '10px' }}
+                      />
+                    ) : null}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#61dca3' }}>
+                        {projectForm.category || 'Web App'} &bull; {projectForm.year || '2026'}
+                      </span>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        {projectForm.videoUrl ? (
+                          <span style={{ fontSize: '10px', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '2px 8px', borderRadius: '999px' }}>
+                            Video Demo
+                          </span>
+                        ) : null}
+                        {projectForm.isFeatured && (
+                          <span style={{ fontSize: '10px', background: 'rgba(97, 220, 163, 0.15)', color: '#61dca3', padding: '2px 8px', borderRadius: '999px' }}>
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#fff' }}>
+                      {projectForm.title || 'Project Title'}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#9ca3af', lineHeight: 1.5 }}>
+                      {projectForm.details || 'Short project summary and technical highlights...'}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {(projectForm.tech ? projectForm.tech.split(',').map((s) => s.trim()).filter(Boolean) : ['React', 'CSS3']).map((t, idx) => (
+                        <span key={idx} className="exp-skill-chip" style={{ fontSize: '11px' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
@@ -4282,13 +5217,13 @@ export default function AdminPage() {
       {/* MODAL: ADD / EDIT WORK EXPERIENCE */}
       {showExpModal && (
         <div className="admin-modal-backdrop" onClick={() => setShowExpModal(false)}>
-          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>
               {editingExpIndex !== null ? 'Edit Work Experience' : 'Add New Work Experience'}
             </div>
 
             <form onSubmit={handleSaveExp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
                   <label className="admin-field-label">Company / Organization</label>
                   <input
@@ -4313,7 +5248,34 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Employment Type</label>
+                  <select
+                    className="admin-input"
+                    value={expForm.employmentType || 'Internship'}
+                    onChange={(e) => setExpForm({ ...expForm, employmentType: e.target.value })}
+                  >
+                    <option value="Internship">Internship</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Freelance">Freelance</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="admin-field-label">Location</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={expForm.location}
+                    onChange={(e) => setExpForm({ ...expForm, location: e.target.value })}
+                    placeholder="e.g. Remote or India"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
                   <input
                     type="checkbox"
@@ -4333,7 +5295,18 @@ export default function AdminPage() {
                     }}
                   />
                   <span style={{ fontWeight: '600', color: expForm.isCurrent ? '#34d399' : '#e5e7eb' }}>
-                    Currently working here (displays &quot;Working&quot; live badge and sets End Date to &quot;Present&quot;)
+                    Currently working here (shows &quot;Working&quot; badge and sets End Date to &quot;Present&quot;)
+                  </span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={expForm.isPublished !== false}
+                    onChange={(e) => setExpForm({ ...expForm, isPublished: e.target.checked })}
+                  />
+                  <span style={{ fontWeight: '600', color: expForm.isPublished !== false ? '#34d399' : '#9ca3af' }}>
+                    {expForm.isPublished !== false ? 'Published (Live on portfolio)' : 'Draft (Hidden from public)'}
                   </span>
                 </label>
               </div>
@@ -4370,29 +5343,15 @@ export default function AdminPage() {
                   />
                 </div>
                 <div>
-                  <label className="admin-field-label">Location</label>
+                  <label className="admin-field-label">Time Period / Timeline</label>
                   <input
                     type="text"
                     className="admin-input"
-                    value={expForm.location}
-                    onChange={(e) => setExpForm({ ...expForm, location: e.target.value })}
-                    placeholder="e.g. India / Remote"
+                    value={expForm.period}
+                    onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
+                    placeholder="e.g. DEC 2025 - PRESENT"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="admin-field-label">Time Period / Timeline</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={expForm.period}
-                  onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
-                  placeholder="e.g. DEC 2025 - PRESENT or JAN 2025 - MAR 2025"
-                />
-                <span className="admin-field-helper" style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px', display: 'block' }}>
-                  Auto-formatted from start and end dates. You can also customize or edit this timeline manually.
-                </span>
               </div>
 
               <AdminImageUploadField
@@ -4401,7 +5360,9 @@ export default function AdminPage() {
                 onChange={(val) => setExpForm({ ...expForm, logo: val, image: val })}
                 placeholder="Paste logo URL or upload image file..."
                 idPrefix="exp-logo"
-                helperText="Upload company/internship logo from device or enter image URL."
+                helperText="Clean rounded-square logo (14px border radius, cover, no background box). Uploads to Supabase Storage under portfolio-assets/experiences"
+                isLogo={true}
+                storageFolder="experiences"
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
@@ -4461,16 +5422,122 @@ export default function AdminPage() {
                 />
               </div>
 
+              {/* DESCRIPTION EDITOR: 1. PARAGRAPH DESCRIPTION */}
               <div>
-                <label className="admin-field-label">Description & Contributions (1 bullet per line)</label>
+                <label className="admin-field-label">Description: Paragraph Overview</label>
                 <textarea
                   className="admin-textarea"
-                  rows={4}
-                  value={expForm.desc}
-                  onChange={(e) => setExpForm({ ...expForm, desc: e.target.value })}
-                  placeholder="Detail your engineering contributions, key features, and impact (one point per line)..."
-                  required
+                  rows={3}
+                  value={expForm.paragraph}
+                  onChange={(e) => setExpForm({ ...expForm, paragraph: e.target.value })}
+                  placeholder="General paragraph summarizing your role, mission, and scope..."
                 />
+                <span className="admin-field-helper">
+                  High-level summary paragraph rendered before bullet points on the public portfolio.
+                </span>
+              </div>
+
+              {/* DESCRIPTION EDITOR: 2. INTERACTIVE BULLET-POINT LIST */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label className="admin-field-label" style={{ margin: 0 }}>
+                    Description: Bullet Points (Responsibilities, achievements, work performed)
+                  </label>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    style={{ padding: '3px 10px', fontSize: '11px' }}
+                    onClick={addExpBullet}
+                  >
+                    + Add Bullet
+                  </button>
+                </div>
+
+                <div className="admin-bullets-editor">
+                  {(expForm.bullets || []).map((bullet, bIdx) => (
+                    <div key={bIdx} className="admin-bullet-row">
+                      <span style={{ fontSize: '11px', color: '#61dca3', fontWeight: '700', minWidth: '18px' }}>
+                        {bIdx + 1}.
+                      </span>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        style={{ flex: 1 }}
+                        value={bullet}
+                        onChange={(e) => updateExpBullet(bIdx, e.target.value)}
+                        placeholder="e.g. Developed responsive frontend interfaces..."
+                      />
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        disabled={bIdx === 0}
+                        onClick={() => moveExpBullet(bIdx, 'up')}
+                        title="Move Up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        disabled={bIdx === (expForm.bullets || []).length - 1}
+                        onClick={() => moveExpBullet(bIdx, 'down')}
+                        title="Move Down"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-danger"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        onClick={() => removeExpBullet(bIdx)}
+                        title="Remove Bullet"
+                        aria-label="Remove Bullet"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* LIVE COMPONENT PREVIEW FOR EXPERIENCE */}
+              <div className="admin-live-preview-section">
+                <div className="admin-preview-title">Live Portfolio Component Preview</div>
+                <div className="admin-preview-wrapper">
+                  <ExperienceCard
+                    experience={{
+                      id: expForm.id || 'preview-exp',
+                      company: expForm.company || 'Company Name',
+                      role: expForm.role || 'Job Role',
+                      position: expForm.role || 'Job Role',
+                      employmentType: expForm.employmentType,
+                      period: expForm.period || 'JAN 2026 - PRESENT',
+                      startDate: expForm.startDate,
+                      endDate: expForm.endDate,
+                      location: expForm.location || 'Remote',
+                      isCurrent: expForm.isCurrent,
+                      description_paragraph: expForm.paragraph,
+                      description_bullets: (expForm.bullets || []).filter(Boolean),
+                      description: (expForm.bullets || []).filter(Boolean),
+                      desc: expForm.paragraph,
+                      skills: expForm.skills ? expForm.skills.split(',').map((s) => s.trim()).filter(Boolean) : [],
+                      technologies: expForm.skills ? expForm.skills.split(',').map((s) => s.trim()).filter(Boolean) : [],
+                      logo: expForm.image || expForm.logo,
+                      image: expForm.image || expForm.logo,
+                      website: expForm.website,
+                      github: expForm.github,
+                      linkedin: expForm.linkedin,
+                      x: expForm.x,
+                    }}
+                    alwaysOpen={true}
+                    isFeatured={true}
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
@@ -4489,7 +5556,7 @@ export default function AdminPage() {
       {/* MODAL: ADD / EDIT EDUCATION */}
       {showEduModal && (
         <div className="admin-modal-backdrop" onClick={() => setShowEduModal(false)}>
-          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="admin-modal-card" style={{ maxWidth: '780px' }} onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '16px' }}>
               {editingEduIndex !== null ? 'Edit Education Milestone' : 'Add Education Milestone'}
             </div>
@@ -4497,18 +5564,31 @@ export default function AdminPage() {
             <form onSubmit={handleSaveEdu} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
-                  <label className="admin-field-label">Degree / Program / Schooling</label>
+                  <label className="admin-field-label">Degree / Program</label>
                   <input
                     type="text"
                     className="admin-input"
                     value={eduForm.degree}
                     onChange={(e) => setEduForm({ ...eduForm, degree: e.target.value })}
-                    placeholder="e.g. B.Tech, Computer Science"
+                    placeholder="e.g. Bachelor of Technology"
                     required
                   />
                 </div>
                 <div>
-                  <label className="admin-field-label">Institution / College / School Name</label>
+                  <label className="admin-field-label">Branch / Specialization</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={eduForm.branch}
+                    onChange={(e) => setEduForm({ ...eduForm, branch: e.target.value })}
+                    placeholder="e.g. Computer Science and Engineering"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }} className="admin-modal-grid">
+                <div>
+                  <label className="admin-field-label">Institution / College / University</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -4518,11 +5598,21 @@ export default function AdminPage() {
                     required
                   />
                 </div>
+                <div>
+                  <label className="admin-field-label">Location</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={eduForm.location}
+                    onChange={(e) => setEduForm({ ...eduForm, location: e.target.value })}
+                    placeholder="e.g. Jammu, J&K"
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
                 <div>
-                  <label className="admin-field-label">Period</label>
+                  <label className="admin-field-label">Period / Duration</label>
                   <input
                     type="text"
                     className="admin-input"
@@ -4532,7 +5622,7 @@ export default function AdminPage() {
                     required
                   />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', paddingTop: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '22px' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
                     <input
                       type="checkbox"
@@ -4540,6 +5630,16 @@ export default function AdminPage() {
                       onChange={(e) => setEduForm({ ...eduForm, isCurrent: e.target.checked })}
                     />
                     <span>Active Student (NOW badge)</span>
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                    <input
+                      type="checkbox"
+                      checked={eduForm.isPublished !== false}
+                      onChange={(e) => setEduForm({ ...eduForm, isPublished: e.target.checked })}
+                    />
+                    <span style={{ fontWeight: '600', color: eduForm.isPublished !== false ? '#34d399' : '#9ca3af' }}>
+                      {eduForm.isPublished !== false ? 'Published' : 'Draft'}
+                    </span>
                   </label>
                 </div>
               </div>
@@ -4550,30 +5650,136 @@ export default function AdminPage() {
                 onChange={(val) => setEduForm({ ...eduForm, logo: val, image: val })}
                 placeholder="Paste logo URL or upload image file..."
                 idPrefix="edu-logo"
-                helperText="Upload college or school logo from device or enter image URL."
+                helperText="Clean rounded-square logo (12px border radius, cover, no background box). Uploads to Supabase Storage under portfolio-assets/education"
+                isLogo={true}
+                storageFolder="education"
               />
 
               <div>
-                <label className="admin-field-label">Key Coursework / Subjects (Comma-Separated)</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={eduForm.courses}
-                  onChange={(e) => setEduForm({ ...eduForm, courses: e.target.value })}
-                  placeholder="Artificial Intelligence, DSA, Database Systems, Computer Networks"
+                <label className="admin-field-label">Description Paragraph</label>
+                <textarea
+                  className="admin-textarea"
+                  rows={3}
+                  value={eduForm.paragraph}
+                  onChange={(e) => setEduForm({ ...eduForm, paragraph: e.target.value })}
+                  placeholder="Summary of academic focus, core curriculum, and honors..."
                 />
               </div>
 
+              {/* HIGHLIGHTS / COURSEWORK BULLET POINTS */}
               <div>
-                <label className="admin-field-label">Description & Overview</label>
-                <textarea
-                  className="admin-textarea"
-                  rows={4}
-                  value={eduForm.desc}
-                  onChange={(e) => setEduForm({ ...eduForm, desc: e.target.value })}
-                  placeholder="Summary of academic focus, projects, and coursework..."
-                  required
-                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label className="admin-field-label" style={{ margin: 0 }}>
+                    Highlights & Core Coursework (Chips / Bullets)
+                  </label>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    style={{ padding: '3px 10px', fontSize: '11px' }}
+                    onClick={addEduBullet}
+                  >
+                    + Add Item
+                  </button>
+                </div>
+
+                <div className="admin-bullets-editor">
+                  {(eduForm.bullets || []).map((highlight, hIdx) => (
+                    <div key={hIdx} className="admin-bullet-row">
+                      <span style={{ fontSize: '11px', color: '#61dca3', fontWeight: '700', minWidth: '18px' }}>
+                        {hIdx + 1}.
+                      </span>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        style={{ flex: 1 }}
+                        value={highlight}
+                        onChange={(e) => updateEduBullet(hIdx, e.target.value)}
+                        placeholder="e.g. Artificial Intelligence, Data Structures..."
+                      />
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        disabled={hIdx === 0}
+                        onClick={() => moveEduBullet(hIdx, 'up')}
+                        title="Move Up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-secondary"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        disabled={hIdx === (eduForm.bullets || []).length - 1}
+                        onClick={() => moveEduBullet(hIdx, 'down')}
+                        title="Move Down"
+                      >
+                        ↓
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-danger"
+                        style={{ padding: '4px 8px', fontSize: '11px' }}
+                        onClick={() => removeEduBullet(hIdx)}
+                        title="Remove"
+                        aria-label="Remove"
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* LIVE COMPONENT PREVIEW FOR EDUCATION */}
+              <div className="admin-live-preview-section">
+                <div className="admin-preview-title">Live Education Component Preview</div>
+                <div className="admin-preview-wrapper" style={{ padding: '16px' }}>
+                  <div className="timeline-connected-item" style={{ marginBottom: 0 }}>
+                    <div className="timeline-logo-col">
+                      <div className={`timeline-logo-node ${eduForm.image || eduForm.logo ? 'has-clean-logo' : ''}`}>
+                        {(eduForm.image || eduForm.logo) ? (
+                          <img
+                            src={eduForm.image || eduForm.logo}
+                            alt={eduForm.institution || 'Logo'}
+                            className="timeline-logo-img-clean"
+                          />
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                    <div className="timeline-content-col">
+                      <div className="exp-top-row">
+                        <div className="exp-company-block">
+                          <h3 className="exp-company-name">{eduForm.degree || 'Degree / Program'}</h3>
+                          <span className="exp-role-title">
+                            {eduForm.institution || 'Institution Name'}
+                            {eduForm.branch ? ` (${eduForm.branch})` : ''}
+                          </span>
+                        </div>
+                        <div className="exp-period-badge">
+                          {eduForm.isCurrent && <span className="edu-now-tag">NOW</span>}
+                          <span className="exp-period-text">{eduForm.period || '2024 - 2028'}</span>
+                        </div>
+                      </div>
+                      {eduForm.paragraph && <p className="exp-clean-desc">{eduForm.paragraph}</p>}
+                      {(eduForm.bullets || []).filter(Boolean).length > 0 && (
+                        <div className="exp-skills-row">
+                          {(eduForm.bullets || []).filter(Boolean).map((c, i) => (
+                            <span key={i} className="exp-skill-chip">{c}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
@@ -4670,13 +5876,49 @@ export default function AdminPage() {
               </div>
 
               <AdminImageUploadField
-                label="Certificate / Badge Logo"
+                label={certModalType === 'certification' ? 'Issuer / Organization Logo (Icon)' : 'Organization / Event Badge (Icon)'}
                 value={certForm.image}
                 onChange={(val) => setCertForm({ ...certForm, image: val })}
-                placeholder="Upload badge/logo image or paste URL..."
+                placeholder="Upload logo/badge image or paste URL..."
                 idPrefix="cert-logo"
-                helperText="Upload certificate image/badge from device or enter URL."
+                helperText="Square/circle logo displayed on the left side of the row."
+                storageFolder="logos"
+                isLogo={true}
               />
+
+              {certModalType === 'certification' ? (
+                <AdminImageUploadField
+                  label="Certificate Document Image (LinkedIn-style preview card)"
+                  value={certForm.certificateImage}
+                  onChange={(val) => setCertForm({ ...certForm, certificateImage: val })}
+                  placeholder="Upload certificate image/PDF render or paste URL..."
+                  idPrefix="cert-doc"
+                  helperText="Stored in Supabase Storage under portfolio-assets/certifications. Displays a small LinkedIn-style verified credential card above the description."
+                  storageFolder="certifications"
+                />
+              ) : (
+                <>
+                  <AdminImageUploadField
+                    label="Award / Event Photo (Shown as photos display)"
+                    value={certForm.certificateImage}
+                    onChange={(val) => setCertForm({ ...certForm, certificateImage: val })}
+                    placeholder="Upload event ceremony, podium, or trophy photo..."
+                    idPrefix="achieve-photo"
+                    helperText="Stored in Supabase Storage under portfolio-assets/achievements. Displays as event photo thumbnail in the achievement row."
+                    storageFolder="achievements"
+                  />
+                  <div>
+                    <label className="admin-field-label">Additional Photo URLs (Optional, comma-separated)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={certForm.photos}
+                      onChange={(e) => setCertForm({ ...certForm, photos: e.target.value })}
+                      placeholder="https://...photo1.jpg, https://...photo2.jpg"
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="admin-field-label">Credential / Verification Link</label>
@@ -4693,11 +5935,79 @@ export default function AdminPage() {
                 <label className="admin-field-label">Description / Summary (Optional)</label>
                 <textarea
                   className="admin-textarea"
-                  rows={3}
+                  rows={2}
                   value={certForm.description}
                   onChange={(e) => setCertForm({ ...certForm, description: e.target.value })}
                   placeholder="Summary of skills verified, project impact, or criteria..."
                 />
+              </div>
+
+              {/* LIVE COMPONENT PREVIEW FOR CERTIFICATION / ACHIEVEMENT */}
+              <div className="admin-live-preview-section">
+                <div className="admin-preview-title">Live Portfolio Single-Row Preview</div>
+                <div className="admin-preview-wrapper" style={{ padding: '14px 16px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: 1 }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                        {certForm.image ? (
+                          <img src={certForm.image} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#60a5fa" strokeWidth="2">
+                            <circle cx="12" cy="8" r="7" />
+                            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+                          </svg>
+                        )}
+                      </div>
+                      <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '14.5px', fontWeight: '600', color: '#ffffff' }}>
+                          {certForm.title || 'Entry Title'}
+                        </span>
+                        <span style={{ fontSize: '12px', color: '#9ca3af' }}>
+                          {certForm.issuer || 'Issuing Organization'} &bull; {certForm.issueDate || certForm.year || '2026'}
+                        </span>
+
+                        {certModalType === 'certification' && certForm.certificateImage ? (
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '4px 10px 4px 4px',
+                            marginTop: '5px',
+                            background: 'rgba(255, 255, 255, 0.04)',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderRadius: '8px',
+                            width: 'fit-content'
+                          }}>
+                            <div style={{ width: '48px', height: '32px', borderRadius: '5px', overflow: 'hidden', background: '#000', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                              <img src={certForm.certificateImage} alt="Cert" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontSize: '9px', fontWeight: '700', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#60a5fa' }}>Certificate</span>
+                              <span style={{ fontSize: '11px', color: '#fff', fontWeight: '500' }}>Show credential ↗</span>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {certModalType === 'achievement' && certForm.certificateImage ? (
+                          <div style={{ display: 'flex', gap: '6px', marginTop: '5px' }}>
+                            <div style={{ width: '58px', height: '40px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                              <img src={certForm.certificateImage} alt="Achievement" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {certForm.description ? (
+                          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.4 }}>
+                            {certForm.description}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: '12px', fontFamily: "'Disket Mono', monospace", color: '#9ca3af' }}>
+                      {certForm.year || '2026'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
@@ -4712,101 +6022,233 @@ export default function AdminPage() {
           </div>
         </div>
       )}
-      {/* MODAL: ADD CUSTOM SKILL WITH LOGO */}
-      {customSkillModal.isOpen && (
-        <div className="admin-modal-backdrop" onClick={() => setCustomSkillModal({ ...customSkillModal, isOpen: false })}>
-          <div className="admin-modal-card" style={{ maxWidth: '440px' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '14px' }}>
-              Add Custom Skill & Logo
-            </div>
+      {/* MODAL: ADD CUSTOM SKILL WITH LOGO / ONLINE ICON LIBRARY */}
+      {customSkillModal.isOpen && (() => {
+        const query = (customSkillModal.filterQuery || '').toLowerCase().trim();
+        const filteredIcons = ONLINE_SKILL_ICONS.filter(
+          (i) => i.name.toLowerCase().includes(query) || i.slug.toLowerCase().includes(query)
+        );
 
-            <form onSubmit={handleAddCustomSkillSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label className="admin-field-label">Skill Name</label>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={customSkillModal.name}
-                  onChange={(e) => setCustomSkillModal({ ...customSkillModal, name: e.target.value })}
-                  placeholder="e.g. PyTorch, Unreal Engine, LangChain"
-                  required
-                  autoFocus
-                />
+        return (
+          <div className="admin-modal-backdrop" onClick={() => setCustomSkillModal({ ...customSkillModal, isOpen: false })}>
+            <div className="admin-modal-card" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ fontSize: '18px', fontWeight: '800', marginBottom: '14px' }}>
+                Add Skill Icon (Online Library or Upload)
               </div>
 
-              <div>
-                <label className="admin-field-label">Upload Skill Logo / Icon</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-                  <label
-                    className="admin-btn admin-btn-secondary"
-                    style={{
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '7px 12px',
-                    }}
-                  >
-                    <span>Browse Image / SVG</span>
-                    <input
-                      type="file"
-                      accept="image/*,.svg"
-                      style={{ display: 'none' }}
-                      onChange={handleCustomSkillLogoUpload}
-                    />
-                  </label>
-                  {(customSkillModal.logoPreview || customSkillModal.logoUrl) && (
-                    <div
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '6px',
-                        background: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <img
-                        src={customSkillModal.logoPreview || customSkillModal.logoUrl}
-                        alt="Logo preview"
-                        style={{ width: '22px', height: '22px', objectFit: 'contain' }}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '4px' }}>
-                  Or paste a logo Image URL:
-                </div>
-                <input
-                  type="text"
-                  className="admin-input"
-                  value={customSkillModal.logoUrl}
-                  onChange={(e) => setCustomSkillModal({ ...customSkillModal, logoUrl: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+              {/* Mode Switcher */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
                 <button
                   type="button"
-                  className="admin-btn admin-btn-secondary"
-                  onClick={() => setCustomSkillModal({ ...customSkillModal, isOpen: false })}
+                  className={`admin-subfilter-pill ${customSkillModal.tab === 'online' ? 'is-active' : ''}`}
+                  onClick={() => setCustomSkillModal({ ...customSkillModal, tab: 'online' })}
+                  style={{ flex: 1, textAlign: 'center', height: '36px' }}
                 >
-                  Cancel
+                  Online Icon Library
                 </button>
-                <button type="submit" className="admin-btn admin-btn-primary">
-                  Add to Category
+                <button
+                  type="button"
+                  className={`admin-subfilter-pill ${customSkillModal.tab === 'upload' ? 'is-active' : ''}`}
+                  onClick={() => setCustomSkillModal({ ...customSkillModal, tab: 'upload' })}
+                  style={{ flex: 1, textAlign: 'center', height: '36px' }}
+                >
+                  Upload File / URL
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleAddCustomSkillSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label className="admin-field-label">Skill Name</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={customSkillModal.name}
+                    onChange={(e) => setCustomSkillModal({ ...customSkillModal, name: e.target.value })}
+                    placeholder="e.g. React, Supabase, Python, Docker"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                {customSkillModal.tab === 'online' ? (
+                  <div>
+                    <label className="admin-field-label">Search Online Icon Library (SkillIcons / Devicons)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={customSkillModal.filterQuery}
+                      onChange={(e) => setCustomSkillModal({ ...customSkillModal, filterQuery: e.target.value })}
+                      placeholder="Type to filter (e.g. react, ts, python, supabase, figma)..."
+                      style={{ marginBottom: '10px' }}
+                    />
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(78px, 1fr))',
+                      gap: '8px',
+                      maxHeight: '190px',
+                      overflowY: 'auto',
+                      padding: '8px',
+                      background: 'rgba(255, 255, 255, 0.02)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px'
+                    }}>
+                      {filteredIcons.map((item) => {
+                        const iconUrl = `https://skillicons.dev/icons?i=${item.slug}`;
+                        const isSelected = customSkillModal.logoUrl === iconUrl;
+                        return (
+                          <button
+                            key={item.slug}
+                            type="button"
+                            onClick={() => {
+                              setCustomSkillModal({
+                                ...customSkillModal,
+                                name: customSkillModal.name ? customSkillModal.name : item.name,
+                                logoUrl: iconUrl,
+                                logoPreview: iconUrl,
+                              });
+                            }}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '4px',
+                              padding: '8px 4px',
+                              background: isSelected ? 'rgba(96, 165, 250, 0.2)' : 'rgba(255, 255, 255, 0.04)',
+                              border: isSelected ? '1px solid #60a5fa' : '1px solid rgba(255, 255, 255, 0.08)',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              color: isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.8)',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            <img src={iconUrl} alt={item.name} width={22} height={22} style={{ objectFit: 'contain' }} />
+                            <span style={{ fontSize: '10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                              {item.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+
+                      {query && !filteredIcons.some((i) => i.slug === query) ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const customUrl = `https://skillicons.dev/icons?i=${query}`;
+                            setCustomSkillModal({
+                              ...customSkillModal,
+                              name: customSkillModal.name || query,
+                              logoUrl: customUrl,
+                              logoPreview: customUrl,
+                            });
+                          }}
+                          style={{
+                            gridColumn: '1 / -1',
+                            padding: '8px',
+                            background: 'rgba(96, 165, 250, 0.15)',
+                            border: '1px dashed #60a5fa',
+                            borderRadius: '6px',
+                            color: '#93c5fd',
+                            fontSize: '11.5px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <img src={`https://skillicons.dev/icons?i=${query}`} alt={query} width={20} height={20} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          <span>Use online icon slug: &quot;{query}&quot;</span>
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="admin-field-label">Upload Skill Logo / Icon</label>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+                      <label
+                        className="admin-btn admin-btn-secondary"
+                        style={{
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '7px 12px',
+                        }}
+                      >
+                        <span>Browse Image / SVG</span>
+                        <input
+                          type="file"
+                          accept="image/*,.svg"
+                          style={{ display: 'none' }}
+                          onChange={handleCustomSkillLogoUpload}
+                        />
+                      </label>
+                    </div>
+
+                    <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '4px' }}>
+                      Or paste a logo Image URL:
+                    </div>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={customSkillModal.logoUrl}
+                      onChange={(e) => setCustomSkillModal({ ...customSkillModal, logoUrl: e.target.value, logoPreview: e.target.value })}
+                      placeholder="https://..."
+                    />
+                  </div>
+                )}
+
+                {/* Selected Icon & Skill Chip Live Preview */}
+                {(customSkillModal.logoPreview || customSkillModal.logoUrl || customSkillModal.name) && (
+                  <div style={{ padding: '10px 12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <div style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '6px' }}>Live Skill Chip Preview:</div>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        background: 'rgba(255, 255, 255, 0.06)',
+                        border: '1px solid rgba(255, 255, 255, 0.14)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12.5px',
+                        color: '#ffffff',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {(customSkillModal.logoPreview || customSkillModal.logoUrl) ? (
+                        <img
+                          src={customSkillModal.logoPreview || customSkillModal.logoUrl}
+                          alt="preview"
+                          style={{ width: '16px', height: '16px', objectFit: 'contain' }}
+                        />
+                      ) : null}
+                      <span>{customSkillModal.name || 'Skill Name'}</span>
+                    </span>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    onClick={() => setCustomSkillModal({ ...customSkillModal, isOpen: false })}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="admin-btn admin-btn-primary">
+                    Add to Category
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Floating Save Notification Toast */}
       {contentSaveMsg && (

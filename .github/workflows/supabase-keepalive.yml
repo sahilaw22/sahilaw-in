@@ -1,0 +1,29 @@
+name: Supabase Health Check & Keepalive
+
+on:
+  schedule:
+    # Runs twice daily at 06:00 and 18:00 UTC (safe low frequency)
+    - cron: '0 6,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Portfolio Supabase Health Check
+        env:
+          PORTFOLIO_URL: ${{ secrets.PORTFOLIO_URL || vars.PORTFOLIO_URL || 'https://sahilwani.me' }}
+        run: |
+          echo "Executing scheduled Supabase health check against: $PORTFOLIO_URL/api/health/supabase"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$PORTFOLIO_URL/api/health/supabase" || echo "000")
+          echo "Response HTTP Status: $STATUS"
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -le 399 ]; then
+            echo "Health check succeeded. Supabase is active."
+          elif [ "$STATUS" -eq 503 ]; then
+            echo "Supabase returned 503 (unconfigured or pausing). Check Supabase project settings."
+          else
+            echo "Warning: Health check endpoint returned status $STATUS."
+          fi
+

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase, fetchPortfolioDirectFromSupabase } from '../lib/supabaseClient.js';
 import {
   HERO_ROLES,
   ABOUT_PARAGRAPHS,
@@ -45,7 +46,8 @@ function cleanSkillCategories(categories) {
  * which cause React "Objects are not valid as a React child" errors.
  */
 function cleanCertOrAchieveItems(items, fallbackList) {
-  if (!Array.isArray(items) || items.length === 0) return fallbackList;
+  if (!Array.isArray(items)) return fallbackList;
+  if (items.length === 0) return [];
   return items.map((item) => {
     if (!item) return item;
     const cleaned = { ...item };
@@ -58,7 +60,8 @@ function cleanCertOrAchieveItems(items, fallbackList) {
 }
 
 function cleanEducationItems(items) {
-  if (!Array.isArray(items) || items.length === 0) return EDUCATION_ITEMS;
+  if (!Array.isArray(items)) return EDUCATION_ITEMS;
+  if (items.length === 0) return [];
   return items.map((item) => {
     if (!item) return item;
     const cleaned = { ...item };
@@ -129,44 +132,77 @@ export function usePortfolioData() {
   const [data, setData] = useState(getInitialState);
 
   const fetchContent = useCallback(async () => {
+    let resolvedContent = null;
+
     try {
       const res = await fetch('/api/portfolio-content');
-      if (!res.ok) return;
-      const json = await res.json();
-      if (json && json.success && json.content) {
-        const fresh = {
-          about: cleanAboutParagraphs(json.content.about || ABOUT_PARAGRAPHS),
-          experiences: json.content.experiences || EXPERIENCES,
-          projects: json.content.projects || PROJECTS,
-          testimonials: json.content.testimonials || TESTIMONIALS,
-          education: cleanEducationItems(json.content.education),
-          skills: cleanSkillCategories(json.content.skills || SKILL_CATEGORIES),
-          certifications: cleanCertOrAchieveItems(json.content.certifications, CERTIFICATIONS),
-          achievements: cleanCertOrAchieveItems(json.content.achievements, ACHIEVEMENTS),
-          custom_icons: json.content.custom_icons || [],
-          meta: json.content.meta || { hero_roles: HERO_ROLES },
-        };
-        setData(fresh);
-        try {
-          // Prepare clean clone without JSX objects for storage
-          const serializable = {
-            ...fresh,
-            certifications: cleanCertOrAchieveItems(fresh.certifications, []),
-            achievements: cleanCertOrAchieveItems(fresh.achievements, []),
-            education: cleanEducationItems(fresh.education),
-          };
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
-        } catch {
-          // Ignore storage quota
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.success && json.content) {
+          resolvedContent = json.content;
         }
       }
     } catch {
-      // Offline or backend restarting, silently use local fallback
+      // Local API unavailable or running static on Vercel
+    }
+
+    // Direct Supabase fallback: when running on static Vercel or if server API gave no content
+    if (!resolvedContent && supabase) {
+      try {
+        const directSupa = await fetchPortfolioDirectFromSupabase();
+        if (directSupa) {
+          resolvedContent = directSupa;
+        }
+      } catch {
+        // Fall back to initial state
+      }
+    }
+
+    if (resolvedContent) {
+      const fresh = {
+        about: cleanAboutParagraphs(Array.isArray(resolvedContent.about) ? resolvedContent.about : ABOUT_PARAGRAPHS),
+        experiences: Array.isArray(resolvedContent.experiences) ? resolvedContent.experiences : EXPERIENCES,
+        projects: Array.isArray(resolvedContent.projects) ? resolvedContent.projects : PROJECTS,
+        testimonials: Array.isArray(resolvedContent.testimonials) ? resolvedContent.testimonials : TESTIMONIALS,
+        education: cleanEducationItems(Array.isArray(resolvedContent.education) ? resolvedContent.education : EDUCATION_ITEMS),
+        skills: cleanSkillCategories(Array.isArray(resolvedContent.skills) ? resolvedContent.skills : SKILL_CATEGORIES),
+        certifications: cleanCertOrAchieveItems(Array.isArray(resolvedContent.certifications) ? resolvedContent.certifications : CERTIFICATIONS, CERTIFICATIONS),
+        achievements: cleanCertOrAchieveItems(Array.isArray(resolvedContent.achievements) ? resolvedContent.achievements : ACHIEVEMENTS, ACHIEVEMENTS),
+        custom_icons: Array.isArray(resolvedContent.custom_icons) ? resolvedContent.custom_icons : [],
+        meta: resolvedContent.meta || { hero_roles: HERO_ROLES },
+      };
+      setData(fresh);
+      try {
+        const serializable = {
+          ...fresh,
+          certifications: cleanCertOrAchieveItems(fresh.certifications, []),
+          achievements: cleanCertOrAchieveItems(fresh.achievements, []),
+          education: cleanEducationItems(fresh.education),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+      } catch {
+        // Ignore storage quota
+      }
     }
   }, []);
 
   useEffect(() => {
     fetchContent();
+
+    // Supabase Realtime subscription for live instant updates
+    let channel = null;
+    if (supabase) {
+      try {
+        channel = supabase
+          .channel('public_portfolio_sync')
+          .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+            fetchContent();
+          })
+          .subscribe();
+      } catch {
+        // Fallback silently
+      }
+    }
 
     function handleUpdate(e) {
       if (e?.detail) {
@@ -188,6 +224,11 @@ export function usePortfolioData() {
     return () => {
       window.removeEventListener('portfolio-content-updated', handleUpdate);
       window.removeEventListener('storage', fetchContent);
+      if (channel && supabase) {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      }
     };
   }, [fetchContent]);
 

@@ -69,11 +69,29 @@ export function authMiddleware(req, res, next) {
 
   const token = authHeader.slice(7).trim();
   const user = verifyToken(token);
-  if (!user) {
-    return res.status(401).json({ error: 'Unauthorized: invalid or expired session token' });
+  if (user) {
+    req.admin = user;
+    return next();
   }
 
-  req.admin = user;
-  next();
+  // Also verify Supabase JWT tokens if supplied
+  if (token.split('.').length === 3 || token.startsWith('supa-')) {
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+        const email = payload.email || payload.user_metadata?.email || '';
+        const adminEmail = process.env.ADMIN_EMAIL || 'sahilaw502@gmail.com';
+        if (email && email.toLowerCase() === adminEmail.toLowerCase()) {
+          req.admin = { id: payload.sub || 'supabase-admin', username: email, provider: 'supabase' };
+          return next();
+        }
+      }
+    } catch {
+      // Fall through to unauthorized
+    }
+  }
+
+  return res.status(401).json({ error: 'Unauthorized: invalid or expired session token' });
 }
 

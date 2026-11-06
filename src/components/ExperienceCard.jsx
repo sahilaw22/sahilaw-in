@@ -69,10 +69,14 @@ export function ExperienceCard({
     }
   };
 
-  const descriptionList = Array.isArray(experience.description)
+  const paragraphText =
+    experience.description_paragraph ||
+    (typeof experience.desc === 'string' && !Array.isArray(experience.description) ? experience.desc : '');
+
+  const bulletsList = Array.isArray(experience.description_bullets)
+    ? experience.description_bullets
+    : Array.isArray(experience.description)
     ? experience.description
-    : experience.desc
-    ? [experience.desc]
     : [];
 
   const skillsList = experience.technologies || experience.skills || [];
@@ -267,10 +271,18 @@ export function ExperienceCard({
             </div>
           )}
 
+          {/* Paragraph Description */}
+          {paragraphText && (
+            <p
+              className="sleek-exp-paragraph-desc"
+              dangerouslySetInnerHTML={{ __html: parseDescription(paragraphText) }}
+            />
+          )}
+
           {/* Description Bullets */}
-          {descriptionList && descriptionList.length > 0 && (
+          {bulletsList && bulletsList.length > 0 && (
             <div className="sleek-exp-desc-list">
-              {descriptionList.map((desc, idx) => (
+              {bulletsList.map((desc, idx) => (
                 <p
                   key={idx}
                   className="sleek-exp-desc-bullet-row"

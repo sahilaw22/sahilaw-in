@@ -8,6 +8,8 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import RightScrollPills from './components/RightScrollPills.jsx';
 import Ribbons from './components/ui/Ribbons.jsx';
+import Preloader from './components/ui/Preloader.jsx';
+import PageLoader from './components/PageLoader.jsx';
 import HomePage from './pages/HomePage.jsx';
 
 // Code-split secondary routes for rapid initial page load
@@ -60,18 +62,25 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  const [isPreloaderActive, setIsPreloaderActive] = useState(() => {
-    if (typeof window === 'undefined') return false;
+  // Preloader management:
+  // - First visit in session: shows original first-time preloader (stairs).
+  // - On reload / subsequent page load in session: shows dark loading animation.
+  // - Client-side route changes: neither shows.
+  const [loaderType, setLoaderType] = useState(() => {
+    if (typeof window === 'undefined') return null;
     try {
-      const isHome = window.location.hash === '' || window.location.hash === '#/' || window.location.hash === '#';
-      return isHome && !sessionStorage.getItem('portfolio_opened_before');
+      const hasOpened = sessionStorage.getItem('portfolio_opened_before');
+      return hasOpened ? 'reload' : 'first-visit';
     } catch {
-      return false;
+      return null;
     }
   });
 
-  const handlePreloaderComplete = () => {
-    setIsPreloaderActive(false);
+  const handleLoaderComplete = () => {
+    try {
+      sessionStorage.setItem('portfolio_opened_before', 'true');
+    } catch {}
+    setLoaderType(null);
   };
 
   useEffect(() => {
@@ -81,7 +90,7 @@ export default function App() {
   // Render the correct page based on the current hash route
   function renderPage() {
     if (route === '/chatbot-response' || route === '/admin') return <AdminPage />;
-    if (route === '/') return <HomePage sound={sound} onIntroComplete={handlePreloaderComplete} />;
+    if (route === '/') return <HomePage sound={sound} />;
     if (route === '/blog') return <BlogPage sound={sound} />;
     if (route.startsWith('/blog/')) {
       const slug = route.replace('/blog/', '');
@@ -92,11 +101,13 @@ export default function App() {
     if (route === '/chat') return <ChatPage />;
     if (route === '/projects') return <ProjectsPage />;
     if (route === '/projects/all') return <ProjectsPage showAll />;
-    return <HomePage sound={sound} onIntroComplete={handlePreloaderComplete} />;
+    return <HomePage sound={sound} />;
   }
 
   return (
     <>
+      {loaderType === 'first-visit' && <Preloader onComplete={handleLoaderComplete} />}
+      {loaderType === 'reload' && <PageLoader onComplete={handleLoaderComplete} />}
       {isDesktopPointer && (
         <div
           className="ribbons-cursor-container"
@@ -127,8 +138,8 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </div>
-      {isHome && !isPreloaderActive && <RightScrollPills play={sound?.play} currentRoute={route} />}
-      {!isAdmin && !isExperience && !isPreloaderActive && <BottomNav activeView={activeView} />}
+      {isHome && !loaderType && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {!isAdmin && !isExperience && !loaderType && <BottomNav activeView={activeView} />}
     </>
   );
 }

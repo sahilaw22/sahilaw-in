@@ -97,13 +97,16 @@ export default function Preloader({
     }
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const effectiveStairCount = isMobile ? 6 : stairCount;
+
   const getStairDelay = (index) => {
-    const stepDuration = 0.045;
+    const stepDuration = isMobile ? 0.065 : 0.045;
     if (stairsRevealFrom === 'right') {
-      return (stairCount - 1 - index) * stepDuration;
+      return (effectiveStairCount - 1 - index) * stepDuration;
     }
     if (stairsRevealFrom === 'center') {
-      const mid = (stairCount - 1) / 2;
+      const mid = (effectiveStairCount - 1) / 2;
       return Math.abs(index - mid) * (stepDuration * 1.3);
     }
     return index * stepDuration;
@@ -131,19 +134,19 @@ export default function Preloader({
           {/* Variant 1: Stairs (signature React Bits Pro stair reveal) */}
           {variant === 'stairs' && (
             <div className="rb-preloader-stairs-wrap">
-              {Array.from({ length: stairCount }).map((_, i) => (
+              {Array.from({ length: effectiveStairCount }).map((_, i) => (
                 <motion.div
                   key={`stair-${i}`}
                   className="rb-preloader-stair-col"
                   style={{
-                    width: `calc(100% / ${stairCount} + 1px)`,
+                    width: `calc(100% / ${effectiveStairCount} + 1px)`,
                     backgroundColor: bgColor,
                   }}
                   initial={{ y: '0%' }}
                   exit={{
                     y: exitY,
                     transition: {
-                      duration: 0.65,
+                      duration: isMobile ? 0.75 : 0.65,
                       ease: [0.76, 0, 0.24, 1],
                       delay: getStairDelay(i),
                     },

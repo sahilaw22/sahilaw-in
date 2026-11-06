@@ -24,7 +24,18 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 0;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.featured-projects-title {
+  font-family: 'Space Grotesk', 'Outfit', -apple-system, sans-serif;
+  font-size: clamp(1.25rem, 2.6vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #ffffff !important;
+  margin: 0 0 0.85rem 0;
+  line-height: 1.25;
   text-align: center;
 }
 

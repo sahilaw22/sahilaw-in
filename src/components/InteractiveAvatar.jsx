@@ -1,26 +1,30 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { AVATAR_HEAD_SRC } from './avatarHeadAsset.js';
 import './InteractiveAvatar.css';
 
 // Eye geometry constants measured from original reference image (1024 x 967)
+// Identical eyeball and pupil sizes for consistent, symmetric look in both eyes
+const EYE_RADIUS = 74;
+const PUPIL_RADIUS = 28;
+
 const LEFT_EYE = {
-  cx: 542,
-  cy: 618,
-  rx: 88,
-  ry: 108,
-  maxDx: 48,
-  maxDy: 68,
-  pupilR: 34,
+  cx: 536,
+  cy: 620,
+  rx: EYE_RADIUS,
+  ry: EYE_RADIUS,
+  maxDx: 32,
+  maxDy: 32,
+  pupilR: PUPIL_RADIUS,
 };
 
 const RIGHT_EYE = {
-  cx: 780,
-  cy: 538,
-  rx: 46,
-  ry: 98,
-  maxDx: 22,
-  maxDy: 66,
-  pupilR: 24,
-  rotate: 12,
+  cx: 774,
+  cy: 544,
+  rx: EYE_RADIUS,
+  ry: EYE_RADIUS,
+  maxDx: 32,
+  maxDy: 32,
+  pupilR: PUPIL_RADIUS,
 };
 
 export default function InteractiveAvatar({ className = '', onAvatarClick }) {
@@ -139,7 +143,7 @@ export default function InteractiveAvatar({ className = '', onAvatarClick }) {
         const wanderY = Math.cos(t * 1.3) * 6;
         targetPos.current.leftX = wanderX;
         targetPos.current.leftY = wanderY;
-        targetPos.current.rightX = wanderX * 0.6;
+        targetPos.current.rightX = wanderX;
         targetPos.current.rightY = wanderY;
       }
 
@@ -286,48 +290,50 @@ export default function InteractiveAvatar({ className = '', onAvatarClick }) {
         <defs>
           {/* Exact lens boundary clips */}
           <clipPath id="avatar-left-lens-clip">
-            <ellipse cx="542" cy="618" rx="88" ry="108" />
+            <ellipse cx="538" cy="620" rx="106" ry="116" />
           </clipPath>
           <clipPath id="avatar-right-lens-clip">
-            <ellipse cx="780" cy="538" rx="46" ry="98" transform="rotate(12 780 538)" />
+            <ellipse cx="774" cy="544" rx="78" ry="98" />
           </clipPath>
         </defs>
 
         {/* Left eye elements */}
         <g ref={leftEyeGroupRef} clipPath="url(#avatar-left-lens-clip)">
-          <ellipse cx="542" cy="618" rx="90" ry="110" className="avatar-sclera" />
+          <ellipse cx="538" cy="620" rx="106" ry="116" fill="#000000" />
+          <circle cx={LEFT_EYE.cx} cy={LEFT_EYE.cy} r={LEFT_EYE.rx} className="avatar-sclera" />
           <g ref={leftPupilRef}>
-            <ellipse cx="542" cy="618" rx={LEFT_EYE.pupilR} ry={LEFT_EYE.pupilR} className="avatar-pupil" />
-            <circle cx="530" cy="606" r="9.5" className="avatar-highlight-primary" />
-            <circle cx="553" cy="627" r="4.5" className="avatar-highlight-secondary" />
+            <circle cx={LEFT_EYE.cx} cy={LEFT_EYE.cy} r={LEFT_EYE.pupilR} className="avatar-pupil" />
+            <circle cx={LEFT_EYE.cx - 9} cy={LEFT_EYE.cy - 9} r="8" className="avatar-highlight-primary" />
+            <circle cx={LEFT_EYE.cx + 8} cy={LEFT_EYE.cy + 7} r="4" className="avatar-highlight-secondary" />
           </g>
         </g>
 
         {/* Right eye elements */}
         <g ref={rightEyeGroupRef} clipPath="url(#avatar-right-lens-clip)">
-          <ellipse cx="780" cy="538" rx="48" ry="100" transform="rotate(12 780 538)" className="avatar-sclera" />
+          <ellipse cx="774" cy="544" rx="78" ry="98" fill="#000000" />
+          <circle cx={RIGHT_EYE.cx} cy={RIGHT_EYE.cy} r={RIGHT_EYE.rx} className="avatar-sclera" />
           <g ref={rightPupilRef}>
-            <ellipse cx="780" cy="538" rx={RIGHT_EYE.pupilR} ry={RIGHT_EYE.pupilR} transform="rotate(12 780 538)" className="avatar-pupil" />
-            <circle cx="771" cy="529" r="6.5" className="avatar-highlight-primary" />
-            <circle cx="788" cy="545" r="3" className="avatar-highlight-secondary" />
+            <circle cx={RIGHT_EYE.cx} cy={RIGHT_EYE.cy} r={RIGHT_EYE.pupilR} className="avatar-pupil" />
+            <circle cx={RIGHT_EYE.cx - 9} cy={RIGHT_EYE.cy - 9} r="8" className="avatar-highlight-primary" />
+            <circle cx={RIGHT_EYE.cx + 8} cy={RIGHT_EYE.cy + 7} r="4" className="avatar-highlight-secondary" />
           </g>
         </g>
 
         {/* Eyelid creases visible during blinks */}
         <path
           ref={leftCreaseRef}
-          d="M 458 618 Q 542 636 626 618"
+          d="M 460 620 Q 536 636 612 620"
           className="avatar-eyelid-crease"
         />
         <path
           ref={rightCreaseRef}
-          d="M 738 544 Q 780 560 822 532"
+          d="M 700 544 Q 774 560 848 544"
           className="avatar-eyelid-crease"
         />
 
-        {/* Head line art overlay */}
+        {/* Head line art overlay (inlined for instant zero-delay render) */}
         <image
-          href="/images/avatar-head.png"
+          href={AVATAR_HEAD_SRC}
           x="0"
           y="0"
           width="1024"

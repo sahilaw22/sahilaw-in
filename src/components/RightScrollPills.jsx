@@ -85,11 +85,23 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
         const journeyEl = document.getElementById('section-journey');
         const skillsEl = document.getElementById('section-skills');
         const contactEl = document.getElementById('section-contact');
+
+        const getTop = (el) => {
+          if (!el) return 0;
+          let top = 0;
+          let curr = el;
+          while (curr) {
+            top += curr.offsetTop || 0;
+            curr = curr.offsetParent;
+          }
+          return top;
+        };
+
         cachedOffsets = {
-          about: aboutEl?.offsetTop || 0,
-          journey: journeyEl?.offsetTop || 0,
-          skills: skillsEl?.offsetTop || 0,
-          contact: contactEl?.offsetTop || 0,
+          about: getTop(aboutEl),
+          journey: getTop(journeyEl),
+          skills: getTop(skillsEl),
+          contact: getTop(contactEl),
         };
         lastCacheTime = now;
       }

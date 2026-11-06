@@ -3,6 +3,14 @@ import crypto from 'crypto';
 import db from './db.js';
 import { selectAnswer } from './matchingEngine.js';
 import { hashPassword, verifyPassword, generateToken, authMiddleware } from './auth.js';
+import {
+  getPortfolioContentFromSupabase,
+  healthCheckSupabase,
+  getAnalyticsFromSupabase,
+  syncSectionToSupabase,
+  deleteItemFromSupabase,
+  supabaseAdmin,
+} from './supabaseAdmin.js';
 
 const router = express.Router();
 
@@ -223,6 +231,58 @@ router.post('/admin/login', (req, res) => {
   } catch (err) {
     console.error('Admin Login Error:', err);
     return res.status(500).json({ error: 'Authentication failed.' });
+  }
+});
+
+/**
+ * POST /api/admin/supabase-verify
+ * Verifies Supabase Auth admin user against allowlist and issues an admin session token.
+ */
+router.post('/admin/supabase-verify', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const adminEmail = (process.env.ADMIN_EMAIL || 'sahilaw502@gmail.com').toLowerCase();
+
+    // Verify against Supabase admin_allowlist table or ADMIN_EMAIL
+    let isAllowed = cleanEmail === adminEmail;
+    if (!isAllowed && supabaseAdmin) {
+      try {
+        const { data } = await supabaseAdmin
+          .from('admin_allowlist')
+          .select('email, role')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+        if (data && data.role === 'admin') {
+          isAllowed = true;
+        }
+      } catch {}
+    }
+
+    if (!isAllowed) {
+      return res.status(403).json({ error: 'Access denied: email is not on the admin allowlist.' });
+    }
+
+    const token = generateToken({ id: `supa-${cleanEmail}`, username: cleanEmail, role: 'admin' });
+    db.addAuditLog('admin_supabase_auth', `Supabase admin ${cleanEmail} authenticated.`);
+
+    return res.json({
+      success: true,
+      token,
+      admin: {
+        id: `supa-${cleanEmail}`,
+        username: cleanEmail,
+        role: 'admin',
+        provider: 'supabase',
+      },
+    });
+  } catch (err) {
+    console.error('Supabase Verify Error:', err);
+    return res.status(500).json({ error: 'Verification failed.' });
   }
 });
 
@@ -653,15 +713,45 @@ router.post('/admin/test-match', authMiddleware, (req, res) => {
 
 /**
  * GET /api/portfolio-content
- * Returns all dynamic portfolio content (about, experiences, education, skills, meta)
+ * Returns all dynamic portfolio content from Supabase with SQLite fallback.
  */
-router.get('/portfolio-content', (req, res) => {
+router.get('/portfolio-content', async (req, res) => {
   try {
+    const supabaseData = await getPortfolioContentFromSupabase();
+    if (supabaseData) {
+      return res.json({ success: true, source: 'supabase', content: supabaseData });
+    }
     const content = db.getPortfolioContent();
-    return res.json({ success: true, content });
+    return res.json({ success: true, source: 'local', content });
   } catch (err) {
     console.error('Error fetching portfolio content:', err);
     return res.status(500).json({ error: 'Failed to fetch portfolio content.' });
+  }
+});
+
+/**
+ * GET /api/health/supabase
+ * Lightweight read-only health check to detect connectivity and keep free tier active.
+ */
+router.get('/health/supabase', async (req, res) => {
+  try {
+    const health = await healthCheckSupabase();
+    return res.status(health.ok ? 200 : (health.configured ? 503 : 200)).json(health);
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/admin/supabase-analytics
+ */
+router.get('/admin/supabase-analytics', authMiddleware, async (req, res) => {
+  try {
+    const range = req.query.range || '7d';
+    const analytics = await getAnalyticsFromSupabase(range);
+    return res.json({ success: true, analytics });
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch Supabase analytics.' });
   }
 });
 
@@ -682,9 +772,9 @@ router.get('/portfolio-content/:section', (req, res) => {
 
 /**
  * PUT /api/admin/portfolio-content/:section
- * Updates portfolio section in SQLite DB in real time.
+ * Updates portfolio section in SQLite DB and synchronizes to Supabase in real time.
  */
-router.put('/admin/portfolio-content/:section', authMiddleware, (req, res) => {
+router.put('/admin/portfolio-content/:section', authMiddleware, async (req, res) => {
   try {
     const { section } = req.params;
     const { data } = req.body;
@@ -694,10 +784,73 @@ router.put('/admin/portfolio-content/:section', authMiddleware, (req, res) => {
 
     db.updatePortfolioSection(section, data);
     db.addAuditLog('update_portfolio_content', `Admin updated section: ${section}`);
-    return res.json({ success: true, section, data });
+
+    // Synchronize to Supabase PostgreSQL database
+    let supabaseResult = { ok: false, error: null };
+    try {
+      const syncOk = await syncSectionToSupabase(section, data);
+      supabaseResult.ok = Boolean(syncOk);
+    } catch (syncErr) {
+      console.warn(`Supabase sync warning for section ${section}:`, syncErr.message);
+      supabaseResult.error = syncErr.message;
+    }
+
+    return res.json({
+      success: true,
+      section,
+      data,
+      supabaseSync: supabaseResult,
+      message: supabaseResult.ok
+        ? `Successfully saved ${section} to Supabase and local database.`
+        : `Saved to local database (Supabase sync: ${supabaseResult.error || 'skipped'}).`,
+    });
   } catch (err) {
     console.error(`Error updating section ${req.params.section}:`, err);
     return res.status(500).json({ error: 'Failed to update section content.' });
+  }
+});
+
+/**
+ * DELETE /api/admin/portfolio-content/:section/:id
+ * Explicit item-level delete permanently removing row from Supabase and SQLite.
+ */
+router.delete('/admin/portfolio-content/:section/:id', authMiddleware, async (req, res) => {
+  try {
+    const { section, id } = req.params;
+    if (!section || !id) {
+      return res.status(400).json({ error: 'Section and ID are required.' });
+    }
+
+    // 1. Delete item from Supabase table
+    let supaDeleted = false;
+    try {
+      supaDeleted = await deleteItemFromSupabase(section, id);
+    } catch (supaErr) {
+      console.warn(`Supabase item delete warning for ${section}/${id}:`, supaErr.message);
+    }
+
+    // 2. Remove item from SQLite section list
+    const currentList = db.getPortfolioSection(section);
+    let updatedList = [];
+    if (Array.isArray(currentList)) {
+      updatedList = currentList.filter((item) => item.id !== id);
+      db.updatePortfolioSection(section, updatedList);
+      db.addAuditLog('delete_portfolio_item', `Admin deleted item ${id} from section ${section}`);
+    }
+
+    return res.json({
+      success: true,
+      section,
+      id,
+      supaDeleted,
+      data: updatedList,
+      message: supaDeleted
+        ? `Item ${id} deleted permanently from Supabase and local database.`
+        : `Item ${id} deleted from local database.`,
+    });
+  } catch (err) {
+    console.error(`Error deleting item from ${req.params.section}/${req.params.id}:`, err);
+    return res.status(500).json({ error: 'Failed to delete item.' });
   }
 });
 

@@ -1,9 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { TechIcon } from './TechIcons.jsx';
 import { PROJECTS as DEFAULT_PROJECTS } from '../data/portfolioData.jsx';
 
 export default function DetailModal({ project, projectsList, onClose, onNext, onPrev }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef(null);
+
   // Manage body class so background scroll is locked and floating navbar is hidden
   useEffect(() => {
     if (project) {
@@ -15,6 +18,11 @@ export default function DetailModal({ project, projectsList, onClose, onNext, on
       document.body.classList.remove('project-detail-active');
     };
   }, [project]);
+
+  // Reset video playback state when navigating projects
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [project?.id]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -35,6 +43,7 @@ export default function DetailModal({ project, projectsList, onClose, onNext, on
     ? project.techFull
     : (Array.isArray(project.tech) ? project.tech : (Array.isArray(project.technologies) ? project.technologies : []));
   const thumb = project.videoThumb || project.image || '/projects/sahil-recreation.jpg';
+  const videoSrc = project.videoUrl || project.video || project.video_url || project.metrics?.videoUrl || '';
   const detailText = project.details || project.description || '';
   const longText = project.longDetails || project.details || project.description || '';
   const websiteLink = project.link || project.website || '#/projects';
@@ -72,19 +81,45 @@ export default function DetailModal({ project, projectsList, onClose, onNext, on
         {/* Project Detail Card */}
         <article className="project-detail-panel" data-lenis-prevent="true">
           {/* Video / image preview banner with hover play button */}
-          <div className="project-detail-media">
-            <img src={thumb} alt={project.title} />
-            <div className="project-card-play-overlay">
-              <button
-                type="button"
-                className="project-play-circle-btn cursor-target" data-cursor-label="Play"
-                aria-label="Play video demo"
-              >
-                <svg width="32" height="32" viewBox="0 0 256 256" fill="currentColor">
-                  <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48.24-94.78-64-40A8,8,0,0,0,100,88v80a8,8,0,0,0,12.24,6.78l64-40a8,8,0,0,0,0-13.56ZM116,153.57V102.43L156.91,128Z" />
-                </svg>
-              </button>
-            </div>
+          <div className={`project-detail-media ${videoSrc ? 'has-video' : ''} ${isPlaying ? 'is-playing' : ''}`}>
+            {isPlaying && videoSrc ? (
+              <video
+                ref={videoRef}
+                src={videoSrc}
+                controls
+                autoPlay
+                playsInline
+                poster={thumb}
+                className="project-detail-video-element"
+              />
+            ) : (
+              <>
+                <img src={thumb} alt={project.title} />
+                <div
+                  className="project-card-play-overlay"
+                  onClick={() => {
+                    if (videoSrc) setIsPlaying(true);
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="project-play-circle-btn cursor-target" data-cursor-label="Play"
+                    aria-label="Play video demo"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (videoSrc) setIsPlaying(true);
+                    }}
+                  >
+                    <svg width="32" height="32" viewBox="0 0 256 256" fill="currentColor">
+                      <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48.24-94.78-64-40A8,8,0,0,0,100,88v80a8,8,0,0,0,12.24,6.78l64-40a8,8,0,0,0,0-13.56ZM116,153.57V102.43L156.91,128Z" />
+                    </svg>
+                  </button>
+                  {videoSrc ? (
+                    <span className="project-play-badge">Play Video Demo</span>
+                  ) : null}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="project-detail-body">

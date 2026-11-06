@@ -186,6 +186,8 @@ export const CERTIFICATIONS = [
     issueDate: 'Issued Oct 2025',
     year: '2025',
     link: 'https://www.skills.google/public_profiles/28d9b2e7-95ee-45b6-97e9-acda35018f7a',
+    certificateImage: 'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=600&q=80',
+    description: 'Demonstrated proficiency in Google Cloud computing fundamentals, cloud security, and scalable infrastructure.',
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
         <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" fill="#4285F4" />
@@ -198,6 +200,8 @@ export const CERTIFICATIONS = [
     issueDate: 'Issued Nov 2025',
     year: '2025',
     link: 'https://www.kaggle.com/certification/badges/sahilahmedwani/105',
+    certificateImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
+    description: 'Mastered production-grade multi-agent architectures, tool calling, and evaluation pipelines using Gemini and Kaggle.',
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="#20BEFF">
         <path d="M18.825 21.999h-3.414l-5.029-7.142-2.122 2.039v5.103H5.21V2h3.05v12.24l6.903-7.239h3.693l-6.19 6.273 6.159 8.725z"/>
@@ -210,6 +214,8 @@ export const CERTIFICATIONS = [
     issueDate: 'Issued Jan 2026',
     year: '2026',
     link: 'https://skills.yourlearning.ibm.com/certificate/share/b1a4e79638ewogICJvYmplY3RUeXBlIiA6ICJBQ1RJVklUWSIsCiAgImxlYXJuZXJDTlVNIiA6ICI3OTc3NzAyUkVHIiwKICAib2JqZWN0SWQiIDogIlBMQU4tMEUwQTM5MEE2MTlGIgp98f17046926-10',
+    certificateImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+    description: 'Completed comprehensive coursework in enterprise generative AI patterns and cloud solutions.',
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#052FAD" strokeWidth="2.4">
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -225,6 +231,8 @@ export const CERTIFICATIONS = [
     issueDate: 'Issued Aug 2025',
     year: '2025',
     link: 'https://www.life-global.org/',
+    certificateImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80',
+    description: 'Practical data science foundations covering analytical reasoning and decision-making.',
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
         <circle cx="12" cy="12" r="10" stroke="#0096D6" strokeWidth="2.2" />
@@ -242,6 +250,11 @@ export const ACHIEVEMENTS = [
     year: 'Oct 2025',
     link: 'https://thinkstartup.in/',
     description: 'Selected among top 1,000 innovators across India for prototype feasibility, social impact, and technical execution.',
+    certificateImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=600&q=80'
+    ],
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="8" r="7" />
@@ -255,6 +268,11 @@ export const ACHIEVEMENTS = [
     year: 'Nov 2025',
     link: 'https://hacktoberfest.com/',
     description: 'Recognized as a Super Contributor for merged pull requests across open-source frontend and developer tooling ecosystems.',
+    certificateImage: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80'
+    ],
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
         <path d="M12 2L4 6v12l8 4 8-4V6l-8-4zm0 2.2l6 3v9.6l-6 3-6-3V7.2l6-3z" fill="#FF7A59" />
