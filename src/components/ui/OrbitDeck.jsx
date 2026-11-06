@@ -1,11 +1,291 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TechIcon } from '../TechIcons.jsx';
 import './OrbitDeck.css';
 
 /**
+ * MobileSwipeDeck: 3D Card Swipe Deck adapted from reference sanjanagvn-portfolio
+ * Uses Framer Motion drag gestures and perspective transforms
+ * Preserves exact portfolio card UI and components
+ */
+function MobileSwipeDeck({
+  projects = [],
+  currentIndex = 0,
+  setCurrentIndex,
+  onSelectProject,
+  autoPlay = true,
+  autoPlayInterval = 4500,
+  windowWidth = 380,
+}) {
+  const [direction, setDirection] = useState(0);
+  const isInteractingRef = useRef(false);
+  const total = projects.length;
+
+  const handlePrevious = useCallback(() => {
+    if (total <= 1) return;
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
+  }, [total, setCurrentIndex]);
+
+  const handleNext = useCallback(() => {
+    if (total <= 1) return;
+    setDirection(1);
+    setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
+  }, [total, setCurrentIndex]);
+
+  const goToSlide = useCallback((index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  }, [currentIndex, setCurrentIndex]);
+
+  const handleDragEnd = (_event, info) => {
+    isInteractingRef.current = false;
+    const swipeThreshold = 55;
+    const velocityThreshold = 250;
+    if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+      handlePrevious();
+    } else if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+      handleNext();
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'ArrowLeft') {
+        handlePrevious();
+      } else if (e.key === 'ArrowRight') {
+        handleNext();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlePrevious, handleNext]);
+
+  // Auto-play timer for mobile
+  useEffect(() => {
+    if (!autoPlay || total <= 1) return;
+
+    const timer = setInterval(() => {
+      if (!isInteractingRef.current) {
+        handleNext();
+      }
+    }, autoPlayInterval);
+
+    return () => clearInterval(timer);
+  }, [autoPlay, autoPlayInterval, total, handleNext]);
+
+  // Fluid card position and 3D perspective style based on offset from active (from reference)
+  const getCardStyle = (index) => {
+    let offset = index - currentIndex;
+    while (offset > total / 2) offset -= total;
+    while (offset < -total / 2) offset += total;
+    const absOffset = Math.abs(offset);
+
+    // Only show cards within range of ±1 from active
+    if (absOffset > 1) {
+      return { display: 'none' };
+    }
+
+    const stepX = Math.min(80, Math.max(62, (windowWidth || 380) * 0.19));
+    const x = `calc(-50% + ${offset * stepX}px)`;
+    const scale = 1 - absOffset * 0.12;
+    const opacity = 1 - absOffset * 0.4;
+    const rotateZ = offset * 4;
+    const rotateY = offset * -10;
+    const z = -absOffset * 80;
+
+    return {
+      x,
+      scale,
+      opacity,
+      rotateZ,
+      rotateY,
+      z,
+      zIndex: 10 - absOffset,
+    };
+  };
+
+  return (
+    <div className="od-wrapper od-mobile-wrapper">
+      <div className="od-mobile-stage">
+        <AnimatePresence initial={false} custom={direction}>
+          {projects.map((project, index) => {
+            let diff = index - currentIndex;
+            while (diff > total / 2) diff -= total;
+            while (diff < -total / 2) diff += total;
+            const absDiff = Math.abs(diff);
+
+            if (absDiff > 1) return null;
+
+            const style = getCardStyle(index);
+            const isActive = diff === 0;
+            const isLeft = diff === -1;
+            const isRight = diff === 1;
+
+            const projectTech = Array.isArray(project.tech)
+              ? project.tech
+              : (Array.isArray(project.technologies) ? project.technologies : []);
+            const projectLink = project.link || project.website;
+
+            return (
+              <motion.div
+                key={project.id || index}
+                custom={direction}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={style}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.32, 0.72, 0, 1],
+                }}
+                drag={isActive ? 'x' : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragStart={() => {
+                  isInteractingRef.current = true;
+                }}
+                onDragEnd={isActive ? handleDragEnd : undefined}
+                className="od-mobile-motion-card"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  y: '-50%',
+                  transformStyle: 'preserve-3d',
+                  width: 'min(280px, 80vw)',
+                  height: '340px',
+                  pointerEvents: isActive || isLeft || isRight ? 'auto' : 'none',
+                }}
+                onClick={(e) => {
+                  if (isLeft) {
+                    e.stopPropagation();
+                    handlePrevious();
+                  } else if (isRight) {
+                    e.stopPropagation();
+                    handleNext();
+                  } else if (isActive && onSelectProject) {
+                    onSelectProject(project);
+                  }
+                }}
+              >
+                <article
+                  className="od-card"
+                  data-od-slide={index}
+                  data-od-name={project.title}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${index + 1} of ${total}`}
+                  {...(isActive ? { 'data-od-centre': '' } : {})}
+                >
+                  {/* Full bleed card background image */}
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="od-card-bg-img"
+                    draggable={false}
+                    decoding="async"
+                  />
+
+                  {/* Gradient overlay for text clarity */}
+                  <div className="od-card-bg-overlay" aria-hidden="true" />
+
+                  {/* Card Body */}
+                  <div className="od-card-body">
+                    <h2 className="od-card-title">{project.title}</h2>
+
+                    <p className="od-card-details">{project.details || project.description}</p>
+
+                    {projectTech && projectTech.length > 0 && (
+                      <div
+                        className="od-card-tech-line"
+                        onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                      >
+                        {projectTech.map((t) => (
+                          <span key={t} className="od-tech-pill">
+                            <TechIcon name={t} size={10} />
+                            <span>{t}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div
+                      className="od-card-actions"
+                      onClick={(e) => e.stopPropagation()}
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        className="od-btn-detail cursor-target"
+                        data-cursor-label="Details"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onSelectProject) onSelectProject(project);
+                        }}
+                      >
+                        View details
+                      </button>
+
+                      {projectLink && (
+                        <a
+                          className="od-visit-btn cursor-target"
+                          data-cursor-label="Visit"
+                          href={projectLink}
+                          target={projectLink.startsWith('http') ? '_blank' : undefined}
+                          rel={projectLink.startsWith('http') ? 'noreferrer' : undefined}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span>Visit</span>
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="11"
+                            height="11"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 17L17 7M17 7H7M17 7V17" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Pagination Pill */}
+      {total > 1 && (
+        <div className="od-pagination" role="tablist" aria-label="Projects">
+          {projects.map((p, i) => (
+            <button
+              key={p.id || i}
+              type="button"
+              className={`od-dot ${i === currentIndex ? 'is-active' : ''}`}
+              role="tab"
+              aria-selected={i === currentIndex}
+              aria-label={`Slide ${i + 1}: ${p.title}`}
+              onClick={() => goToSlide(i)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * OrbitDeck: 3D Card Carousel Slider
  * Optimized for Mobile & Desktop
- * Displays projects with full-bleed background imagery and classic portfolio content layout
+ * Mobile uses Framer Motion swipe deck; Desktop uses 3D Orbit Carousel
  */
 export default function OrbitDeck({
   projects = [],
@@ -51,9 +331,9 @@ export default function OrbitDeck({
     setCurrentIndex(index);
   }, []);
 
-  // Auto-play timer
+  // Auto-play timer (desktop)
   useEffect(() => {
-    if (!autoPlay || isDragging || total <= 1) return;
+    if (!autoPlay || isDragging || total <= 1 || windowWidth <= 768) return;
 
     const timer = setInterval(() => {
       if (!isHoveredRef.current && !isPointerDownRef.current) {
@@ -62,10 +342,11 @@ export default function OrbitDeck({
     }, autoPlayInterval);
 
     return () => clearInterval(timer);
-  }, [autoPlay, autoPlayInterval, isDragging, total, nextSlide]);
+  }, [autoPlay, autoPlayInterval, isDragging, total, nextSlide, windowWidth]);
 
   // Keyboard navigation
   useEffect(() => {
+    if (windowWidth <= 768) return; // Handled by MobileSwipeDeck
     function handleKeyDown(e) {
       if (e.key === 'ArrowLeft') {
         prevSlide();
@@ -75,9 +356,24 @@ export default function OrbitDeck({
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [prevSlide, nextSlide]);
+  }, [prevSlide, nextSlide, windowWidth]);
 
-  // Pointer / Touch / Mouse Drag Handling
+  // If on mobile (<= 768px), render Framer Motion card swipe deck
+  if (windowWidth <= 768) {
+    return (
+      <MobileSwipeDeck
+        projects={projects}
+        currentIndex={currentIndex}
+        setCurrentIndex={setCurrentIndex}
+        onSelectProject={onSelectProject}
+        autoPlay={autoPlay}
+        autoPlayInterval={autoPlayInterval}
+        windowWidth={windowWidth}
+      />
+    );
+  }
+
+  // Pointer / Touch / Mouse Drag Handling (Desktop Orbit)
   const handlePointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return;
     // Do not capture pointer if clicking on buttons, links, or actions
