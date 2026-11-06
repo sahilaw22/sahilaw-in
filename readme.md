@@ -4,9 +4,9 @@
 
 # Sahil's Portfolio
 
-A performant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
+[sahilaw.in](https://sahilaw.in)
 
-[Live Demo](https://sahilaw.in) &bull; [Key Features](#key-features) &bull; [Architecture](#architecture) &bull; [Quickstart](#quickstart) &bull; [Project Structure](#project-structure) &bull; [Credits](#credits) &bull; [License](#license)
+A performant, interactive design engineering portfolio and live content management system built with React 18, Vite, GSAP, and Node.js.
 
 </div>
 
