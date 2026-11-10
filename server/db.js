@@ -252,6 +252,18 @@ class SqliteStorage {
         }
       }
     } catch {}
+
+    // Auto-migrate meta if earlier schema lacked action_words
+    try {
+      const metaRow = this.db.prepare("SELECT data_json FROM portfolio_content WHERE section = 'meta'").get();
+      if (metaRow) {
+        const currentMeta = JSON.parse(metaRow.data_json);
+        if (!Array.isArray(currentMeta.action_words) || currentMeta.action_words.length === 0) {
+          currentMeta.action_words = DEFAULT_PORTFOLIO_CONTENT.meta.action_words;
+          this.updatePortfolioSection('meta', currentMeta);
+        }
+      }
+    } catch {}
   }
 
   // Reload/re-seed updated knowledge entries and templates

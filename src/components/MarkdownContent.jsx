@@ -176,7 +176,7 @@ export default function MarkdownContent({ text, maxParagraphs, className = '' })
 
   let blocks = rawBlocks;
   if (maxParagraphs && rawBlocks.length > maxParagraphs) {
-    const hasListOrQuote = rawBlocks.some((b) => /^\s*(\d+\.|[-*•✓→›]|>)\s+/m.test(b));
+    const hasListOrQuote = rawBlocks.some((b) => /^\s*(\d+\.|[-*•+→›]|>)\s+/m.test(b));
     if (!hasListOrQuote) {
       const first = rawBlocks[0];
       const rest = rawBlocks.slice(1).join(' ');
@@ -215,12 +215,12 @@ export default function MarkdownContent({ text, maxParagraphs, className = '' })
           );
         }
 
-        // Check if unordered list (- item, * item, • item, ✓ item, → item, › item)
-        if (lines.length >= 1 && lines.every((l) => /^[-*•✓→›]\s+/.test(l))) {
+        // Check if unordered list (- item, * item, • item, + item, → item, › item)
+        if (lines.length >= 1 && lines.every((l) => /^[-*•+→›]\s+/.test(l))) {
           return (
             <ul key={idx} className="markdown-ul">
               {lines.map((l, lIdx) => {
-                const itemText = l.replace(/^[-*•✓→›]\s+/, '');
+                const itemText = l.replace(/^[-*•+→›]\s+/, '');
                 return (
                   <li key={lIdx} className="markdown-li">
                     {parseInlineMarkdown(itemText)}

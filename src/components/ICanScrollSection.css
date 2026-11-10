@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Geist:wght@700;800&display=swap');
+
+/* ==========================================================================
+   Capabilities Section:
+   - Desktop (> 768px): Restored vertical rolling wheel animation with vivid reddish slots
+   - Mobile (<= 768px): Single-word cycle animation aligned along the X-axis
+   ========================================================================== */
+
+:root {
+  --can-bg: transparent;
+  --can-ink: #ffffff;
+  --can-accent: #f43f5e;
+  --can-font: 'Bricolage Grotesque', 'Geist', system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --can-accent: #f43f5e;
+    --can-ink: #ffffff;
+  }
+}
+
+body, [data-theme="dark"], html {
+  --can-accent: #f43f5e;
+  --can-ink: #ffffff;
+}
+
+/* Section height: 240vh on desktop, 280vh on mobile */
+.can {
+  height: clamp(2000px, 240vh, 2600px);
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background: var(--can-bg);
+  overflow: visible;
+  z-index: 2;
+}
+
+/* Sticky stage: pins at top:0 across viewport */
+.stick {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Desktop: Restored Vertical Rolling Wheel Animation (> 768px)
+   ========================================================================== */
+
+.can-wheel-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--can-font);
+  font-size: clamp(2.3rem, 4.4vw, 3.4rem);
+  letter-spacing: -0.04em;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.can-prefix {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: 800;
+  line-height: var(--wheel-line-height, 68px);
+  height: var(--wheel-line-height, 68px);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+  padding-right: 0.28em;
+  flex-shrink: 0;
+  color: var(--can-ink, #ffffff);
+}
+
+/* 5-slot Viewport: feathered edge mask for organic appear & disappear fade */
+.can-wheel-viewport {
+  position: relative;
+  height: calc(5 * var(--wheel-line-height, 68px));
+  min-width: 6.2em;
+  width: fit-content;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 12%,
+    rgba(0, 0, 0, 0.45) 28%,
+    black 44%,
+    black 56%,
+    rgba(0, 0, 0, 0.45) 72%,
+    transparent 88%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 12%,
+    rgba(0, 0, 0, 0.45) 28%,
+    black 44%,
+    black 56%,
+    rgba(0, 0, 0, 0.45) 72%,
+    transparent 88%,
+    transparent 100%
+  );
+}
+
+/* Vertical Wheel track */
+.can-wheel-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  will-change: transform;
+}
+
+/* Individual wheel item */
+.can-wheel-item {
+  font-size: inherit;
+  font-family: inherit;
+  line-height: var(--wheel-line-height, 68px);
+  height: var(--wheel-line-height, 68px);
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  letter-spacing: -0.04em;
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+.can-wheel-item.is-active {
+  z-index: 2;
+}
+
+/* Reddish word gradient styling - NO GLOW */
+.can-word-text {
+  display: inline-block;
+  font-weight: 800;
+  color: #f43f5e;
+  background: linear-gradient(135deg, #ff3366 0%, #f43f5e 50%, #e11d48 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+.can-wheel-item.is-active .can-word-text {
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+/* ==========================================================================
+   Mobile: Single-line Word Cycle Animation (<= 768px)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .can {
+    height: clamp(1400px, 180vh, 1800px);
+  }
+
+  .stick {
+    padding: 0 16px;
+  }
+
+  .can-prefix {
+    height: auto !important;
+    line-height: 1 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+  }
+
+  .can h2 {
+    margin: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0 0.22em;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--can-font);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    font-size: clamp(2rem, 7.8vw, 3.2rem);
+    text-align: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .can ul#can-words {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    height: 1em;
+    min-width: 4.8em;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .can ul#can-words li {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    opacity: 0;
+    color: #f43f5e;
+    background: linear-gradient(135deg, #ff3366 0%, #f43f5e 50%, #e11d48 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: none !important;
+    text-shadow: none !important;
+    white-space: nowrap;
+    font-family: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    will-change: transform, opacity;
+  }
+}
+
+@media (max-width: 380px) {
+  .stick {
+    padding: 0 12px;
+  }
+
+  .can h2 {
+    font-size: clamp(1.8rem, 7.2vw, 2.1rem);
+    gap: 0 0.20em;
+  }
+
+  .can ul#can-words {
+    min-width: 4.6em;
+  }
+}
+
+/* Visually hidden sentence for screen readers */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

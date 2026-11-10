@@ -19,19 +19,28 @@ export function useSmoothScroll(route) {
     const isTouch =
       'ontouchstart' in window ||
       (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
-      window.innerWidth <= 768;
+      window.innerWidth <= 820;
+
+    // Use native 120Hz/60Hz hardware scrolling on touch/mobile devices for instant, zero-lag response
+    if (isTouch) {
+      delete window.lenis;
+      return undefined;
+    }
 
     const lenis = new Lenis({
-      duration: isTouch ? 0.8 : 1.05,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
       smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.2,
       syncTouch: false,
-      touchMultiplier: 1.0,
       infinite: false,
       prevent: (node) =>
         Boolean(
           node.closest?.(
-            '[data-lenis-prevent], .project-detail-panel, .project-detail-backdrop, .resume-preview, .resume-page, .chat-messages, .admin-viewport'
+            '[data-lenis-prevent], .project-detail-panel, .project-detail-backdrop, .resume-preview, .resume-page, .chat-messages, .admin-viewport, .admin-modal-backdrop'
           )
         ),
     });
@@ -47,8 +56,8 @@ export function useSmoothScroll(route) {
     };
 
     gsap.ticker.add(tickerCallback);
-    // Smooth frame pacing without freezing
-    gsap.ticker.lagSmoothing(500, 33);
+    // Smooth frame pacing with zero lag-smoothing jitter for Lenis
+    gsap.ticker.lagSmoothing(0);
 
     // Observe body class for project detail modal view to prevent scroll blocking
     const handleBodyClassChange = () => {
@@ -94,7 +103,7 @@ export function useSmoothScroll(route) {
         const targetEl = document.getElementById(scrollTarget);
         if (targetEl) {
           if (window.lenis) {
-            window.lenis.scrollTo(targetEl, { offset: -30, immediate: false });
+            window.lenis.scrollTo(targetEl, { offset: -30, immediate: false, duration: 0.85 });
           } else {
             targetEl.scrollIntoView({ behavior: 'smooth' });
           }

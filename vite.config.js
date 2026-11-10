@@ -4,6 +4,7 @@ import { portfolioAssistantVitePlugin } from './server/vitePlugin.js';
 
 export default defineConfig({
   plugins: [react(), portfolioAssistantVitePlugin()],
+  envPrefix: ['VITE_', 'SUPABASE_', 'NEXT_PUBLIC_'],
   base: './',
   build: {
     rollupOptions: {

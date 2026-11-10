@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase, fetchPortfolioDirectFromSupabase } from '../lib/supabaseClient.js';
 import {
   HERO_ROLES,
+  ACTION_WORDS,
   ABOUT_PARAGRAPHS,
   EXPERIENCES,
   EDUCATION_ITEMS,
@@ -13,11 +14,21 @@ import {
 } from './portfolioData.jsx';
 
 // Bump storage key to bust any previously corrupted/deserialized React element cache
-const STORAGE_KEY = 'portfolio_content_cache_v13';
+const STORAGE_KEY = 'portfolio_content_cache_v14';
 
 function cleanAboutParagraphs(paragraphs) {
   if (!Array.isArray(paragraphs)) return paragraphs;
-  return paragraphs.map((p) => (typeof p === 'string' ? p.replace(/\s*(at\s+)?GCET\s+Jammu/gi, '') : p));
+  return paragraphs.map((p) => {
+    if (typeof p !== 'string') return p;
+    let s = p.replace(/\s*(at\s+)?GCET\s+Jammu/gi, '');
+    s = s.replace(/(:::ICON:[^:]*:::)+/gi, '');
+    s = s.replace(/\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}/gi, '');
+    s = s.replace(/\b([a-z0-9_-]+):::\1:::/gi, '');
+    s = s.replace(/:::[^:]*:::/g, '');
+    s = s.replace(/\bith\b/g, 'with');
+    s = s.replace(/\s{2,}/g, ' ').trim();
+    return s;
+  });
 }
 
 function cleanSkillCategories(categories) {
@@ -55,6 +66,18 @@ function cleanCertOrAchieveItems(items, fallbackList) {
     if (cleaned.icon && typeof cleaned.icon === 'object' && !cleaned.icon.$$typeof) {
       delete cleaned.icon;
     }
+    // Filter demo / placeholder images (e.g. Unsplash stock)
+    if (Array.isArray(cleaned.photos)) {
+      cleaned.photos = cleaned.photos.filter(
+        (p) => p && typeof p === 'string' && !p.includes('unsplash.com') && !p.includes('placeholder')
+      );
+    }
+    if (typeof cleaned.certificateImage === 'string' && (cleaned.certificateImage.includes('unsplash.com') || cleaned.certificateImage.includes('placeholder'))) {
+      cleaned.certificateImage = '';
+    }
+    if (typeof cleaned.certificate_image_url === 'string' && (cleaned.certificate_image_url.includes('unsplash.com') || cleaned.certificate_image_url.includes('placeholder'))) {
+      cleaned.certificate_image_url = '';
+    }
     return cleaned;
   });
 }
@@ -83,8 +106,10 @@ function getInitialState() {
       skills: cleanSkillCategories(SKILL_CATEGORIES),
       certifications: CERTIFICATIONS,
       achievements: ACHIEVEMENTS,
+      social_links: [],
       custom_icons: [],
-      meta: { hero_roles: HERO_ROLES },
+      meta: { hero_roles: HERO_ROLES, action_words: ACTION_WORDS },
+      action_words: ACTION_WORDS,
     };
   }
 
@@ -106,8 +131,10 @@ function getInitialState() {
         skills: cleanSkillCategories(parsed.skills || SKILL_CATEGORIES),
         certifications: cleanCertOrAchieveItems(parsed.certifications, CERTIFICATIONS),
         achievements: cleanCertOrAchieveItems(parsed.achievements, ACHIEVEMENTS),
+        social_links: parsed.social_links || [],
         custom_icons: parsed.custom_icons || [],
-        meta: parsed.meta || { hero_roles: HERO_ROLES },
+        meta: parsed.meta || { hero_roles: HERO_ROLES, action_words: ACTION_WORDS },
+        action_words: parsed.action_words || parsed.meta?.action_words || ACTION_WORDS,
       };
     }
   } catch {
@@ -123,8 +150,10 @@ function getInitialState() {
     skills: cleanSkillCategories(SKILL_CATEGORIES),
     certifications: CERTIFICATIONS,
     achievements: ACHIEVEMENTS,
+    social_links: [],
     custom_icons: [],
-    meta: { hero_roles: HERO_ROLES },
+    meta: { hero_roles: HERO_ROLES, action_words: ACTION_WORDS },
+    action_words: ACTION_WORDS,
   };
 }
 
@@ -168,8 +197,12 @@ export function usePortfolioData() {
         skills: cleanSkillCategories(Array.isArray(resolvedContent.skills) ? resolvedContent.skills : SKILL_CATEGORIES),
         certifications: cleanCertOrAchieveItems(Array.isArray(resolvedContent.certifications) ? resolvedContent.certifications : CERTIFICATIONS, CERTIFICATIONS),
         achievements: cleanCertOrAchieveItems(Array.isArray(resolvedContent.achievements) ? resolvedContent.achievements : ACHIEVEMENTS, ACHIEVEMENTS),
+        social_links: Array.isArray(resolvedContent.social_links) ? resolvedContent.social_links : [],
         custom_icons: Array.isArray(resolvedContent.custom_icons) ? resolvedContent.custom_icons : [],
-        meta: resolvedContent.meta || { hero_roles: HERO_ROLES },
+        meta: resolvedContent.meta || { hero_roles: HERO_ROLES, action_words: ACTION_WORDS },
+        action_words: Array.isArray(resolvedContent.action_words)
+          ? resolvedContent.action_words
+          : (Array.isArray(resolvedContent.meta?.action_words) ? resolvedContent.meta.action_words : ACTION_WORDS),
       };
       setData(fresh);
       try {
@@ -208,6 +241,9 @@ export function usePortfolioData() {
       if (e?.detail) {
         setData((prev) => {
           const next = { ...prev, ...e.detail };
+          if (e.detail.meta && Array.isArray(e.detail.meta.action_words)) {
+            next.action_words = e.detail.meta.action_words;
+          }
           try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
           } catch {}
@@ -242,7 +278,8 @@ export function usePortfolioData() {
     certifications: data.certifications || CERTIFICATIONS,
     achievements: data.achievements || ACHIEVEMENTS,
     custom_icons: data.custom_icons || [],
-    meta: data.meta || { hero_roles: HERO_ROLES },
+    meta: data.meta || { hero_roles: HERO_ROLES, action_words: ACTION_WORDS },
+    action_words: data.meta?.action_words || data.action_words || ACTION_WORDS,
     refresh: fetchContent,
   };
 }

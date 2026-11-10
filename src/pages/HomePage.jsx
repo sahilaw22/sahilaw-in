@@ -6,6 +6,7 @@ import GlassDistortionSVG from '../components/GlassDistortionSVG.jsx';
 import LetterGlitch from '../components/LetterGlitch.jsx';
 import HeroHeader from '../components/HeroHeader.jsx';
 import SocialIcons from '../components/SocialIcons.jsx';
+import ICanScrollSection from '../components/ICanScrollSection.jsx';
 import AboutSection from '../components/AboutSection.jsx';
 import ExperienceSection from '../components/ExperienceSection.jsx';
 import FeaturedProjectsSection from '../components/FeaturedProjectsSection.jsx';
@@ -47,7 +48,7 @@ export default function HomePage({ sound }) {
       );
 
       const sections = document.querySelectorAll(
-        '.portfolio-section:not(.hero-section):not(.portfolio-about-section):not(.portfolio-featured-projects-section)'
+        '.portfolio-section:not(.hero-section):not(.portfolio-about-section):not(.portfolio-featured-projects-section):not(.i-can-scroll-section):not(.can):not(.portfolio-contact-section)'
       );
       sections.forEach((section) => {
         gsap.fromTo(
@@ -85,7 +86,7 @@ export default function HomePage({ sound }) {
         const targetEl = document.getElementById(scrollTarget);
         if (targetEl) {
           if (window.lenis) {
-            window.lenis.scrollTo(targetEl, { offset: -30, immediate: false });
+            window.lenis.scrollTo(targetEl, { offset: -30, immediate: false, duration: 1.5 });
           } else {
             targetEl.scrollIntoView({ behavior: 'smooth' });
           }
@@ -134,10 +135,12 @@ export default function HomePage({ sound }) {
         </div>
       </section>
 
+      <ICanScrollSection />
+
       <AboutSection play={sound.play} />
       <ExperienceSection />
       <FeaturedProjectsSection play={sound.play} />
-      <EducationSection />
+      <EducationSection play={sound?.play} />
       <SkillsSection />
       <CertificationsSection play={sound?.play} />
       <ContactSection play={sound.play} />

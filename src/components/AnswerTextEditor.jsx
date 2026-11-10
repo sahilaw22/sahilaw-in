@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import MarkdownContent from './MarkdownContent.jsx';
 import './AnswerTextEditor.css';
 
-const QUICK_SYMBOLS = ['>', '•', '→', '✓', '›', '-', '|'];
+const QUICK_SYMBOLS = ['>', '•', '→', '›', '-', '|', '+'];
 
 export default function AnswerTextEditor({
   value = '',
@@ -86,7 +86,7 @@ export default function AnswerTextEditor({
         counter += 1;
         return item;
       }
-      return `${prefix}${line.replace(/^([>*•✓→›-]\s*)/, '')}`;
+      return `${prefix}${line.replace(/^([>*•→›+-]\s*)/, '')}`;
     });
 
     const nextValue =

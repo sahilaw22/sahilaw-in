@@ -175,19 +175,43 @@ export default function InteractiveAvatar({ className = '', onAvatarClick }) {
 
     rafRef.current = requestAnimationFrame(loop);
 
+    let isVisibleOnScreen = true;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleOnScreen = entry.isIntersecting;
+        if (isVisibleOnScreen) {
+          lastTime = performance.now();
+          if (!rafRef.current) rafRef.current = requestAnimationFrame(loop);
+        } else {
+          if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (svgRef.current) observer.observe(svgRef.current);
+
     const handleVisibility = () => {
-      if (document.hidden) {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (document.hidden || !isVisibleOnScreen) {
+        if (rafRef.current) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
         if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current);
       } else {
         lastTime = performance.now();
-        rafRef.current = requestAnimationFrame(loop);
+        if (!rafRef.current) rafRef.current = requestAnimationFrame(loop);
         scheduleNextBlink();
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
     return () => {
+      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (blinkTimerRef.current) clearTimeout(blinkTimerRef.current);
       document.removeEventListener('visibilitychange', handleVisibility);

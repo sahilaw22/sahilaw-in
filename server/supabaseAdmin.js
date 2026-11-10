@@ -59,7 +59,7 @@ export async function getPortfolioContentFromSupabase() {
   if (!supabaseAdmin) return null;
 
   try {
-    const [profileRes, projectsRes, experiencesRes, educationRes, skillsRes, certsRes] =
+    const [profileRes, projectsRes, experiencesRes, educationRes, skillsRes, certsRes, socialRes] =
       await Promise.all([
         supabaseAdmin.from('profiles').select('*').limit(1).maybeSingle(),
         supabaseAdmin
@@ -84,6 +84,11 @@ export async function getPortfolioContentFromSupabase() {
           .order('display_order', { ascending: true }),
         supabaseAdmin
           .from('certifications')
+          .select('*')
+          .eq('is_published', true)
+          .order('display_order', { ascending: true }),
+        supabaseAdmin
+          .from('social_links')
           .select('*')
           .eq('is_published', true)
           .order('display_order', { ascending: true }),
@@ -115,12 +120,13 @@ export async function getPortfolioContentFromSupabase() {
         issueDate: c.issue_date,
         year: c.issue_date ? c.issue_date.replace(/^Issued\s+/i, '') : '',
         link: c.credential_url,
+        credentialUrl: c.credential_url,
         credId: c.credential_id,
-        image: c.certificate_image_url,
-        logo: c.certificate_image_url,
-        certificateImage: c.certificate_image_url,
+        image: c.certificate_image_url || '',
+        logo: c.certificate_image_url || '',
+        certificateImage: c.certificate_image_url || '',
         description: c.description || '',
-        photos: c.photos || [],
+        photos: Array.isArray(c.photos) ? c.photos.filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com')) : [],
       }));
 
     const achievements = (certsRes.data || [])
@@ -133,11 +139,12 @@ export async function getPortfolioContentFromSupabase() {
         year: c.issue_date,
         issueDate: c.issue_date,
         link: c.credential_url,
+        credentialUrl: c.credential_url,
         description: c.description || '',
-        image: c.certificate_image_url,
-        logo: c.certificate_image_url,
+        image: c.certificate_image_url || '',
+        logo: c.certificate_image_url || '',
         photos: Array.isArray(c.photos) && c.photos.length > 0
-          ? c.photos
+          ? c.photos.filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com'))
           : c.certificate_image_url
           ? [c.certificate_image_url]
           : [],
@@ -210,17 +217,25 @@ export async function getPortfolioContentFromSupabase() {
       skills: skillCategories,
       certifications,
       achievements,
+      social_links: socialRes.data || [],
       custom_icons: [],
       meta: {
         name: profile.name || 'Sahil Wani',
         hero_roles: profile.hero_roles || [],
+        action_words: profile.action_words || [],
+        introduction: profile.introduction || '',
+        pitch: profile.introduction || '',
         email: profile.email || 'sahilaw502@gmail.com',
         github: profile.github_url || 'https://github.com/sahil-wani',
         linkedin: profile.linkedin_url || 'https://linkedin.com/in/sahil-wani',
-        x: profile.x_url || 'https://x.com/sahilwani',
+        x:
+          profile.x_url ||
+          (socialRes.data || []).find((s) => s.platform === 'X' || s.platform === 'Twitter')?.url ||
+          'https://x.com/sahilwani',
         threads: profile.threads_url || 'https://threads.net/@sahilwani',
         resume: profile.resume_url || '#/careers',
       },
+      action_words: profile.action_words || [],
     };
   } catch (err) {
     console.error('Failed to load portfolio content from Supabase:', err);
@@ -360,6 +375,7 @@ export async function deleteItemFromSupabase(section, id) {
     else if (section === 'education') tableName = 'education';
     else if (section === 'certifications' || section === 'achievements') tableName = 'certifications';
     else if (section === 'skills') tableName = 'skills';
+    else if (section === 'social_links') tableName = 'social_links';
     else return false;
 
     const { error } = await supabaseAdmin.from(tableName).delete().eq('id', id);
@@ -474,16 +490,16 @@ export async function syncSectionToSupabase(section, data) {
         id: validIds[idx],
         institution_name: item.institution || item.institution_name || '',
         degree: item.degree || '',
-        branch: item.branch || item.fieldOfStudy || '',
+        field_of_study: item.branch || item.fieldOfStudy || item.field_of_study || '',
         location: item.location || '',
-        institution_logo_url: item.image || item.logo || '',
-        start_date: item.startDate || '',
-        end_date: item.endDate || '',
-        is_current: Boolean(item.isCurrent),
+        institution_logo_url: item.image || item.logo || item.institution_logo_url || '',
+        start_date: item.startDate || (item.period ? item.period.split('-')[0].trim() : '') || '',
+        end_date: item.endDate || (item.period && item.period.includes('-') ? item.period.split('-')[1].trim() : '') || '',
+        is_current: Boolean(item.isCurrent || item.is_current),
         description_paragraph: item.description_paragraph || item.paragraph || item.desc || item.description || '',
         highlights: Array.isArray(item.highlights) ? item.highlights : (Array.isArray(item.courses) ? item.courses : []),
         display_order: idx,
-        is_published: item.isPublished !== false,
+        is_published: item.isPublished !== false && item.is_published !== false,
         updated_at: new Date().toISOString(),
       }));
 
@@ -513,17 +529,18 @@ export async function syncSectionToSupabase(section, data) {
         issue_date: item.issueDate || item.year || '',
         credential_id: item.credentialId || item.credential_id || '',
         credential_url: item.link || item.credential_url || item.credentialUrl || '',
-        certificate_image_url: item.certificateImage || item.certificate_image_url || item.image || item.logo || '',
+        certificate_image_url: item.certificateImage || item.certificate_image_url || '',
         description: item.description || '',
-        photos: Array.isArray(item.photos)
+        photos: (Array.isArray(item.photos)
           ? item.photos
           : item.photos
           ? [item.photos]
           : item.photo
           ? [item.photo]
-          : item.image
-          ? [item.image]
-          : [],
+          : (item.certificateImage || item.certificate_image_url)
+          ? [item.certificateImage || item.certificate_image_url]
+          : [])
+          .filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com')),
         is_achievement: isAchievement,
         display_order: idx,
         is_published: item.isPublished !== false,
@@ -585,6 +602,32 @@ export async function syncSectionToSupabase(section, data) {
       return true;
     }
 
+    if (section === 'social_links' && Array.isArray(data)) {
+      const validIds = data.map((item, idx) => item.id || `social-${idx}-${Date.now()}`);
+      const rows = data.map((item, idx) => ({
+        id: validIds[idx],
+        platform: item.platform || 'Link',
+        url: item.url || '',
+        icon: item.icon || (item.platform || 'link').toLowerCase(),
+        display_order: typeof item.display_order === 'number' ? item.display_order : idx,
+        is_published: item.is_published !== false,
+      }));
+
+      const { data: existingRows } = await supabaseAdmin.from('social_links').select('id');
+      const existingIds = (existingRows || []).map((r) => r.id);
+      const toDelete = existingIds.filter((id) => !validIds.includes(id));
+      if (toDelete.length > 0) {
+        const { error: delErr } = await supabaseAdmin.from('social_links').delete().in('id', toDelete);
+        if (delErr) console.warn('Supabase social_links pruning warning:', delErr.message);
+      }
+
+      if (rows.length > 0) {
+        const { error } = await supabaseAdmin.from('social_links').upsert(rows, { onConflict: 'id' });
+        if (error) throw error;
+      }
+      return true;
+    }
+
     if (section === 'about' && Array.isArray(data)) {
       const { error } = await supabaseAdmin.from('profiles').upsert(
         {
@@ -598,21 +641,26 @@ export async function syncSectionToSupabase(section, data) {
       return true;
     }
 
-    if (section === 'meta' && data && typeof data === 'object') {
+    if ((section === 'meta' || section === 'profile') && data && typeof data === 'object') {
+      const updatePayload = {
+        id: 'primary',
+        name: data.name || 'Sahil Ahmed Wani',
+        email: data.email || 'sahilaw502@gmail.com',
+        updated_at: new Date().toISOString(),
+      };
+      if (data.introduction || data.pitch) updatePayload.introduction = data.introduction || data.pitch;
+      if (Array.isArray(data.hero_roles)) updatePayload.hero_roles = data.hero_roles;
+      if (Array.isArray(data.action_words)) updatePayload.action_words = data.action_words;
+      if (data.location) updatePayload.location = data.location;
+      if (data.github || data.github_url) updatePayload.github_url = data.github || data.github_url;
+      if (data.linkedin || data.linkedin_url) updatePayload.linkedin_url = data.linkedin || data.linkedin_url;
+      if (data.threads || data.threads_url) updatePayload.threads_url = data.threads || data.threads_url;
+      if (data.resume || data.resume_url) updatePayload.resume_url = data.resume || data.resume_url;
+      if (data.profile_image) updatePayload.profile_image = data.profile_image;
+      if (Array.isArray(data.about_paragraphs)) updatePayload.about_paragraphs = data.about_paragraphs;
+
       const { error } = await supabaseAdmin.from('profiles').upsert(
-        {
-          id: 'primary',
-          name: data.name || 'Sahil Wani',
-          email: data.email || 'sahilaw502@gmail.com',
-          hero_roles: Array.isArray(data.hero_roles) ? data.hero_roles : [],
-          location: data.location || 'India',
-          github_url: data.github || data.github_url || '',
-          linkedin_url: data.linkedin || data.linkedin_url || '',
-          x_url: data.x || data.x_url || data.twitter || '',
-          threads_url: data.threads || data.threads_url || '',
-          resume_url: data.resume || data.resume_url || '',
-          updated_at: new Date().toISOString(),
-        },
+        updatePayload,
         { onConflict: 'id' }
       );
       if (error) throw error;

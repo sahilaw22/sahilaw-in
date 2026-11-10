@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ChevronDown, Check } from 'lucide-react';
 import { TechIcon } from '../components/TechIcons.jsx';
 import OrbitDeck from '../components/ui/OrbitDeck.jsx';
@@ -143,7 +144,15 @@ function matchesCategory(project, catId) {
   return true;
 }
 
-export default function ProjectsPage({ showAll = false }) {
+const categorySpanVariants = {
+  initial: { width: 0, opacity: 0 },
+  animate: { width: 'auto', opacity: 1 },
+  exit: { width: 0, opacity: 0 },
+};
+
+const categoryTransition = { type: 'spring', bounce: 0, duration: 0.26 };
+
+export default function ProjectsPage({ showAll = true }) {
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -268,11 +277,50 @@ export default function ProjectsPage({ showAll = false }) {
 
   if (showAll) {
     return (
-      <main className={`projects-page projects-all-page ${isDropdownOpen ? 'projects-cat-open' : ''}`}>
+      <main className="projects-page projects-all-page">
         <header className="projects-header projects-header-all">
           <h1>Projects</h1>
           <p>My projects and work across different technologies and domains.</p>
-          {categoryDropdown}
+
+          {/* Desktop: Connected horizontal category bar */}
+          <div className="projects-categories-desktop projects-categories-scroll-wrap">
+            <div className="projects-categories-bar" role="tablist" aria-label="Filter projects by category">
+              {PROJECT_CATEGORIES.map((cat) => {
+                const isSelected = activeCategory === cat.id;
+                const ItemIcon = cat.icon;
+
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    className={`projects-cat-pill ${isSelected ? 'is-active' : ''} cursor-target`}
+                    data-cursor-label={cat.label}
+                    title={cat.label}
+                    onClick={() => setActiveCategory(cat.id)}
+                  >
+                    {isSelected && (
+                      <motion.div
+                        layoutId="activeCategoryPill"
+                        className="projects-cat-pill-highlight"
+                        transition={{ type: 'spring', bounce: 0.16, duration: 0.36 }}
+                      />
+                    )}
+                    <span className="projects-cat-pill-icon" aria-hidden="true">
+                      <ItemIcon />
+                    </span>
+                    <span className="projects-cat-pill-label">{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mobile: Category dropdown selector */}
+          <div className="projects-categories-mobile">
+            {categoryDropdown}
+          </div>
         </header>
 
         <div className="projects-all-divider-wrap" aria-hidden="true">
@@ -300,90 +348,104 @@ export default function ProjectsPage({ showAll = false }) {
             </div>
           ) : (
             projectsToDisplay.map((project) => {
-            const projectTech = Array.isArray(project.tech) ? project.tech : (Array.isArray(project.technologies) ? project.technologies : []);
-            const projectLink = project.link || project.website || '#/projects';
+              const projectTech = Array.isArray(project.tech)
+                ? project.tech
+                : (Array.isArray(project.technologies) ? project.technologies : []);
+              const projectLink = project.link || project.website || '#/projects';
 
-            return (
-              <article
-                key={project.id || project.title}
-                className="projects-grid-card od-grid-card cursor-target" data-cursor-label="Details"
-                onClick={() => setSelectedProject(project)}
-              >
-                {/* Full bleed card background image */}
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="od-card-bg-img"
-                  draggable={false}
-                  decoding="async"
-                />
-
-                {/* Gradient overlay for text clarity */}
-                <div className="od-card-bg-overlay" aria-hidden="true" />
-
-                {/* Card Body matching OrbitDeck */}
-                <div className="od-card-body">
-                  <h2 className="od-card-title">{project.title}</h2>
-                  <p className="od-card-details">{project.details || project.description}</p>
-
-                  {projectTech && projectTech.length > 0 && (
-                    <div
-                      className="od-card-tech-line"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {projectTech.map((t) => (
-                        <span key={t} className="od-tech-pill">
-                          <TechIcon name={t} size={10} />
-                          <span>{t}</span>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
+              return (
+                <article
+                  key={project.id || project.title}
+                  className="projects-grid-card"
+                >
+                  {/* Banner with play hover overlay */}
                   <div
-                    className="od-card-actions"
-                    onClick={(e) => e.stopPropagation()}
+                    className="projects-grid-image-wrap cursor-target"
+                    data-cursor-label="Play"
+                    onClick={() => setSelectedProject(project)}
+                    role="button"
+                    tabIndex={0}
                   >
-                    <button
-                      type="button"
-                      className="od-btn-detail cursor-target" data-cursor-label="Details"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProject(project);
-                      }}
-                    >
-                      View details
-                    </button>
-
-                    {projectLink && (
-                      <a
-                        className="od-visit-btn cursor-target" data-cursor-label="Visit"
-                        href={projectLink}
-                        target={projectLink.startsWith('http') ? '_blank' : undefined}
-                        rel={projectLink.startsWith('http') ? 'noreferrer' : undefined}
-                        onClick={(e) => e.stopPropagation()}
+                    <img src={project.image} alt={project.title} loading="lazy" />
+                    <div className="project-card-play-overlay">
+                      <button
+                        type="button"
+                        className="project-play-circle-btn cursor-target"
+                        data-cursor-label="Play"
+                        aria-label="Play video demo"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProject(project);
+                        }}
                       >
-                        <span>Visit</span>
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="11"
-                          height="11"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        <svg width="26" height="26" viewBox="0 0 256 256" fill="currentColor">
+                          <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm48.24-94.78-64-40A8,8,0,0,0,100,88v80a8,8,0,0,0,12.24,6.78l64-40a8,8,0,0,0,0-13.56ZM116,153.57V102.43L156.91,128Z" />
                         </svg>
-                      </a>
-                    )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            );
-          })
-        )}
+
+                  <div className="projects-grid-content">
+                    <h2 className="project-card-title">{project.title}</h2>
+
+                    <p className="projects-grid-desc">
+                      <span className="projects-grid-desc-text">
+                        {project.details || project.description}
+                      </span>
+                      <button
+                        type="button"
+                        className="project-show-more-text cursor-target"
+                        data-cursor-label="Details"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProject(project);
+                        }}
+                      >
+                        ... show more
+                      </button>
+                    </p>
+
+                    {/* Dotted tech stack at bottom */}
+                    <div className="project-card-bottom-row">
+                      <div className="project-card-tech-dotted">
+                        {projectTech.map((t) => (
+                          <span key={t} className="project-tech-dotted-chip">
+                            <TechIcon name={t} size={13} />
+                            <span>{t}</span>
+                          </span>
+                        ))}
+                      </div>
+
+                      {projectLink && (
+                        <a
+                          className="project-visit-btn cursor-target"
+                          data-cursor-label="Visit"
+                          href={projectLink}
+                          target={projectLink.startsWith('http') ? '_blank' : undefined}
+                          rel={projectLink.startsWith('http') ? 'noreferrer' : undefined}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span>Visit</span>
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="11"
+                            height="11"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 17L17 7M17 7H7M17 7V17" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          )}
         </section>
 
         <DetailModal

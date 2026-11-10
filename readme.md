@@ -26,6 +26,7 @@ The application includes an in-browser management workspace, dynamic content syn
 ## Key Features
 
 - **Spring-Physics Eye Tracking**: Vector avatar in the hero greeting with cursor-following pupils constrained within circular eyewear, organic double-blinks, and background tab idle suspension.
+- **Action Words Scroll Wheel ("I can ...")**: 5-slot vertical rolling wheel on desktop with reddish gradient and drop-shadow glow; smooth appear/fade entrance and exit transitions; single-line word cycling on mobile. Configurable in real time via the Admin Dashboard.
 - **GSAP ScrollStack Deck**: Cascading card deck with pin-spacing that docks projects sequentially as the user scrolls, finishing with a gliding action before unlocking subsequent sections.
 - **3D OrbitDeck Perspective Ring**: Cylindrical 3D project ring powered by CSS 3D transforms, supporting pointer drag and touch scrubbing.
 - **Interactive Certifications Preview**: Hover popover on desktop with full-dimension image view and focused modal preview with zero bezels and scroll lock.
@@ -65,7 +66,7 @@ flowchart TD
 ```
 
 > [!TIP]
-> The dynamic data layer in `src/data/usePortfolioData.js` provides automatic local caching (`portfolio_content_cache_v13`) and broadcasts real-time cross-tab synchronization via CustomEvents whenever content is updated in the Admin workspace.
+> The dynamic data layer in `src/data/usePortfolioData.js` provides automatic local caching (`portfolio_content_cache_v14`) and broadcasts real-time cross-tab synchronization via CustomEvents whenever content is updated in the Admin workspace.
 
 ---
 

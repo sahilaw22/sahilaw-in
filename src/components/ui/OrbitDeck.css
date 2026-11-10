@@ -3,7 +3,7 @@
 .od-wrapper {
   position: relative;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1020px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -16,8 +16,8 @@
 .od-scene {
   position: relative;
   width: 100%;
-  height: 418px;
-  perspective: 1200px;
+  height: 392px;
+  perspective: 1100px;
   perspective-origin: 50% 50%;
   transform-style: preserve-3d;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -41,9 +41,9 @@
    -------------------------------------------------------------------------- */
 .od-card {
   position: absolute;
-  width: 360px;
-  height: 418px;
-  border-radius: 24px;
+  width: 320px;
+  height: 385px;
+  border-radius: 2.25rem; /* ~36px squircle curvature */
   overflow: hidden;
   will-change: transform, opacity;
   transform-style: preserve-3d;
@@ -88,7 +88,7 @@
 }
 
 .od-card[data-od-centre]:hover .od-card-bg-img {
-  transform: none !important;
+  transform: scale(1.05);
 }
 
 /* Vignette gradient overlay for text readability over background photo */
@@ -239,8 +239,8 @@
 .od-grid-card {
   position: relative !important;
   width: 100% !important;
-  height: 418px !important;
-  border-radius: 24px !important;
+  height: 385px !important;
+  border-radius: 2.25rem !important;
   overflow: hidden !important;
   background-color: #0e0f13 !important;
   display: flex !important;
@@ -263,7 +263,7 @@
 }
 
 .od-grid-card:hover .od-card-bg-img {
-  transform: none !important;
+  transform: scale(1.05) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -317,7 +317,7 @@
   .od-card {
     width: 300px;
     height: 375px;
-    border-radius: 24px;
+    border-radius: 2rem;
   }
 
   .od-card-title {
@@ -336,76 +336,58 @@
   }
 
   .od-scene {
-    height: clamp(435px, 58.5vh, 470px);
-    perspective: 850px;
+    height: 346px;
+    perspective: 800px;
   }
 
   .od-card {
-    width: min(335px, 88vw);
-    height: clamp(430px, 58vh, 465px);
-    border-radius: 24px;
-  }
-
-  .od-grid-card {
-    height: 420px !important;
-    border-radius: 24px !important;
-  }
-
-  .od-card-bg-overlay {
-    background: linear-gradient(
-      180deg,
-      rgba(10, 11, 14, 0.04) 0%,
-      rgba(10, 11, 14, 0.22) 35%,
-      rgba(10, 11, 14, 0.82) 64%,
-      rgba(10, 11, 14, 0.98) 100%
-    );
+    width: min(280px, 80vw);
+    height: 340px;
+    border-radius: 1.75rem;
   }
 
   .od-card-body {
-    padding: 1.35rem 1.2rem 1.25rem;
+    padding: 1rem 0.95rem;
   }
 
   .od-card-title {
-    font-size: 1.24rem;
-    margin-bottom: 0.35rem;
-    font-weight: 700;
+    font-size: 1.08rem;
+    margin-bottom: 0.25rem;
   }
 
   .od-card-details {
-    font-size: 0.82rem;
-    line-height: 1.48;
-    margin-bottom: 0.65rem;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    font-size: 0.74rem;
+    line-height: 1.38;
+    margin-bottom: 0.45rem;
   }
 
   .od-card-tech-line {
-    gap: 0.28rem;
-    margin-bottom: 0.85rem;
+    gap: 0.2rem;
+    margin-bottom: 0.65rem;
   }
 
   .od-tech-pill {
-    padding: 0.16rem 0.44rem;
-    font-size: 0.65rem;
-    gap: 0.24rem;
+    padding: 0.12rem 0.35rem;
+    font-size: 0.58rem;
+    gap: 0.2rem;
   }
 
   .od-card-actions {
-    gap: 0.65rem;
+    gap: 0.5rem;
   }
 
   .od-btn-detail {
-    padding: 0.48rem 1.05rem;
-    font-size: 0.76rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.7rem;
   }
 
   .od-visit-btn {
-    padding: 0.48rem 1.05rem;
-    font-size: 0.76rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.7rem;
   }
 
   .od-pagination {
-    margin-top: 0.75rem;
-    padding: 0.34rem 0.75rem;
+    margin-top: 0.55rem;
+    padding: 0.3rem 0.68rem;
   }
 }

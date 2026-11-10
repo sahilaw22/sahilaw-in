@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fetchResumeFromStorageOrFallback, saveResumeToStorage } from '../lib/supabaseClient.js';
 
 const initialResume = {
   name: 'Sahil Ahmed Wani',
@@ -102,6 +103,9 @@ function Lines({ value }) {
 
 export default function ResumePage() {
   const [resume, setResume] = useState(initialResume);
+  const [isLoadingCsv, setIsLoadingCsv] = useState(true);
+  const [isSavingCsv, setIsSavingCsv] = useState(false);
+  const [csvSyncMsg, setCsvSyncMsg] = useState('');
   const [savedHtml, setSavedHtml] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeFormats, setActiveFormats] = useState({
@@ -202,6 +206,43 @@ export default function ResumePage() {
     }
   }
 
+  // Load resume data asynchronously from modular CSVs with local fallback
+  useEffect(() => {
+    let isMounted = true;
+    async function loadResumeData() {
+      setIsLoadingCsv(true);
+      try {
+        const data = await fetchResumeFromStorageOrFallback();
+        if (isMounted && data) {
+          setResume(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load resume CSV:', err);
+      } finally {
+        if (isMounted) setIsLoadingCsv(false);
+      }
+    }
+    loadResumeData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  async function handleSaveResumeCsv() {
+    setIsSavingCsv(true);
+    setCsvSyncMsg('Saving resume CSV to Supabase Storage...');
+    try {
+      await saveResumeToStorage(resume);
+      setCsvSyncMsg('Resume CSV successfully synced to cloud storage.');
+      setTimeout(() => setCsvSyncMsg(''), 4000);
+    } catch (err) {
+      setCsvSyncMsg(`Saved locally (Cloud sync: ${err.message || 'offline'})`);
+      setTimeout(() => setCsvSyncMsg(''), 5000);
+    } finally {
+      setIsSavingCsv(false);
+    }
+  }
+
   function handleSaveDone() {
     // Only finalize and persist changes when Done button is explicitly clicked
     if (resumeRef.current) {
@@ -210,6 +251,7 @@ export default function ResumePage() {
       setSavedHtml(finalized);
     }
     setIsEditing(false);
+    handleSaveResumeCsv();
   }
 
   function saveCurrentSelection() {
@@ -284,6 +326,34 @@ export default function ResumePage() {
           <Field label="Projects" value={resume.projects} onChange={(value) => updateField('projects', value)} multiline />
           <Field label="Education" value={resume.education} onChange={(value) => updateField('education', value)} multiline />
           <Field label="Certifications" value={resume.certifications} onChange={(value) => updateField('certifications', value)} multiline />
+          <div style={{ marginTop: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <button
+              type="button"
+              onClick={handleSaveResumeCsv}
+              disabled={isSavingCsv}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
+                background: '#ffffff',
+                color: '#000000',
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                border: 'none',
+                cursor: isSavingCsv ? 'wait' : 'pointer',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+                transition: 'opacity 0.2s ease',
+                opacity: isSavingCsv ? 0.7 : 1,
+              }}
+            >
+              {isSavingCsv ? 'Saving to Cloud Storage...' : 'Save to Cloud CSV'}
+            </button>
+            {csvSyncMsg && (
+              <span style={{ fontSize: '0.78rem', color: csvSyncMsg.includes('success') ? '#22c55e' : '#94a3b8', textAlign: 'center' }}>
+                {csvSyncMsg}
+              </span>
+            )}
+          </div>
         </form>
 
         {/* Floating Edit Toolbar when editing is active */}

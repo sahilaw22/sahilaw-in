@@ -1,14 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
+import { parseCSV, resumeDataToModularCSVs, modularCSVRecordsToResume } from './csvHelper.js';
+
+const env = typeof import.meta !== 'undefined' ? import.meta.env || {} : {};
 
 const supabaseUrl =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
-  (typeof import.meta !== 'undefined' && import.meta.env?.NEXT_PUBLIC_SUPABASE_URL) ||
+  env.SUPABASE_URL ||
+  env.VITE_SUPABASE_URL ||
+  env.NEXT_PUBLIC_SUPABASE_URL ||
   '';
 
 const supabaseAnonKey =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY) ||
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
-  (typeof import.meta !== 'undefined' && import.meta.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+  env.SUPABASE_PUBLISHABLE_KEY ||
+  env.SUPABASE_ANON_KEY ||
+  env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  env.VITE_SUPABASE_ANON_KEY ||
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   '';
 
 export const isSupabaseConfigured = () => {
@@ -79,21 +85,41 @@ export async function trackAnalyticsEvent(eventType, metadata = {}) {
 }
 
 /**
- * Upload an image or logo to Supabase Storage in portfolio-assets bucket.
+ * Upload an image, logo, or video to Supabase Storage in portfolio-assets bucket.
+ * Enforces folder prefixes and sanitized auto-renaming:
+ * - Single item: <folder>/<slug>.<ext>
+ * - Multi item:   <folder>/<slug>/<slug>_<timestamp>_<clean-name>.<ext>
  */
-export async function uploadPortfolioAsset(file, folder = 'misc') {
+export async function uploadPortfolioAsset(file, options = {}) {
   if (!supabase) {
-    throw new Error('Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.');
+    throw new Error('Supabase is not configured. Please add SUPABASE_URL and SUPABASE_ANON_KEY to your .env file.');
   }
 
-  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_').toLowerCase();
-  const fileName = `${folder}/${Date.now()}_${cleanName}`;
+  const folder = typeof options === 'string' ? options : options.folder || 'misc';
+  const slug = (options.slug || 'asset').toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
+  const isMultiple = Boolean(options.multiple);
+
+  const originalName = file.name || 'file';
+  const ext = originalName.includes('.') ? originalName.split('.').pop().toLowerCase() : 'jpg';
+  const cleanOriginal = originalName
+    .replace(/\.[^/.]+$/, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '_')
+    .slice(0, 30);
+
+  let filePath = '';
+  if (isMultiple) {
+    filePath = `${folder}/${slug}/${slug}_${Date.now()}_${cleanOriginal}.${ext}`;
+  } else {
+    filePath = `${folder}/${slug}.${ext}`;
+  }
 
   const { data, error } = await supabase.storage
     .from('portfolio-assets')
-    .upload(fileName, file, {
+    .upload(filePath, file, {
       cacheControl: '31536000',
       upsert: true,
+      contentType: file.type || undefined,
     });
 
   if (error) {
@@ -104,7 +130,139 @@ export async function uploadPortfolioAsset(file, folder = 'misc') {
     .from('portfolio-assets')
     .getPublicUrl(data.path);
 
-  return publicData?.publicUrl || '';
+  return {
+    path: data.path,
+    publicUrl: publicData?.publicUrl || '',
+  };
+}
+
+/**
+ * Remove an asset from Supabase Storage by public URL or relative path.
+ */
+export async function deletePortfolioAsset(fileUrlOrPath) {
+  if (!supabase || !fileUrlOrPath) return false;
+
+  try {
+    let storagePath = fileUrlOrPath;
+    if (fileUrlOrPath.includes('/portfolio-assets/')) {
+      storagePath = fileUrlOrPath.split('/portfolio-assets/')[1].split('?')[0];
+    } else if (fileUrlOrPath.startsWith('http')) {
+      const parts = new URL(fileUrlOrPath).pathname.split('/');
+      const bucketIdx = parts.indexOf('portfolio-assets');
+      if (bucketIdx !== -1) {
+        storagePath = parts.slice(bucketIdx + 1).join('/');
+      }
+    }
+
+    const { error } = await supabase.storage
+      .from('portfolio-assets')
+      .remove([storagePath]);
+
+    return !error;
+  } catch (err) {
+    console.warn('Failed to delete asset from storage:', err.message);
+    return false;
+  }
+}
+
+/**
+ * Load resume data asynchronously from Supabase Storage resume/*.csv with fallback to local /data/resume/*.csv.
+ */
+export async function fetchResumeFromStorageOrFallback() {
+  const tryFetchCsvText = async (pathInStorage, fallbackUrl) => {
+    // 1. Try Supabase Storage first if configured
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.storage.from('portfolio-assets').download(pathInStorage);
+        if (!error && data) {
+          return await data.text();
+        }
+      } catch {
+        // Fall through to public fetch
+      }
+    }
+
+    // 2. Fetch local public asset fallback
+    try {
+      const res = await fetch(fallbackUrl, { cache: 'no-store' });
+      if (res.ok) {
+        return await res.text();
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
+  };
+
+  try {
+    const [profileText, expText, projText, eduText, certText] = await Promise.all([
+      tryFetchCsvText('resume/resume_profile.csv', './data/resume/resume_profile.csv'),
+      tryFetchCsvText('resume/resume_experience.csv', './data/resume/resume_experience.csv'),
+      tryFetchCsvText('resume/resume_projects.csv', './data/resume/resume_projects.csv'),
+      tryFetchCsvText('resume/resume_education.csv', './data/resume/resume_education.csv'),
+      tryFetchCsvText('resume/resume_certifications.csv', './data/resume/resume_certifications.csv'),
+    ]);
+
+    if (profileText && (expText || projText)) {
+      const profileRecs = parseCSV(profileText);
+      const expRecs = expText ? parseCSV(expText) : [];
+      const projRecs = projText ? parseCSV(projText) : [];
+      const eduRecs = eduText ? parseCSV(eduText) : [];
+      const certRecs = certText ? parseCSV(certText) : [];
+      return modularCSVRecordsToResume(profileRecs, expRecs, projRecs, eduRecs, certRecs);
+    }
+
+    // Secondary fallback: Unified single resume.csv
+    const unifiedText = await tryFetchCsvText('resume/resume.csv', './data/resume/resume.csv');
+    if (unifiedText) {
+      const unifiedRecs = parseCSV(unifiedText);
+      const profileRecs = unifiedRecs.filter((r) => r.section === 'profile');
+      const expRecs = unifiedRecs.filter((r) => r.section === 'experience');
+      const projRecs = unifiedRecs.filter((r) => r.section === 'projects');
+      const eduRecs = unifiedRecs.filter((r) => r.section === 'education');
+      const certRecs = unifiedRecs.filter((r) => r.section === 'certifications');
+      return modularCSVRecordsToResume(profileRecs, expRecs, projRecs, eduRecs, certRecs);
+    }
+  } catch (err) {
+    console.warn('Error reading resume CSVs:', err);
+  }
+
+  return null;
+}
+
+/**
+ * Save resume edits to Supabase Storage as modular CSV files.
+ */
+export async function saveResumeToStorage(resumeData) {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Unable to save resume CSV to cloud storage.');
+  }
+
+  const { profileCSV, experienceCSV, projectsCSV, educationCSV, certificationsCSV } =
+    resumeDataToModularCSVs(resumeData);
+
+  const uploads = [
+    { path: 'resume/resume_profile.csv', content: profileCSV },
+    { path: 'resume/resume_experience.csv', content: experienceCSV },
+    { path: 'resume/resume_projects.csv', content: projectsCSV },
+    { path: 'resume/resume_education.csv', content: educationCSV },
+    { path: 'resume/resume_certifications.csv', content: certificationsCSV },
+  ];
+
+  for (const item of uploads) {
+    const blob = new Blob([item.content], { type: 'text/csv;charset=utf-8;' });
+    const { error } = await supabase.storage.from('portfolio-assets').upload(item.path, blob, {
+      cacheControl: '60',
+      upsert: true,
+      contentType: 'text/csv',
+    });
+    if (error) {
+      throw new Error(`Failed to upload ${item.path}: ${error.message}`);
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -114,13 +272,14 @@ export async function uploadPortfolioAsset(file, folder = 'misc') {
 export async function fetchPortfolioDirectFromSupabase() {
   if (!supabase) return null;
   try {
-    const [projRes, expRes, eduRes, skillRes, certRes, profileRes] = await Promise.all([
+    const [projRes, expRes, eduRes, skillRes, certRes, profileRes, socialRes] = await Promise.all([
       supabase.from('projects').select('*').order('display_order', { ascending: true }),
       supabase.from('experiences').select('*').order('display_order', { ascending: true }),
       supabase.from('education').select('*').order('display_order', { ascending: true }),
       supabase.from('skills').select('*').order('display_order', { ascending: true }),
       supabase.from('certifications').select('*').order('display_order', { ascending: true }),
-      supabase.from('profiles').select('*').eq('id', 'primary').maybeSingle(),
+      supabase.from('profiles').select('*').limit(1).maybeSingle(),
+      supabase.from('social_links').select('*').eq('is_published', true).order('display_order', { ascending: true }),
     ]);
 
     if (projRes.error && expRes.error) {
@@ -211,7 +370,7 @@ export async function fetchPortfolioDirectFromSupabase() {
         logo: c.certificate_image_url || c.certificate_image || '',
         certificateImage: c.certificate_image_url || c.certificate_image || '',
         description: c.description || '',
-        photos: c.photos || [],
+        photos: Array.isArray(c.photos) ? c.photos.filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com')) : [],
       }));
 
     const achievements = allCerts
@@ -229,11 +388,12 @@ export async function fetchPortfolioDirectFromSupabase() {
         image: c.certificate_image_url || c.certificate_image || '',
         logo: c.certificate_image_url || c.certificate_image || '',
         photos: Array.isArray(c.photos) && c.photos.length > 0
-          ? c.photos
-          : (c.certificate_image_url ? [c.certificate_image_url] : []),
+          ? c.photos.filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com'))
+          : (c.certificate_image_url && !c.certificate_image_url.includes('unsplash.com') ? [c.certificate_image_url] : []),
       }));
 
     const profile = profileRes.data || {};
+    const socialLinks = socialRes.data || [];
 
     return {
       about: Array.isArray(profile.about_paragraphs) ? profile.about_paragraphs : undefined,
@@ -243,16 +403,24 @@ export async function fetchPortfolioDirectFromSupabase() {
       skills: Array.isArray(skills) ? skills : undefined,
       certifications: Array.isArray(certifications) ? certifications : undefined,
       achievements: Array.isArray(achievements) ? achievements : undefined,
+      social_links: Array.isArray(socialLinks) ? socialLinks : undefined,
       meta: {
         hero_roles: profile.hero_roles || [],
+        action_words: profile.action_words || [],
+        introduction: profile.introduction || '',
+        pitch: profile.introduction || '',
         email: profile.email || 'sahilaw502@gmail.com',
         location: profile.location || 'India',
         name: profile.name || 'Sahil Wani',
         github: profile.github_url || '',
         linkedin: profile.linkedin_url || '',
-        x: profile.x_url || '',
+        x:
+          profile.x_url ||
+          socialLinks.find((s) => s.platform === 'X' || s.platform === 'Twitter')?.url ||
+          '',
         threads: profile.threads_url || '',
       },
+      action_words: profile.action_words || [],
     };
   } catch (err) {
     console.warn('Direct Supabase fetch fallback warning:', err);
@@ -281,4 +449,3 @@ function getDeviceType() {
   if (w <= 1024) return 'tablet';
   return 'desktop';
 }
-

@@ -40,7 +40,7 @@ export default function ExperienceSection() {
               className="sleek-exp-view-all-btn cursor-target"
               data-cursor-label="Explore"
             >
-              <span>Show all work experiences</span>
+              <span>View all experiences</span>
             </a>
           </div>
         </div>

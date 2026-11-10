@@ -672,11 +672,11 @@
 }
 
 .portfolio-logo-thumb {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -685,9 +685,10 @@
 }
 
 .portfolio-logo-thumb img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  object-fit: cover;
 }
 
 .portfolio-status-save-banner {
@@ -968,9 +969,11 @@
 }
 
 .admin-upload-thumb {
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   border-radius: 14px;
+  background: transparent;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -984,6 +987,68 @@
   border-radius: 14px;
   object-fit: cover;
   display: block;
+}
+
+.admin-demo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  letter-spacing: 0.04em;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.admin-multi-upload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.admin-multi-upload-item {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #090a0f;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.admin-multi-upload-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.admin-multi-remove-btn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.admin-multi-remove-btn:hover {
+  background: #dc2626;
+  color: #ffffff;
 }
 
 .admin-upload-meta {

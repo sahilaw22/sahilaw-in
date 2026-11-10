@@ -152,7 +152,7 @@ export default function OrbitDeck({
   const isMobile = windowWidth <= 640;
   const isTablet = windowWidth > 640 && windowWidth <= 920;
 
-  const baseX = isMobile ? Math.min(215, windowWidth * 0.46) : isTablet ? 290 : 360;
+  const baseX = isMobile ? Math.min(195, windowWidth * 0.44) : isTablet ? 265 : 320;
   const baseY = isMobile ? 2.0 : 3.4;
   const baseZ = isMobile ? -520 : isTablet ? -660 : -780;
   const baseRot = isMobile ? 24 : isTablet ? 28 : 31;
@@ -361,6 +361,23 @@ export default function OrbitDeck({
           );
         })}
       </div>
+
+      {/* Pagination Pill */}
+      {total > 1 && (
+        <div className="od-pagination" role="tablist" aria-label="Projects">
+          {projects.map((p, i) => (
+            <button
+              key={p.id || i}
+              type="button"
+              className={`od-dot ${i === currentIndex ? 'is-active' : ''}`}
+              role="tab"
+              aria-selected={i === currentIndex}
+              aria-label={`Slide ${i + 1}: ${p.title}`}
+              onClick={() => goToSlide(i)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

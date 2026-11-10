@@ -99,8 +99,7 @@ export default function App() {
     if (route === '/experience' || route === '/work-experience') return <ExperiencePage />;
     if (route === '/careers' || route === '/resume') return <ResumePage />;
     if (route === '/chat') return <ChatPage />;
-    if (route === '/projects') return <ProjectsPage />;
-    if (route === '/projects/all') return <ProjectsPage showAll />;
+    if (route === '/projects' || route === '/projects/all') return <ProjectsPage showAll />;
     return <HomePage sound={sound} />;
   }
 
@@ -138,8 +137,8 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </div>
-      {isHome && !loaderType && <RightScrollPills play={sound?.play} currentRoute={route} />}
-      {!isAdmin && !isExperience && !loaderType && <BottomNav activeView={activeView} />}
+      {isHome && <RightScrollPills play={sound?.play} currentRoute={route} />}
+      {!isAdmin && <BottomNav activeView={activeView} />}
     </>
   );
 }

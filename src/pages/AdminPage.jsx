@@ -1,10 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import JSZip from 'jszip';
 import MarkdownContent from '../components/MarkdownContent.jsx';
 import AnswerTextEditor from '../components/AnswerTextEditor.jsx';
 import { TechIcon } from '../components/TechIcons.jsx';
 import { ExperienceCard } from '../components/ExperienceCard.jsx';
-import { supabase, isSupabaseConfigured, uploadPortfolioAsset } from '../lib/supabaseClient.js';
+import {
+  supabase,
+  isSupabaseConfigured,
+  uploadPortfolioAsset,
+  deletePortfolioAsset,
+  fetchPortfolioDirectFromSupabase,
+} from '../lib/supabaseClient.js';
+import { getSocialIconSvg } from '../components/SocialIcons.jsx';
 import {
   HERO_ROLES,
   ABOUT_PARAGRAPHS,
@@ -16,6 +23,21 @@ import {
   ACHIEVEMENTS,
 } from '../data/portfolioData.jsx';
 import './AdminPage.css';
+
+function sanitizeAdminParagraphs(paragraphs) {
+  if (!Array.isArray(paragraphs)) return paragraphs;
+  return paragraphs.map((p) => {
+    if (typeof p !== 'string') return p;
+    let s = p.replace(/\s*(at\s+)?GCET\s+Jammu/gi, '');
+    s = s.replace(/(:::ICON:[^:]*:::)+/gi, '');
+    s = s.replace(/\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}/gi, '');
+    s = s.replace(/\b([a-z0-9_-]+):::\1:::/gi, '');
+    s = s.replace(/:::[^:]*:::/g, '');
+    s = s.replace(/\bith\b/g, 'with');
+    s = s.replace(/\s{2,}/g, ' ').trim();
+    return s;
+  });
+}
 
 const QUICK_ABOUT_ICONS = [
   { label: 'React', token: '{{ICON_REACT}}', id: 'react' },
@@ -136,6 +158,40 @@ const ONLINE_SKILL_ICONS = [
   { name: 'Electron', slug: 'electron' }
 ];
 
+function slugify(text) {
+  return (text || 'item')
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9_-]/g, '')
+    .replace(/-+/g, '-')
+    .slice(0, 40) || 'item';
+}
+
+function isDemoItem(item) {
+  if (!item) return false;
+  if (item.is_demo === true || item.isDemo === true) return true;
+  const idStr = String(item.id || '').toLowerCase();
+  if (idStr.startsWith('demo-') || idStr.includes('sample-')) return true;
+  const title = String(item.title || item.company || item.institution || item.name || item.degree || '').toLowerCase();
+  return title.includes('[demo]') || title.includes('demo sample') || title.includes('sample company') || title.includes('sample project');
+}
+
+const SOCIAL_PRESETS = [
+  { platform: 'GitHub', label: 'GitHub', icon: 'github', defaultUrl: 'https://github.com/' },
+  { platform: 'LinkedIn', label: 'LinkedIn', icon: 'linkedin', defaultUrl: 'https://linkedin.com/in/' },
+  { platform: 'Threads', label: 'Threads', icon: 'threads', defaultUrl: 'https://threads.net/@' },
+  { platform: 'X', label: 'X (Twitter)', icon: 'x', defaultUrl: 'https://x.com/' },
+  { platform: 'Instagram', label: 'Instagram', icon: 'instagram', defaultUrl: 'https://instagram.com/' },
+  { platform: 'YouTube', label: 'YouTube', icon: 'youtube', defaultUrl: 'https://youtube.com/@' },
+  { platform: 'Discord', label: 'Discord', icon: 'discord', defaultUrl: 'https://discord.com/users/' },
+  { platform: 'LeetCode', label: 'LeetCode', icon: 'leetcode', defaultUrl: 'https://leetcode.com/' },
+  { platform: 'Kaggle', label: 'Kaggle', icon: 'kaggle', defaultUrl: 'https://kaggle.com/' },
+  { platform: 'Website', label: 'Personal Website', icon: 'website', defaultUrl: 'https://' },
+  { platform: 'Custom', label: 'Custom Link', icon: 'link', defaultUrl: 'https://' },
+];
+
 function AdminImageUploadField({
   label,
   value,
@@ -145,6 +201,8 @@ function AdminImageUploadField({
   helperText = '',
   isLogo = false,
   storageFolder = 'logos',
+  slug = '',
+  requireExplicitDelete = false,
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const inputId = `${idPrefix}-file`;
@@ -152,10 +210,26 @@ function AdminImageUploadField({
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (requireExplicitDelete && value) {
+      alert('This logo requires explicit deletion before uploading a replacement. Please click "Clear" to remove the current logo first.');
+      e.target.value = '';
+      return;
+    }
+
     setIsProcessing(true);
     try {
       if (isSupabaseConfigured()) {
-        const publicUrl = await uploadPortfolioAsset(file, storageFolder);
+        if (!requireExplicitDelete && value && typeof value === 'string' && value.includes('supabase.co')) {
+          try {
+            await deletePortfolioAsset(value);
+          } catch (delErr) {
+            console.warn('Auto-replace cleanup notice:', delErr.message);
+          }
+        }
+        const cleanSlug = slug || 'asset';
+        const uploadRes = await uploadPortfolioAsset(file, { folder: storageFolder, slug: cleanSlug, multiple: false });
+        const publicUrl = typeof uploadRes === 'string' ? uploadRes : (uploadRes?.publicUrl || '');
         onChange(publicUrl);
       } else {
         const dataUrl = await compressImage(file, 400, 0.9);
@@ -167,6 +241,17 @@ function AdminImageUploadField({
       setIsProcessing(false);
       e.target.value = '';
     }
+  };
+
+  const handleClear = async () => {
+    if (value && typeof value === 'string' && value.includes('supabase.co')) {
+      try {
+        await deletePortfolioAsset(value);
+      } catch (err) {
+        console.warn('Clear asset notice:', err.message);
+      }
+    }
+    onChange('');
   };
 
   const isDataUrl = typeof value === 'string' && value.startsWith('data:image/');
@@ -184,28 +269,32 @@ function AdminImageUploadField({
           placeholder={placeholder}
           style={{ flex: 1 }}
         />
-        <label htmlFor={inputId} className="admin-btn admin-btn-secondary admin-btn-upload">
+        <label
+          htmlFor={inputId}
+          className={`admin-btn admin-btn-secondary admin-btn-upload ${requireExplicitDelete && value ? 'is-disabled' : ''}`}
+          style={requireExplicitDelete && value ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span>{isProcessing ? 'Uploading...' : 'Upload Image'}</span>
+          <span>{isProcessing ? 'Uploading...' : requireExplicitDelete && value ? 'Clear Logo First' : 'Upload Image'}</span>
           <input
             id={inputId}
             type="file"
             accept="image/*,.svg"
             style={{ display: 'none' }}
             onChange={handleFileChange}
-            disabled={isProcessing}
+            disabled={isProcessing || (requireExplicitDelete && !!value)}
           />
         </label>
         {value ? (
           <button
             type="button"
             className="admin-btn admin-btn-danger admin-upload-clear-btn"
-            onClick={() => onChange('')}
-            title="Remove image"
+            onClick={handleClear}
+            title="Remove image from storage"
           >
             Clear
           </button>
@@ -221,8 +310,8 @@ function AdminImageUploadField({
             style={
               isLogo
                 ? {
-                    width: '48px',
-                    height: '48px',
+                    width: '50px',
+                    height: '50px',
                     borderRadius: '14px',
                     border: 'none',
                     background: 'transparent',
@@ -269,14 +358,129 @@ function AdminImageUploadField({
   );
 }
 
+function AdminMultiImageUploadField({
+  label,
+  values = [],
+  onChange,
+  placeholder = 'Add image URLs or upload multiple files...',
+  idPrefix = 'multi-img',
+  helperText = '',
+  storageFolder = 'achievements/photos',
+  slug = '',
+}) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const inputId = `${idPrefix}-multi-file`;
+
+  const items = Array.isArray(values)
+    ? values.filter(Boolean)
+    : (typeof values === 'string' ? values.split(',').map((s) => s.trim()).filter(Boolean) : []);
+
+  const handleFilesChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setIsProcessing(true);
+    try {
+      const cleanSlug = slug || 'asset';
+      const newUrls = [];
+      for (const file of files) {
+        if (isSupabaseConfigured()) {
+          const uploadRes = await uploadPortfolioAsset(file, { folder: storageFolder, slug: cleanSlug, multiple: true });
+          const url = typeof uploadRes === 'string' ? uploadRes : (uploadRes?.publicUrl || '');
+          if (url) newUrls.push(url);
+        } else {
+          const dataUrl = await compressImage(file, 600, 0.9);
+          if (dataUrl) newUrls.push(dataUrl);
+        }
+      }
+      const combined = [...items, ...newUrls];
+      onChange(combined);
+    } catch (err) {
+      alert('Failed to upload photos: ' + (err.message || 'Error occurred'));
+    } finally {
+      setIsProcessing(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveOne = async (indexToRemove) => {
+    const urlToRemove = items[indexToRemove];
+    if (urlToRemove && typeof urlToRemove === 'string' && urlToRemove.includes('supabase.co')) {
+      try {
+        await deletePortfolioAsset(urlToRemove);
+      } catch (err) {
+        console.warn('Asset deletion notice:', err.message);
+      }
+    }
+    const updated = items.filter((_, idx) => idx !== indexToRemove);
+    onChange(updated);
+  };
+
+  return (
+    <div className="admin-image-upload-control">
+      {label && <label className="admin-field-label">{label}</label>}
+      <div className="admin-image-upload-inputs">
+        <input
+          type="text"
+          className="admin-input"
+          value={items.join(', ')}
+          onChange={(e) => {
+            const parsed = e.target.value.split(',').map((s) => s.trim()).filter(Boolean);
+            onChange(parsed);
+          }}
+          placeholder={placeholder}
+          style={{ flex: 1 }}
+        />
+        <label htmlFor={inputId} className="admin-btn admin-btn-secondary admin-btn-upload">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>{isProcessing ? 'Uploading...' : 'Upload Photos'}</span>
+          <input
+            id={inputId}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={handleFilesChange}
+            disabled={isProcessing}
+          />
+        </label>
+      </div>
+
+      {helperText && <span className="admin-field-helper">{helperText}</span>}
+
+      {items.length > 0 && (
+        <div className="admin-multi-upload-grid">
+          {items.map((url, i) => (
+            <div key={`${url}-${i}`} className="admin-multi-upload-item">
+              <img src={url} alt={`Upload ${i + 1}`} />
+              <button
+                type="button"
+                className="admin-multi-remove-btn"
+                onClick={() => handleRemoveOne(i)}
+                title="Remove photo"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AdminVideoUploadField({
   label = 'Project Demo Video (MP4 / WebM / QuickTime)',
   value,
   onChange,
   placeholder = 'Paste video URL or upload MP4 / WebM...',
   idPrefix = 'video-field',
-  helperText = 'Stored in Supabase Storage under portfolio-assets/videos or paste an external video link',
-  storageFolder = 'videos',
+  helperText = 'Stored in Supabase Storage under portfolio-assets/projects/project-video or paste an external video link',
+  storageFolder = 'projects/project-video',
+  slug = 'video',
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const inputId = `${idPrefix}-file`;
@@ -287,7 +491,16 @@ function AdminVideoUploadField({
     setIsProcessing(true);
     try {
       if (isSupabaseConfigured()) {
-        const publicUrl = await uploadPortfolioAsset(file, storageFolder);
+        if (value && typeof value === 'string' && value.includes('supabase.co')) {
+          try {
+            await deletePortfolioAsset(value);
+          } catch (delErr) {
+            console.warn('Video replacement cleanup notice:', delErr.message);
+          }
+        }
+        const cleanSlug = slug || 'video';
+        const uploadRes = await uploadPortfolioAsset(file, { folder: storageFolder, slug: cleanSlug, multiple: false });
+        const publicUrl = typeof uploadRes === 'string' ? uploadRes : (uploadRes?.publicUrl || '');
         onChange(publicUrl);
       } else {
         alert('Supabase is not configured for video file storage. Please enter a public video URL.');
@@ -298,6 +511,17 @@ function AdminVideoUploadField({
       setIsProcessing(false);
       e.target.value = '';
     }
+  };
+
+  const handleClear = async () => {
+    if (value && typeof value === 'string' && value.includes('supabase.co')) {
+      try {
+        await deletePortfolioAsset(value);
+      } catch (err) {
+        console.warn('Video deletion notice:', err.message);
+      }
+    }
+    onChange('');
   };
 
   const hasVideo = typeof value === 'string' && value.trim().length > 0;
@@ -334,7 +558,7 @@ function AdminVideoUploadField({
           <button
             type="button"
             className="admin-btn admin-btn-danger admin-upload-clear-btn"
-            onClick={() => onChange('')}
+            onClick={handleClear}
             title="Remove video"
           >
             Clear
@@ -455,11 +679,13 @@ export default function AdminPage() {
     skills: [],
     certifications: [],
     achievements: [],
+    social_links: [],
     custom_icons: [],
     meta: {
       hero_roles: [],
       name: 'Sahil Wani',
       pitch: '',
+      introduction: '',
       email: 'sahilaw502@gmail.com',
       github: 'https://github.com/sahil-wani',
       linkedin: 'https://linkedin.com/in/sahil-wani',
@@ -469,6 +695,24 @@ export default function AdminPage() {
   });
   const [contentSubtab, setContentSubtab] = useState('experiences');
   const [contentSaveMsg, setContentSaveMsg] = useState('');
+
+  // Social Links modal/editing state
+  const [showSocialModal, setShowSocialModal] = useState(false);
+  const [editingSocialIndex, setEditingSocialIndex] = useState(null);
+  const [socialForm, setSocialForm] = useState({
+    id: '',
+    platform: 'GitHub',
+    label: 'GitHub',
+    url: '',
+    icon_name: 'github',
+    icon_svg: '',
+    is_published: true,
+    display_order: 0,
+    is_demo: false,
+  });
+  const [metaIntroText, setMetaIntroText] = useState(
+    'Hey, I am Sahil Wani, a 20yo guy building things for the web. Crafting sleek digital experiences, experimenting with code, design, and ideas that feel right.'
+  );
 
   // Projects modal/editing state
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -512,6 +756,7 @@ export default function AdminPage() {
     github: '',
     linkedin: '',
     x: '',
+    showSkillIcons: true,
     isPublished: true,
   });
 
@@ -559,6 +804,7 @@ export default function AdminPage() {
   const [editingSkillsList, setEditingSkillsList] = useState([]);
   const [editingAboutList, setEditingAboutList] = useState([]);
   const [metaRolesText, setMetaRolesText] = useState('');
+  const [metaActionWordsText, setMetaActionWordsText] = useState('');
   const [metaEmailText, setMetaEmailText] = useState('sahilaw502@gmail.com');
   const [metaContactStatusText, setMetaContactStatusText] = useState('OPEN TO PRODUCT DESIGN ROLES');
   const [metaLocationText, setMetaLocationText] = useState('JAMMU, INDIA');
@@ -805,54 +1051,73 @@ export default function AdminPage() {
       .then((d) => setSettings(d.settings || {}))
       .catch(console.error);
 
+    const applyFreshPortfolioData = (content) => {
+      const fresh = {
+        about: Array.isArray(content.about) ? content.about : (ABOUT_PARAGRAPHS || []),
+        experiences: Array.isArray(content.experiences) ? content.experiences : (EXPERIENCES || []),
+        projects: Array.isArray(content.projects) ? content.projects : (PROJECTS || []),
+        education: Array.isArray(content.education) ? content.education : (EDUCATION_ITEMS || []),
+        skills: Array.isArray(content.skills) ? content.skills : (SKILL_CATEGORIES || []),
+        certifications: Array.isArray(content.certifications) ? content.certifications : (CERTIFICATIONS || []),
+        achievements: Array.isArray(content.achievements) ? content.achievements : (ACHIEVEMENTS || []),
+        social_links: Array.isArray(content.social_links) ? content.social_links : [],
+        custom_icons: Array.isArray(content.custom_icons) ? content.custom_icons : [],
+        meta: content.meta || { hero_roles: HERO_ROLES },
+      };
+      setPortfolioContent(fresh);
+      if (Array.isArray(fresh.skills)) {
+        const cleaned = fresh.skills
+          .filter((cat) => cat && (cat.category || '').trim().toLowerCase() !== 'new category')
+          .map((cat) => {
+            const filteredSkills = (cat.skills || []).filter((s) => {
+              const sName = (typeof s === 'string' ? s : s?.name || '').trim().toLowerCase();
+              return sName !== 'newskill' && sName !== 'new skill';
+            });
+            return {
+              ...cat,
+              skills: filteredSkills,
+              _rawSkills: filteredSkills.map((s) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean).join(', '),
+            };
+          });
+        setEditingSkillsList(cleaned);
+      }
+      if (Array.isArray(fresh.about)) setEditingAboutList(sanitizeAdminParagraphs(fresh.about));
+      if (fresh.meta) {
+        setMetaRolesText(Array.isArray(fresh.meta.hero_roles) ? fresh.meta.hero_roles.join(', ') : '');
+        setMetaActionWordsText(
+          Array.isArray(fresh.meta.action_words)
+            ? fresh.meta.action_words.join(', ')
+            : (Array.isArray(fresh.action_words) ? fresh.action_words.join(', ') : 'design., prototype., solve., build., develop., debug., ship., optimize., scale., do it.')
+        );
+        setMetaEmailText(fresh.meta.email || 'sahilaw502@gmail.com');
+        if (fresh.meta.contact_status) setMetaContactStatusText(fresh.meta.contact_status);
+        if (fresh.meta.location) setMetaLocationText(fresh.meta.location);
+        if (fresh.meta.name) setMetaNameText(fresh.meta.name);
+        if (fresh.meta.introduction) setMetaIntroText(fresh.meta.introduction);
+        else if (fresh.meta.pitch) setMetaIntroText(fresh.meta.pitch);
+        if (fresh.meta.pitch) setMetaPitchText(fresh.meta.pitch);
+        if (fresh.meta.github) setMetaGithubText(fresh.meta.github);
+        if (fresh.meta.linkedin) setMetaLinkedinText(fresh.meta.linkedin);
+        if (fresh.meta.threads) setMetaThreadsText(fresh.meta.threads);
+        if (fresh.meta.x || fresh.meta.twitter) setMetaXText(fresh.meta.x || fresh.meta.twitter);
+      }
+    };
+
     fetch('/api/portfolio-content')
       .then((r) => r.json())
       .then((d) => {
         if (d && d.success && d.content) {
-          const fresh = {
-            about: Array.isArray(d.content.about) ? d.content.about : (ABOUT_PARAGRAPHS || []),
-            experiences: Array.isArray(d.content.experiences) ? d.content.experiences : (EXPERIENCES || []),
-            projects: Array.isArray(d.content.projects) ? d.content.projects : (PROJECTS || []),
-            education: Array.isArray(d.content.education) ? d.content.education : (EDUCATION_ITEMS || []),
-            skills: Array.isArray(d.content.skills) ? d.content.skills : (SKILL_CATEGORIES || []),
-            certifications: Array.isArray(d.content.certifications) ? d.content.certifications : (CERTIFICATIONS || []),
-            achievements: Array.isArray(d.content.achievements) ? d.content.achievements : (ACHIEVEMENTS || []),
-            custom_icons: Array.isArray(d.content.custom_icons) ? d.content.custom_icons : [],
-            meta: d.content.meta || { hero_roles: HERO_ROLES },
-          };
-          setPortfolioContent(fresh);
-          if (Array.isArray(fresh.skills)) {
-            const cleaned = fresh.skills
-              .filter((cat) => cat && (cat.category || '').trim().toLowerCase() !== 'new category')
-              .map((cat) => {
-                const filteredSkills = (cat.skills || []).filter((s) => {
-                  const sName = (typeof s === 'string' ? s : s?.name || '').trim().toLowerCase();
-                  return sName !== 'newskill' && sName !== 'new skill';
-                });
-                return {
-                  ...cat,
-                  skills: filteredSkills,
-                  _rawSkills: filteredSkills.map((s) => (typeof s === 'string' ? s : s?.name || '')).filter(Boolean).join(', '),
-                };
-              });
-            setEditingSkillsList(cleaned);
-          }
-          if (Array.isArray(fresh.about)) setEditingAboutList(fresh.about);
-          if (fresh.meta) {
-            setMetaRolesText(Array.isArray(fresh.meta.hero_roles) ? fresh.meta.hero_roles.join(', ') : '');
-            setMetaEmailText(fresh.meta.email || 'sahilaw502@gmail.com');
-            if (fresh.meta.contact_status) setMetaContactStatusText(fresh.meta.contact_status);
-            if (fresh.meta.location) setMetaLocationText(fresh.meta.location);
-            if (fresh.meta.name) setMetaNameText(fresh.meta.name);
-            if (fresh.meta.pitch) setMetaPitchText(fresh.meta.pitch);
-            if (fresh.meta.github) setMetaGithubText(fresh.meta.github);
-            if (fresh.meta.linkedin) setMetaLinkedinText(fresh.meta.linkedin);
-            if (fresh.meta.threads) setMetaThreadsText(fresh.meta.threads);
-            if (fresh.meta.x || fresh.meta.twitter) setMetaXText(fresh.meta.x || fresh.meta.twitter);
-          }
+          applyFreshPortfolioData(d.content);
+        } else if (isSupabaseConfigured()) {
+          fetchPortfolioDirectFromSupabase().then(applyFreshPortfolioData).catch(console.error);
         }
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.warn('API content fetch failed, attempting direct Supabase query:', err);
+        if (isSupabaseConfigured()) {
+          fetchPortfolioDirectFromSupabase().then(applyFreshPortfolioData).catch(console.error);
+        }
+      });
   }
 
   async function handleLogin(e) {
@@ -1245,6 +1510,7 @@ export default function AdminPage() {
       dataFolder.file('experiences.json', JSON.stringify(portfolioContent.experiences || [], null, 2));
       dataFolder.file('education.json', JSON.stringify(portfolioContent.education || [], null, 2));
       dataFolder.file('skills.json', JSON.stringify(portfolioContent.skills || [], null, 2));
+      dataFolder.file('social_links.json', JSON.stringify(portfolioContent.social_links || [], null, 2));
       dataFolder.file('meta.json', JSON.stringify(portfolioContent.meta || {}, null, 2));
       dataFolder.file('certifications.json', JSON.stringify(portfolioContent.certifications || CERTIFICATIONS, null, 2));
       dataFolder.file('achievements.json', JSON.stringify(portfolioContent.achievements || ACHIEVEMENTS, null, 2));
@@ -1427,7 +1693,11 @@ export default function AdminPage() {
     const target = (portfolioContent.projects || [])[index];
     if (!target) return;
     const confirmTitle = target.title || 'this project';
-    if (!window.confirm(`Are you sure you want to delete ${confirmTitle}? This will permanently remove it from Supabase and the portfolio.`)) return;
+    const isDemo = isDemoItem(target);
+    const confirmMsg = isDemo
+      ? `Delete sample demo project "${confirmTitle}"? This record will be safely removed.`
+      : `Are you sure you want to delete ${confirmTitle}? This will permanently remove it from Supabase and the portfolio.`;
+    if (!window.confirm(confirmMsg)) return;
     const updated = (portfolioContent.projects || []).filter((_, idx) => idx !== index);
     handleSavePortfolioSection('projects', updated, {
       action: 'delete',
@@ -1473,6 +1743,7 @@ export default function AdminPage() {
       github: '',
       linkedin: '',
       x: '',
+      showSkillIcons: true,
       isPublished: true,
     });
     setShowExpModal(true);
@@ -1531,6 +1802,7 @@ export default function AdminPage() {
       github: exp.github || '',
       linkedin: exp.linkedin || '',
       x: exp.x || '',
+      showSkillIcons: exp.showSkillIcons !== false,
       isPublished: exp.isPublished !== false,
     });
     setShowExpModal(true);
@@ -1616,6 +1888,7 @@ export default function AdminPage() {
       github: expForm.github.trim(),
       linkedin: expForm.linkedin.trim(),
       x: expForm.x.trim(),
+      showSkillIcons: expForm.showSkillIcons !== false,
       isPublished: expForm.isPublished !== false,
     };
 
@@ -1642,7 +1915,11 @@ export default function AdminPage() {
     const target = (portfolioContent.experiences || [])[index];
     if (!target) return;
     const confirmName = target.company || target.role || 'this experience';
-    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
+    const isDemo = isDemoItem(target);
+    const confirmMsg = isDemo
+      ? `Delete sample demo experience "${confirmName}"? This record will be safely removed.`
+      : `Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`;
+    if (!window.confirm(confirmMsg)) return;
     const updated = (portfolioContent.experiences || []).filter((_, idx) => idx !== index);
     handleSavePortfolioSection('experiences', updated, {
       action: 'delete',
@@ -1812,7 +2089,11 @@ export default function AdminPage() {
     const target = (portfolioContent.education || [])[index];
     if (!target) return;
     const confirmName = target.institution || target.degree || 'this education entry';
-    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
+    const isDemo = isDemoItem(target);
+    const confirmMsg = isDemo
+      ? `Delete sample demo education "${confirmName}"? This record will be safely removed.`
+      : `Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`;
+    if (!window.confirm(confirmMsg)) return;
     const updated = (portfolioContent.education || []).filter((_, idx) => idx !== index);
     handleSavePortfolioSection('education', updated, {
       action: 'delete',
@@ -1942,7 +2223,11 @@ export default function AdminPage() {
     const target = existingList[index];
     if (!target) return;
     const confirmName = target.title || target.name || `this ${label}`;
-    if (!window.confirm(`Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`)) return;
+    const isDemo = isDemoItem(target);
+    const confirmMsg = isDemo
+      ? `Delete sample demo ${label} "${confirmName}"? This record will be safely removed.`
+      : `Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`;
+    if (!window.confirm(confirmMsg)) return;
 
     const updated = existingList.filter((_, idx) => idx !== index);
     handleSavePortfolioSection(sectionName, updated, {
@@ -2099,7 +2384,9 @@ export default function AdminPage() {
 
   function handleSaveAllAbout(e) {
     e.preventDefault();
-    handleSavePortfolioSection('about', editingAboutList, {
+    const sanitized = sanitizeAdminParagraphs(editingAboutList);
+    setEditingAboutList(sanitized);
+    handleSavePortfolioSection('about', sanitized, {
       action: 'save',
       sectionName: 'About',
       itemTitle: 'Narrative Paragraphs',
@@ -2113,6 +2400,15 @@ export default function AdminPage() {
   function handleDeleteAboutParagraph(index) {
     const updated = editingAboutList.filter((_, idx) => idx !== index);
     setEditingAboutList(updated);
+  }
+
+  function handleMoveAboutParagraph(index, dir) {
+    const target = dir === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= editingAboutList.length) return;
+    const list = [...editingAboutList];
+    const [removed] = list.splice(index, 1);
+    list.splice(target, 0, removed);
+    setEditingAboutList(list);
   }
 
   function insertIconIntoParagraph(paraIdx, iconToken) {
@@ -2152,10 +2448,16 @@ export default function AdminPage() {
       .split(',')
       .map((r) => r.trim())
       .filter(Boolean);
+    const actionWordsArray = metaActionWordsText
+      .split(',')
+      .map((w) => w.trim())
+      .filter(Boolean);
     const updatedMeta = {
       ...(portfolioContent.meta || {}),
       hero_roles: rolesArray,
+      action_words: actionWordsArray.length > 0 ? actionWordsArray : undefined,
       name: metaNameText.trim() || 'Sahil Wani',
+      introduction: (metaIntroText || metaPitchText).trim(),
       pitch: metaPitchText.trim(),
       email: metaEmailText.trim() || 'sahilaw502@gmail.com',
       contact_status: metaContactStatusText.trim() || 'OPEN TO PRODUCT DESIGN ROLES',
@@ -2170,6 +2472,126 @@ export default function AdminPage() {
       action: 'update',
       sectionName: 'Profile Meta',
       itemTitle: 'Roles & Contact Info',
+    });
+  }
+
+  // Social Links Handlers
+  function handleOpenAddSocial() {
+    setEditingSocialIndex(null);
+    const count = portfolioContent.social_links?.length || 0;
+    setSocialForm({
+      id: `social-${Date.now()}`,
+      platform: 'GitHub',
+      label: 'GitHub',
+      url: 'https://github.com/',
+      icon_name: 'github',
+      icon_svg: '',
+      is_published: true,
+      display_order: count,
+      is_demo: false,
+    });
+    setShowSocialModal(true);
+  }
+
+  function handleOpenEditSocial(link, index) {
+    setEditingSocialIndex(index);
+    setSocialForm({
+      id: link.id || `social-${Date.now()}`,
+      platform: link.platform || 'Custom',
+      label: link.label || link.platform || '',
+      url: link.url || '',
+      icon_name: link.icon_name || (link.platform || '').toLowerCase(),
+      icon_svg: link.icon_svg || '',
+      is_published: link.is_published !== false && link.isPublished !== false,
+      display_order: link.display_order ?? index,
+      is_demo: Boolean(link.is_demo || link.isDemo),
+    });
+    setShowSocialModal(true);
+  }
+
+  function handleSaveSocial(e) {
+    e.preventDefault();
+    const url = (socialForm.url || '').trim();
+    if (!url) {
+      alert('Please enter a valid URL for this social link.');
+      return;
+    }
+
+    const updatedItem = {
+      id: socialForm.id || `social-${Date.now()}`,
+      platform: socialForm.platform,
+      label: (socialForm.label || socialForm.platform).trim(),
+      url,
+      icon_name: (socialForm.icon_name || socialForm.platform).toLowerCase(),
+      icon_svg: (socialForm.icon_svg || '').trim(),
+      is_published: Boolean(socialForm.is_published),
+      display_order: Number(socialForm.display_order) || 0,
+      is_demo: Boolean(socialForm.is_demo),
+    };
+
+    let updatedList = [...(portfolioContent.social_links || [])];
+    const isEditing = editingSocialIndex !== null && editingSocialIndex >= 0 && editingSocialIndex < updatedList.length;
+    if (isEditing) {
+      updatedList[editingSocialIndex] = updatedItem;
+    } else {
+      updatedList.push(updatedItem);
+    }
+
+    handleSavePortfolioSection('social_links', updatedList, {
+      action: isEditing ? 'update' : 'create',
+      sectionName: 'Social Links',
+      itemTitle: updatedItem.label || updatedItem.platform,
+    })
+      .then(() => {
+        setShowSocialModal(false);
+      })
+      .catch(() => {});
+  }
+
+  function handleDeleteSocial(index) {
+    const target = (portfolioContent.social_links || [])[index];
+    if (!target) return;
+    const confirmName = target.label || target.platform || 'this social link';
+    const isDemo = isDemoItem(target);
+    const confirmMsg = isDemo
+      ? `Delete sample social link "${confirmName}"? This record will be safely removed.`
+      : `Are you sure you want to delete ${confirmName}? This will permanently remove it from Supabase and the portfolio.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    const updated = (portfolioContent.social_links || []).filter((_, idx) => idx !== index);
+    handleSavePortfolioSection('social_links', updated, {
+      action: 'delete',
+      sectionName: 'Social Links',
+      itemTitle: confirmName,
+      deleteId: target.id,
+    });
+  }
+
+  function handleMoveSocial(index, direction) {
+    const list = [...(portfolioContent.social_links || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    const reordered = list.map((item, idx) => ({ ...item, display_order: idx }));
+    handleSavePortfolioSection('social_links', reordered, {
+      action: 'reorder',
+      sectionName: 'Social Links',
+      itemTitle: temp?.label || temp?.platform || 'Social Link',
+    });
+  }
+
+  function handleTogglePublishSocial(index) {
+    const list = [...(portfolioContent.social_links || [])];
+    const target = list[index];
+    if (!target) return;
+    const isPublished = !(target.is_published !== false && target.isPublished !== false);
+    list[index] = { ...target, is_published: isPublished, isPublished };
+    handleSavePortfolioSection('social_links', list, {
+      action: 'update',
+      sectionName: 'Social Links',
+      itemTitle: target.label || target.platform,
     });
   }
 
@@ -3109,10 +3531,17 @@ export default function AdminPage() {
                 </button>
                 <button
                   type="button"
+                  className={`portfolio-subtab-btn ${contentSubtab === 'social_links' ? 'is-active' : ''}`}
+                  onClick={() => setContentSubtab('social_links')}
+                >
+                  Social Links ({portfolioContent.social_links?.length || 0})
+                </button>
+                <button
+                  type="button"
                   className={`portfolio-subtab-btn ${contentSubtab === 'meta' ? 'is-active' : ''}`}
                   onClick={() => setContentSubtab('meta')}
                 >
-                  Profile & Links
+                  Profile & Meta
                 </button>
               </div>
 
@@ -3155,6 +3584,9 @@ export default function AdminPage() {
                                     <span style={{ marginLeft: '8px', fontSize: '10px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
                                       NOW
                                     </span>
+                                  )}
+                                  {isDemoItem(exp) && (
+                                    <span className="admin-demo-badge">Demo Sample</span>
                                   )}
                                 </div>
                                 <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
@@ -3264,6 +3696,9 @@ export default function AdminPage() {
                                         VIDEO DEMO
                                       </span>
                                     )}
+                                    {isDemoItem(proj) && (
+                                      <span className="admin-demo-badge">Demo Sample</span>
+                                    )}
                                   </div>
                                   <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
                                     {proj.category || 'Project'} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{proj.year || '2026'}</span>
@@ -3363,6 +3798,9 @@ export default function AdminPage() {
                                     <span style={{ marginLeft: '8px', fontSize: '10px', background: 'rgba(56, 189, 248, 0.2)', color: '#38bdf8', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
                                       NOW
                                     </span>
+                                  )}
+                                  {isDemoItem(edu) && (
+                                    <span className="admin-demo-badge">Demo Sample</span>
                                   )}
                                 </div>
                                 <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
@@ -3515,6 +3953,9 @@ export default function AdminPage() {
                                               LINKEDIN PREVIEW
                                             </span>
                                           )}
+                                          {isDemoItem(c) && (
+                                            <span className="admin-demo-badge">Demo Sample</span>
+                                          )}
                                         </div>
                                         <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
                                           {c.issuer} &bull; <span style={{ fontFamily: "'Disket Mono', monospace", fontSize: '11px' }}>{c.issueDate || c.year}</span>
@@ -3616,6 +4057,9 @@ export default function AdminPage() {
                                             <span style={{ fontSize: '10px', background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
                                               PHOTOS
                                             </span>
+                                          )}
+                                          {isDemoItem(a) && (
+                                            <span className="admin-demo-badge">Demo Sample</span>
                                           )}
                                         </div>
                                         <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
@@ -3890,6 +4334,9 @@ export default function AdminPage() {
                           onChange={setNewCustomIconImg}
                           placeholder="Upload image or paste URL..."
                           idPrefix="custom-about-icon"
+                          storageFolder="skills"
+                          slug={slugify(newCustomIconName || 'skill')}
+                          isLogo={true}
                         />
                       </div>
                       <div style={{ alignSelf: 'center', paddingTop: '18px' }}>
@@ -4103,6 +4550,128 @@ export default function AdminPage() {
                 </form>
               )}
 
+              {/* SUBTAB: SOCIAL LINKS */}
+              {contentSubtab === 'social_links' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <div style={{ fontSize: '17px', fontWeight: '800', color: '#ffffff' }}>
+                        Social & Platform Profiles
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '2px' }}>
+                        Dedicated CRUD management for your social handles (GitHub, LinkedIn, Threads, X, Instagram, YouTube, Discord, LeetCode, Kaggle, Website).
+                      </div>
+                    </div>
+                    <button type="button" className="admin-btn admin-btn-accent" onClick={handleOpenAddSocial}>
+                      + Add Social Link
+                    </button>
+                  </div>
+
+                  <div className="portfolio-items-list">
+                    {(!portfolioContent.social_links || portfolioContent.social_links.length === 0) ? (
+                      <div className="admin-card" style={{ textAlign: 'center', padding: '36px', color: '#6b7280' }}>
+                        No social links configured yet. Click "+ Add Social Link" to configure your verified profiles.
+                      </div>
+                    ) : (
+                      portfolioContent.social_links.map((link, idx) => (
+                        <div key={link.id || idx} className="portfolio-item-card">
+                          <div className="portfolio-item-header">
+                            <div className="portfolio-item-title-col">
+                              <div
+                                className="portfolio-logo-thumb"
+                                style={{
+                                  width: '48px',
+                                  height: '48px',
+                                  borderRadius: '14px',
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                {getSocialIconSvg(link.platform || link.icon_name, 22)}
+                              </div>
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: '16px', fontWeight: '700', color: '#ffffff' }}>
+                                    {link.label || link.platform}
+                                  </span>
+                                  <span style={{ fontSize: '11px', fontFamily: "'Disket Mono', monospace", color: '#38bdf8', background: 'rgba(56, 189, 248, 0.12)', padding: '2px 7px', borderRadius: '4px' }}>
+                                    {link.platform}
+                                  </span>
+                                  {isDemoItem(link) && (
+                                    <span className="admin-demo-badge">Demo Sample</span>
+                                  )}
+                                  {(link.is_published === false || link.isPublished === false) && (
+                                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', padding: '2px 6px', borderRadius: '4px', fontFamily: "'Disket Mono', monospace" }}>
+                                      DRAFT
+                                    </span>
+                                  )}
+                                </div>
+                                <div style={{ fontSize: '13px', color: '#9ca3af', marginTop: '3px' }}>
+                                  <a href={link.url} target="_blank" rel="noopener noreferrer" style={{ color: '#9ca3af', textDecoration: 'none' }}>
+                                    {link.url}
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveSocial(idx, 'up')}
+                                disabled={idx === 0}
+                                title="Move Up"
+                                aria-label="Move link up"
+                              >
+                                &uarr;
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleMoveSocial(idx, 'down')}
+                                disabled={idx === portfolioContent.social_links.length - 1}
+                                title="Move Down"
+                                aria-label="Move link down"
+                              >
+                                &darr;
+                              </button>
+                              <button
+                                type="button"
+                                className={`admin-btn ${(link.is_published !== false && link.isPublished !== false) ? 'admin-btn-secondary' : 'admin-btn-accent'}`}
+                                style={{ padding: '6px 10px', fontSize: '11.5px' }}
+                                onClick={() => handleTogglePublishSocial(idx)}
+                              >
+                                {(link.is_published !== false && link.isPublished !== false) ? 'Unpublish' : 'Publish'}
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-secondary"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
+                                onClick={() => handleOpenEditSocial(link, idx)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-btn admin-btn-danger"
+                                style={{ padding: '6px 12px', fontSize: '12px' }}
+                                onClick={() => handleDeleteSocial(idx)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* SUBTAB 5: PROFILE, METADATA & LINKS */}
               {contentSubtab === 'meta' && (
                 <form onSubmit={handleSaveMetaRoles}>
@@ -4156,6 +4725,20 @@ export default function AdminPage() {
                     </div>
 
                     <div className="admin-field-group" style={{ marginBottom: '16px' }}>
+                      <label className="admin-field-label">Action Words Wheel List (Comma-Separated)</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={metaActionWordsText}
+                        onChange={(e) => setMetaActionWordsText(e.target.value)}
+                        placeholder="design., prototype., solve., build., develop., debug., ship., optimize., scale., do it."
+                      />
+                      <span className="admin-field-helper">
+                        These action words animate through the 5-slot vertical wheel in the &quot;I can ...&quot; section on the home page.
+                      </span>
+                    </div>
+
+                    <div className="admin-field-group" style={{ marginBottom: '16px' }}>
                       <label className="admin-field-label">Hero Headline Pitch Statement</label>
                       <textarea
                         className="admin-textarea"
@@ -4166,6 +4749,20 @@ export default function AdminPage() {
                       />
                       <span className="admin-field-helper">
                         The primary introductory narrative displayed directly beneath your name on the home page.
+                      </span>
+                    </div>
+
+                    <div className="admin-field-group" style={{ marginBottom: '16px' }}>
+                      <label className="admin-field-label">Introduction Overview (profiles.introduction)</label>
+                      <textarea
+                        className="admin-textarea"
+                        rows={3}
+                        value={metaIntroText}
+                        onChange={(e) => setMetaIntroText(e.target.value)}
+                        placeholder="Crafting sleek digital experiences, experimenting with code, design, and ideas that feel right."
+                      />
+                      <span className="admin-field-helper">
+                        Persisted directly into profiles.introduction in Supabase. Displays as the primary profile introduction.
                       </span>
                     </div>
 
@@ -5097,8 +5694,9 @@ export default function AdminPage() {
                 onChange={(img) => setProjectForm({ ...projectForm, image: img })}
                 placeholder="/projects/my-project.jpg or upload below"
                 idPrefix="project-cover"
-                helperText="Stored in Supabase Storage under portfolio-assets/projects"
-                storageFolder="projects"
+                helperText="Stored in Supabase Storage under projects/project-banner/. Auto-replaces old file."
+                storageFolder="projects/project-banner"
+                slug={slugify(projectForm.title || 'project')}
               />
 
               <AdminVideoUploadField
@@ -5107,8 +5705,9 @@ export default function AdminPage() {
                 onChange={(vid) => setProjectForm({ ...projectForm, videoUrl: vid })}
                 placeholder="Paste direct MP4/WebM URL or upload to Supabase..."
                 idPrefix="project-video"
-                helperText="Stored in Supabase Storage under portfolio-assets/videos. Visitors can play this video directly in the project details modal."
-                storageFolder="videos"
+                helperText="Stored in Supabase Storage under projects/project-video/. Visitors can play this video directly in the project details modal."
+                storageFolder="projects/project-video"
+                slug={slugify(projectForm.title || 'project')}
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
@@ -5309,6 +5908,17 @@ export default function AdminPage() {
                     {expForm.isPublished !== false ? 'Published (Live on portfolio)' : 'Draft (Hidden from public)'}
                   </span>
                 </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                  <input
+                    type="checkbox"
+                    checked={expForm.showSkillIcons !== false}
+                    onChange={(e) => setExpForm({ ...expForm, showSkillIcons: e.target.checked })}
+                  />
+                  <span style={{ fontWeight: '600', color: expForm.showSkillIcons !== false ? '#34d399' : '#9ca3af' }}>
+                    Show tech icons beside skills on experience cards
+                  </span>
+                </label>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }} className="admin-modal-grid">
@@ -5360,9 +5970,10 @@ export default function AdminPage() {
                 onChange={(val) => setExpForm({ ...expForm, logo: val, image: val })}
                 placeholder="Paste logo URL or upload image file..."
                 idPrefix="exp-logo"
-                helperText="Clean rounded-square logo (14px border radius, cover, no background box). Uploads to Supabase Storage under portfolio-assets/experiences"
+                helperText="Clean rounded-square logo (14px border radius, no border). Uploads to Supabase Storage under logos/. Auto-replaces old file."
                 isLogo={true}
-                storageFolder="experiences"
+                storageFolder="logos"
+                slug={slugify(expForm.company || 'company')}
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="admin-modal-grid">
@@ -5650,9 +6261,11 @@ export default function AdminPage() {
                 onChange={(val) => setEduForm({ ...eduForm, logo: val, image: val })}
                 placeholder="Paste logo URL or upload image file..."
                 idPrefix="edu-logo"
-                helperText="Clean rounded-square logo (12px border radius, cover, no background box). Uploads to Supabase Storage under portfolio-assets/education"
+                helperText="Clean rounded-square logo (14px border radius, no border). Uploads to Supabase Storage under education/college-logos/. Re-upload requires explicit deletion."
                 isLogo={true}
-                storageFolder="education"
+                storageFolder="education/college-logos"
+                slug={slugify(eduForm.institution || eduForm.degree || 'edu')}
+                requireExplicitDelete={true}
               />
 
               <div>
@@ -5881,8 +6494,9 @@ export default function AdminPage() {
                 onChange={(val) => setCertForm({ ...certForm, image: val })}
                 placeholder="Upload logo/badge image or paste URL..."
                 idPrefix="cert-logo"
-                helperText="Square/circle logo displayed on the left side of the row."
-                storageFolder="logos"
+                helperText="Square/circle logo displayed on the left side of the row. Single upload, auto-replaces existing file."
+                storageFolder={certModalType === 'certification' ? 'certifications/logos' : 'achievements/logos'}
+                slug={slugify(certForm.title || certForm.issuer || 'cert')}
                 isLogo={true}
               />
 
@@ -5893,31 +6507,21 @@ export default function AdminPage() {
                   onChange={(val) => setCertForm({ ...certForm, certificateImage: val })}
                   placeholder="Upload certificate image/PDF render or paste URL..."
                   idPrefix="cert-doc"
-                  helperText="Stored in Supabase Storage under portfolio-assets/certifications. Displays a small LinkedIn-style verified credential card above the description."
-                  storageFolder="certifications"
+                  helperText="Stored in Supabase Storage under portfolio-assets/certifications/certificates/. Displays verified credential card."
+                  storageFolder="certifications/certificates"
+                  slug={slugify(certForm.title || 'cert')}
                 />
               ) : (
-                <>
-                  <AdminImageUploadField
-                    label="Award / Event Photo (Shown as photos display)"
-                    value={certForm.certificateImage}
-                    onChange={(val) => setCertForm({ ...certForm, certificateImage: val })}
-                    placeholder="Upload event ceremony, podium, or trophy photo..."
-                    idPrefix="achieve-photo"
-                    helperText="Stored in Supabase Storage under portfolio-assets/achievements. Displays as event photo thumbnail in the achievement row."
-                    storageFolder="achievements"
-                  />
-                  <div>
-                    <label className="admin-field-label">Additional Photo URLs (Optional, comma-separated)</label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={certForm.photos}
-                      onChange={(e) => setCertForm({ ...certForm, photos: e.target.value })}
-                      placeholder="https://...photo1.jpg, https://...photo2.jpg"
-                    />
-                  </div>
-                </>
+                <AdminMultiImageUploadField
+                  label="Award / Event Photos (Multi-Upload Allowed)"
+                  values={certForm.photos ? (Array.isArray(certForm.photos) ? certForm.photos : certForm.photos.split(',').map((s) => s.trim()).filter(Boolean)) : (certForm.certificateImage ? [certForm.certificateImage] : [])}
+                  onChange={(vals) => setCertForm({ ...certForm, photos: vals, certificateImage: vals[0] || '' })}
+                  placeholder="Upload event ceremony, podium, or trophy photos..."
+                  idPrefix="achieve-photos"
+                  helperText="Stored in Supabase Storage under portfolio-assets/achievements/photos/<slug>/. Multiple photos organized by achievement."
+                  storageFolder="achievements/photos"
+                  slug={slugify(certForm.title || 'achieve')}
+                />
               )}
 
               <div>
@@ -5948,11 +6552,11 @@ export default function AdminPage() {
                 <div className="admin-preview-wrapper" style={{ padding: '14px 16px', background: 'rgba(255, 255, 255, 0.02)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: 1 }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, padding: '4px', boxSizing: 'border-box' }}>
                         {certForm.image ? (
-                          <img src={certForm.image} alt="Logo" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                          <img src={certForm.image} alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '7px', objectFit: 'contain' }} />
                         ) : (
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#60a5fa" strokeWidth="2">
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#60a5fa" strokeWidth="2">
                             <circle cx="12" cy="8" r="7" />
                             <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
                           </svg>
@@ -6022,6 +6626,123 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL: ADD / EDIT SOCIAL LINK */}
+      {showSocialModal && (
+        <div className="admin-modal-backdrop" onClick={() => setShowSocialModal(false)}>
+          <div className="admin-modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+            <div className="admin-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>
+                {editingSocialIndex !== null ? 'Edit Social Link' : 'Add New Social Link'}
+              </div>
+              <button type="button" className="admin-btn admin-btn-secondary" style={{ padding: '4px 10px' }} onClick={() => setShowSocialModal(false)}>
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSocial} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="admin-field-group">
+                <label className="admin-field-label">Platform Preset</label>
+                <select
+                  className="admin-input"
+                  value={socialForm.platform}
+                  onChange={(e) => {
+                    const selectedPlatform = e.target.value;
+                    const preset = SOCIAL_PRESETS.find((p) => p.platform === selectedPlatform);
+                    setSocialForm({
+                      ...socialForm,
+                      platform: selectedPlatform,
+                      label: preset?.label || selectedPlatform,
+                      url: socialForm.url || preset?.defaultUrl || '',
+                      icon_name: preset?.icon || selectedPlatform.toLowerCase(),
+                    });
+                  }}
+                >
+                  {SOCIAL_PRESETS.map((p) => (
+                    <option key={p.platform} value={p.platform}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="admin-field-group">
+                <label className="admin-field-label">Display Label</label>
+                <input
+                  type="text"
+                  className="admin-input"
+                  value={socialForm.label}
+                  onChange={(e) => setSocialForm({ ...socialForm, label: e.target.value })}
+                  placeholder="e.g. GitHub"
+                  required
+                />
+              </div>
+
+              <div className="admin-field-group">
+                <label className="admin-field-label">Profile / Destination URL</label>
+                <input
+                  type="url"
+                  className="admin-input"
+                  value={socialForm.url}
+                  onChange={(e) => setSocialForm({ ...socialForm, url: e.target.value })}
+                  placeholder="https://..."
+                  required
+                />
+              </div>
+
+              {socialForm.platform === 'Custom' && (
+                <div className="admin-field-group">
+                  <label className="admin-field-label">Custom SVG Markup (Optional)</label>
+                  <textarea
+                    className="admin-textarea"
+                    rows={3}
+                    value={socialForm.icon_svg}
+                    onChange={(e) => setSocialForm({ ...socialForm, icon_svg: e.target.value })}
+                    placeholder="<svg viewBox='0 0 24 24'>...</svg>"
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="checkbox"
+                  id="social-is-published"
+                  checked={socialForm.is_published}
+                  onChange={(e) => setSocialForm({ ...socialForm, is_published: e.target.checked })}
+                />
+                <label htmlFor="social-is-published" className="admin-field-label" style={{ margin: 0, cursor: 'pointer' }}>
+                  Visible and active on live portfolio
+                </label>
+              </div>
+
+              {/* Live preview */}
+              <div style={{ background: 'rgba(255, 255, 255, 0.03)', padding: '12px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {getSocialIconSvg(socialForm.platform || socialForm.icon_name, 20)}
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>
+                    {socialForm.label || socialForm.platform}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#9ca3af' }}>
+                    {socialForm.url || 'https://...'}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '8px' }}>
+                <button type="button" className="admin-btn admin-btn-secondary" onClick={() => setShowSocialModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary">
+                  Save Social Link
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: ADD CUSTOM SKILL WITH LOGO / ONLINE ICON LIBRARY */}
       {customSkillModal.isOpen && (() => {
         const query = (customSkillModal.filterQuery || '').toLowerCase().trim();

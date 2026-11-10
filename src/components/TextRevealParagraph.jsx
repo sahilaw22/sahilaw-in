@@ -39,42 +39,73 @@ const TECH_ICON_MAP = {
 function tokenizeParagraph(para, customIconsMap = {}) {
   if (!para) return [];
 
-  // Convert explicit {{ICON_...}} or {{icon:...}} to uniform tokens
-  let preprocessed = para.replace(/\{\{(?:ICON_|icon:)([A-Za-z0-9_-]+)\}\}/gi, (match, iconName) => {
-    return `:::ICON:${iconName.toLowerCase()}:::`;
-  });
+  // Strip all corrupted tokens, legacy tags, and repeated token artifacts
+  let cleaned = String(para)
+    .replace(/(:::ICON:[^:]*:::)+/gi, '')
+    .replace(/\{\{(?:ICON_|icon:)[A-Za-z0-9_-]+\}\}/gi, '')
+    .replace(/\b([a-z0-9_-]+):::\1:::/gi, '')
+    .replace(/:::[^:]*:::/g, '')
+    .replace(/\bith\b/g, 'with')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
 
-  // Detect tech keywords and place icon token before the tech name if not already preceded by an icon
-  const techRegex = /\b(Tailwind(?:\s+CSS)?|Next\.?js|TypeScript|Flutter|React|Figma|Python)\b([.,!?;:]*)/gi;
-  preprocessed = preprocessed.replace(techRegex, (match, techName, punct) => {
-    const key = techName.toLowerCase();
-    const iconKey = TECH_ICON_MAP[key] || key;
-    return `:::ICON:${iconKey}::: ${techName}${punct || ''}`;
-  });
-
-  // Also support custom uploaded icons mentioned in text by name
-  Object.keys(customIconsMap).forEach((customName) => {
-    if (!customName || customName.length < 2) return;
-    const escaped = customName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const customRegex = new RegExp(`(?<!:::ICON:[^:]*:::\\s*)\\b(${escaped})\\b([.,!?;:]*)`, 'gi');
-    preprocessed = preprocessed.replace(customRegex, (match, word, punct) => {
-      return `:::ICON:${customName.toLowerCase()}::: ${word}${punct || ''}`;
-    });
-  });
-
-  const words = preprocessed.split(/\s+/).filter(Boolean);
+  const words = cleaned.split(/\s+/).filter(Boolean);
   const tokens = [];
 
-  for (const word of words) {
-    const iconMatch = word.match(/^:::ICON:([a-z0-9_-]+):::$/i);
-    if (iconMatch) {
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    // Check two-word combo (e.g. "Tailwind CSS")
+    const nextWord = words[i + 1] || '';
+    const twoWordCandidate = `${word} ${nextWord}`.replace(/[.,!?;:]*$/, '');
+    const twoWordMatch = twoWordCandidate.match(/^(Tailwind\s+CSS)$/i);
+
+    if (twoWordMatch) {
+      const punct = nextWord.match(/[.,!?;:]*$/)?.[0] || '';
       tokens.push({
         isIcon: true,
-        iconName: iconMatch[1].toLowerCase(),
+        iconName: 'tailwind',
       });
-    } else {
-      tokens.push({ isIcon: false, text: word });
+      tokens.push({
+        isIcon: false,
+        text: 'Tailwind',
+      });
+      tokens.push({
+        isIcon: false,
+        text: `CSS${punct}`,
+      });
+      i++;
+      continue;
     }
+
+    // Check single-word tech keywords
+    const match = word.match(/^([A-Za-z0-9.]+)([.,!?;:]*)$/);
+    if (match) {
+      const core = match[1];
+      const punct = match[2];
+      const lower = core.toLowerCase();
+
+      // Check if custom or standard tech icon
+      const customSrc = customIconsMap[lower];
+      const standardIcon = TECH_ICON_MAP[lower];
+
+      if (standardIcon || customSrc) {
+        tokens.push({
+          isIcon: true,
+          iconName: standardIcon || lower,
+          customSrc,
+        });
+        tokens.push({
+          isIcon: false,
+          text: `${core}${punct}`,
+        });
+        continue;
+      }
+    }
+
+    tokens.push({
+      isIcon: false,
+      text: word.replace(/\*\*/g, ''),
+    });
   }
 
   return tokens;
@@ -110,10 +141,11 @@ export default function TextRevealParagraph({ paragraphs }) {
     const words = Array.from(el.querySelectorAll('.tr-word'));
     if (!words.length) return undefined;
 
-    words.forEach((w) => {
-      w.style.opacity = '0.28';
-      const s = w.querySelector('.tr-word-text');
-      if (s) s.style.opacity = '0.28';
+    // Reset styles
+    words.forEach((word) => {
+      word.style.opacity = '0.28';
+      const wordText = word.querySelector('.tr-word-text');
+      if (wordText) wordText.style.opacity = '0.28';
     });
 
     const st = ScrollTrigger.create({

@@ -1,0 +1,272 @@
+@import url('https://fonts.googleapis.com/css?family=Pathway+Gothic+One');
+
+/* ==========================================================================
+   Education Section: Minimal Transparent Panel Timeline & Card
+   ========================================================================== */
+
+.portfolio-education-section {
+  position: relative;
+  width: 100%;
+  padding: 3.5rem 1.25rem 4rem;
+  background: transparent !important;
+  color: #ededed;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.edu-expert-wrap {
+  width: 100%;
+  max-width: 820px;
+  margin: 1.25rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Transparent Panel Timeline (Static Equal Panels, Minimal Zoom-in on Hover)
+   ========================================================================== */
+
+.edu-panel-timeline {
+  display: flex;
+  width: 100%;
+  height: 52px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  position: relative;
+  box-sizing: border-box;
+  margin-bottom: 1.6rem;
+}
+
+/* Each Panel Item: Sits equally without width/flex expansion */
+.edu-tl-item {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 0;
+  transform: translate3d(0, 0, 0);
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Year Show Up-Down Line Style:
+   - Original Pathway Gothic One font with clean 2px lines above and below
+   - Compact proportion for both screens
+   - Minimal zoom-in animation on hover
+   ========================================================================== */
+
+.edu-tl-year {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  border-top: 2px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.45);
+  padding: 8px 4px;
+  line-height: 1;
+  transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(1);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.edu-tl-year p,
+.edu-tl-year-text {
+  font-family: 'Pathway Gothic One', 'Space Grotesk', Helvetica Neue, Helvetica, Arial, sans-serif !important;
+  font-size: 1.55rem !important;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.02em !important;
+  transition: color 0.3s ease;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Minimal Zoom In Animation on Hover */
+.edu-tl-item:hover .edu-tl-year {
+  transform: scale(1.08);
+}
+
+/* Active Panel: Pure White Text & Grey 2px Lines */
+.edu-tl-item.is-active .edu-tl-year {
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.edu-tl-item.is-active .edu-tl-year-text {
+  color: #ffffff;
+}
+
+/* Inactive Panel: Dull White / Grey Text & Subdued Grey Lines */
+.edu-tl-item.is-inactive .edu-tl-year {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.edu-tl-item.is-inactive .edu-tl-year-text {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Inactive Panel on Hover: Brightens Line & Text while Zooming In */
+.edu-tl-item.is-inactive:hover .edu-tl-year {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.edu-tl-item.is-inactive:hover .edu-tl-year-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ==========================================================================
+   HR Divider Line: Exactly like Project All Page
+   ========================================================================== */
+
+.edu-divider-wrap {
+  width: 100%;
+  margin: 0.5rem 0 1.25rem 0;
+  padding: 0 0.5rem;
+  box-sizing: border-box;
+}
+
+.edu-divider-line {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.1) 15%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.1) 85%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+/* ==========================================================================
+   Bottom Card: Appears on Click with Smooth Transition
+   ========================================================================== */
+
+.edu-minimal-display-wrap {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  animation: eduCardAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes eduCardAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.edu-minimal-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.edu-minimal-item .timeline-logo-col {
+  padding-top: 2px;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.edu-minimal-item .timeline-logo-node {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.edu-minimal-item .timeline-content-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.edu-card-period-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+   Mobile Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .edu-expert-wrap {
+    gap: 0.65rem;
+  }
+
+  .edu-panel-timeline {
+    height: 44px;
+  }
+
+  .edu-tl-year {
+    padding: 6px 4px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+  }
+
+  .edu-tl-year p,
+  .edu-tl-year-text {
+    font-size: 1.35rem !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .edu-tl-item:hover .edu-tl-year {
+    transform: scale(1.06);
+  }
+
+  .edu-divider-wrap {
+    margin: 0.25rem 0 1rem 0;
+    padding: 0 0.25rem;
+  }
+
+  .edu-minimal-item {
+    gap: 0.9rem;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .exp-top-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.35rem !important;
+  }
+
+  .edu-card-period-wrap {
+    margin-top: 0.2rem !important;
+    align-self: flex-start !important;
+  }
+}

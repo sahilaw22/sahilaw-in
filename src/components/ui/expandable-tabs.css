@@ -5,6 +5,7 @@
   position: fixed;
   left: 0;
   right: 0;
+  top: auto;
   bottom: 1.75rem;
   display: flex;
   justify-content: center;
@@ -143,7 +144,7 @@ body[data-preloader-active="true"] .expandable-tabs-wrapper {
 /* Mobile view: top docked floating pill */
 @media screen and (max-width: 920px) {
   .expandable-tabs-wrapper {
-    top: max(0.85rem, env(safe-area-inset-top, 0.85rem));
+    top: max(0.85rem, env(safe-area-inset-top, 0.85rem)) !important;
     bottom: auto !important;
     padding: 0 0.75rem;
   }

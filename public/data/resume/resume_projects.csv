@@ -1,0 +1,4 @@
+id,title,tech,period,description,bullets
+"proj-1","Sahil Portfolio","React, GSAP, Web Audio API","2026","High-performance interactive design engineering portfolio with fluid animations and procedural sound feedback.","Built a high-performance interactive portfolio with fluid animations and custom sound synthesis.|Hand-crafted microinteractions, draggable physics cards, and responsive UI components."
+"proj-2","ConnectKit Theme and Web3 UI","React, TypeScript, Figma","2025","Modular wallet connection flows and state management interfaces.","Designed and built modular wallet connection flows and state management interfaces.|Optimized responsive layouts and dark-mode styling tokens."
+

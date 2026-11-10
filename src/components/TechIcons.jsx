@@ -211,6 +211,58 @@ export function TechIcon({ name, size = 14 }) {
     );
   }
 
+  if (norm.includes('bootstrap')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#7952B3">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.2 14.5H9.5V7.5h3.6c1.6 0 2.7.9 2.7 2.2 0 .9-.5 1.6-1.3 1.9 1.1.3 1.8 1.1 1.8 2.2 0 1.6-1.3 2.7-3.1 2.7zm-.6-7.8h-1.7v2.2h1.7c.7 0 1.2-.4 1.2-1.1 0-.7-.5-1.1-1.2-1.1zm.2 3.6h-1.9v2.4h1.9c.8 0 1.4-.4 1.4-1.2 0-.8-.6-1.2-1.4-1.2z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('jquery')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#0769AD">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11.2c-.8 2.2-2.7 3.8-5 3.8-2.9 0-5.3-2.3-5.3-5.2 0-2.8 2.2-5 5-5.2 1.4 0 2.7.5 3.6 1.4l-1.3 1.3c-.6-.6-1.4-.9-2.3-.9-1.9 0-3.4 1.5-3.4 3.4s1.5 3.4 3.4 3.4c1.3 0 2.3-.6 2.8-1.5H12v-1.8h5v1.7z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('vercel')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#fff">
+        <path d="M12 3L22 20.5H2L12 3Z" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('canva')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#00C4CC">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 7c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z" fill="#fff" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('reddit')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="#FF4500">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M16.5 13.5c0-.6-.4-1-1-1-.2 0-.4.1-.6.2-1-.7-2.3-1.2-3.8-1.2l.6-3 2 .4c0 .6.4 1 1 1s1-.4 1-1-.4-1-1-1c-.4 0-.8.3-.9.7l-2.3-.5c-.2 0-.3.1-.4.3l-.8 3.7c-1.5 0-2.8.5-3.8 1.2-.2-.1-.4-.2-.6-.2-.6 0-1 .4-1 1 0 .4.2.8.5.9-.1.3-.1.6-.1.9 0 2 2.3 3.6 5.2 3.6s5.2-1.6 5.2-3.6c0-.3 0-.6-.1-.9.3-.1.5-.5.5-.9zm-6.7.5c.4 0 .7.3.7.7s-.3.7-.7.7-.7-.3-.7-.7.3-.7.7-.7zm4.4 2.5c-.7.6-1.6.8-2.2.8s-1.5-.2-2.2-.8c-.1-.1-.1-.3 0-.4.1-.1.3-.1.4 0 .5.5 1.2.6 1.8.6s1.3-.1 1.8-.6c.1-.1.3-.1.4 0 .1.1.1.3 0 .4zm-.2-1.8c-.4 0-.7-.3-.7-.7s.3-.7.7-.7.7.3.7.7-.3.7-.7.7z" fill="#fff" />
+      </svg>
+    );
+  }
+
+  if (norm.includes('analytics') || norm.includes('research') || norm.includes('strategy') || norm.includes('growth')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"></line>
+        <line x1="12" y1="20" x2="12" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="14"></line>
+      </svg>
+    );
+  }
+
   // Default fallback code tag icon
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

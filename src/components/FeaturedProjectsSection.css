@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech&family=Share:wght@400;700&display=swap');
+
 /* Featured projects cascading scroll stack deck */
 
 .portfolio-featured-projects-section {
@@ -24,19 +26,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
 .featured-projects-title {
-  font-family: 'Space Grotesk', 'Outfit', -apple-system, sans-serif;
-  font-size: clamp(1.25rem, 2.6vw, 1.65rem);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-family: 'Share Tech', 'Share', -apple-system, sans-serif !important;
+  font-size: clamp(1.85rem, 3.8vw, 2.5rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
   color: #ffffff !important;
-  margin: 0 0 0.85rem 0;
-  line-height: 1.25;
+  margin: 0 0 1.1rem 0;
+  line-height: 1.15;
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .featured-projects-title {
+    font-size: clamp(1.55rem, 5.5vw, 1.95rem) !important;
+    margin-bottom: 0.75rem;
+  }
 }
 
 /* Card Styling: Exact Dimensions and Tokens Matching Project Pages */

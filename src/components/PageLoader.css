@@ -66,19 +66,23 @@ body[data-preloader-active="true"] .portfolio-scroll-pills-nav {
 
 @media (max-width: 768px) {
   .page-loader-animation-wrap {
-    max-width: 360px;
-    padding: 1rem;
+    max-width: 90vw;
+    padding: 1.5rem;
   }
   .page-loader-lottie {
-    width: 170px !important;
-    height: 284px !important;
+    width: min(72vw, 240px) !important;
+    height: calc(min(72vw, 240px) * 1.66) !important;
   }
 }
 
 @media (max-width: 480px) {
+  .page-loader-animation-wrap {
+    max-width: 92vw;
+    padding: 1rem;
+  }
   .page-loader-lottie {
-    width: 160px !important;
-    height: 268px !important;
+    width: min(76vw, 240px) !important;
+    height: calc(min(76vw, 240px) * 1.66) !important;
   }
 }
 

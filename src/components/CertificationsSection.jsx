@@ -6,23 +6,6 @@ import './CertificationsSection.css';
 
 const INITIAL_LIMIT = 4;
 
-function getHoverPosition(rect) {
-  if (!rect || typeof window === 'undefined') return { top: 0, left: 0 };
-  const approxWidth = 420;
-  const approxHeight = 280;
-  const padding = 16;
-
-  const centerX = rect.left + rect.width / 2;
-  const left = Math.max(padding, Math.min(centerX - approxWidth / 2, window.innerWidth - approxWidth - padding));
-
-  const spaceAbove = rect.top >= approxHeight + padding;
-  const top = spaceAbove
-    ? rect.top - approxHeight - 12
-    : Math.min(rect.bottom + 12, window.innerHeight - approxHeight - padding);
-
-  return { top, left };
-}
-
 function renderCertIcon(item) {
   const logoSrc = item.image || item.logo;
   if (typeof logoSrc === 'string' && (logoSrc.startsWith('data:') || logoSrc.startsWith('http') || logoSrc.startsWith('/'))) {
@@ -31,7 +14,7 @@ function renderCertIcon(item) {
         src={logoSrc}
         alt=""
         aria-hidden="true"
-        style={{ width: '22px', height: '22px', objectFit: 'contain', borderRadius: '4px' }}
+        style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '7px' }}
       />
     );
   }
@@ -123,6 +106,23 @@ function renderCertIcon(item) {
       <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
     </svg>
   );
+}
+
+function getHoverPosition(rect) {
+  if (!rect || typeof window === 'undefined') return { top: 0, left: 0 };
+  const approxWidth = 420;
+  const approxHeight = 280;
+  const padding = 16;
+
+  const centerX = rect.left + rect.width / 2;
+  const left = Math.max(padding, Math.min(centerX - approxWidth / 2, window.innerWidth - approxWidth - padding));
+
+  const spaceAbove = rect.top >= approxHeight + padding;
+  const top = spaceAbove
+    ? rect.top - approxHeight - 12
+    : Math.min(rect.bottom + 12, window.innerHeight - approxHeight - padding);
+
+  return { top, left };
 }
 
 /**
@@ -278,14 +278,22 @@ export default function CertificationsSection({ play }) {
         <div className="certifications-clean-list" role="tabpanel" aria-label={activeTab}>
           {visibleItems.map((item, idx) => {
             const certImg = activeTab === 'certifications'
-              ? (item.certificateImage || item.certificate_image_url || (item.image && typeof item.image === 'string' && (item.image.includes('cert') || item.image.includes('supabase.co')) ? item.image : null))
+              ? ((item.certificateImage && typeof item.certificateImage === 'string' && item.certificateImage.trim() && !item.certificateImage.includes('unsplash.com') && !item.certificateImage.includes('placeholder'))
+                  ? item.certificateImage.trim()
+                  : ((item.certificate_image_url && typeof item.certificate_image_url === 'string' && item.certificate_image_url.trim() && !item.certificate_image_url.includes('unsplash.com') && !item.certificate_image_url.includes('placeholder'))
+                      ? item.certificate_image_url.trim()
+                      : null))
               : null;
-            const photos = activeTab === 'achievements'
+            const rawPhotos = activeTab === 'achievements'
               ? (Array.isArray(item.photos) && item.photos.length > 0
                   ? item.photos
-                  : (item.photo || item.certificateImage || (item.image && typeof item.image === 'string' && item.image.includes('supabase.co')) ? [item.photo || item.certificateImage || item.image].filter(Boolean) : []))
+                  : ((item.certificateImage && typeof item.certificateImage === 'string' && item.certificateImage.trim()) ||
+                     (item.certificate_image_url && typeof item.certificate_image_url === 'string' && item.certificate_image_url.trim()))
+                  ? [item.certificateImage || item.certificate_image_url]
+                  : [])
               : [];
-            const images = activeTab === 'certifications' ? (certImg ? [certImg] : []) : photos.filter(Boolean);
+            const photos = rawPhotos.filter((p) => p && typeof p === 'string' && !p.includes('unsplash.com') && !p.includes('placeholder'));
+            const images = activeTab === 'certifications' ? (certImg ? [certImg] : []) : photos;
             const hasMedia = images.length > 0;
             const issueDateDisplay = activeTab === 'certifications' ? (item.issueDate || item.year) : item.year;
 
@@ -297,7 +305,6 @@ export default function CertificationsSection({ play }) {
                 rel={item.link ? 'noopener noreferrer' : undefined}
                 className="cert-clean-row cursor-target"
                 data-cursor-label="Verify"
-                title={`View ${item.title}`}
                 onClick={() => play?.('click')}
               >
                 {/* Header Row: Left is Icon in its old location + Title & Issuer; Right is Date & Link Arrow */}
@@ -343,8 +350,6 @@ export default function CertificationsSection({ play }) {
                         role="button"
                         tabIndex={0}
                         className="cert-preview-btn-thumb cursor-target"
-                        data-cursor-label="Preview"
-                        title="Click to view full preview"
                         onClick={(e) => handleOpenPreview(e, item, images, iIdx)}
                         onMouseEnter={(e) => handleThumbMouseEnter(e, item, images, iIdx)}
                         onMouseLeave={handleThumbMouseLeave}
@@ -356,7 +361,7 @@ export default function CertificationsSection({ play }) {
                       >
                         <img
                           src={imgUrl}
-                          alt={`${item.title} ${images.length > 1 ? `Photo ${iIdx + 1}` : 'Certificate'}`}
+                          alt=""
                           onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }}
                         />
                       </div>
@@ -405,7 +410,7 @@ export default function CertificationsSection({ play }) {
         )}
       </div>
 
-      {/* Desktop Hover Floating Preview: ONLY image in full dimension without any border */}
+      {/* Desktop Hover Floating Preview: ONLY photo preview without any text */}
       {hoverPreview && typeof document !== 'undefined' && createPortal(
         <div
           className="cert-hover-preview-card"

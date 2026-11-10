@@ -46,9 +46,23 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   const [activeSlug, setActiveSlug] = useState('about');
   const [hoveredSlug, setHoveredSlug] = useState(null);
 
-  // Mobile notch visibility: hidden by default, visible during scrolling, auto-hides after 1s idle
-  const [isMobileVisible, setIsMobileVisible] = useState(false);
-  const mobileHideTimerRef = useRef(null);
+  // Mobile notch visibility: auto-hides after 1.5s idle when scrolling stops
+  const [isMobileVisible, setIsMobileVisible] = useState(true);
+  const hideTimerRef = useRef(null);
+
+  // Auto-hide on initial mobile load after 1.5 seconds
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+      hideTimerRef.current = setTimeout(() => {
+        if (!isDraggingRef.current) {
+          setIsMobileVisible(false);
+        }
+      }, 1500);
+    }
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
 
   // In-memory vertical slide offset (resets back to 0 on page reload)
   const [offsetY, setOffsetY] = useState(0);
@@ -109,19 +123,6 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     }
 
     function updateScrollState() {
-      // Reveal notch on mobile when user scrolls; hide after 1 second of inactivity
-      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-        setIsMobileVisible(true);
-        if (mobileHideTimerRef.current) {
-          clearTimeout(mobileHideTimerRef.current);
-        }
-        mobileHideTimerRef.current = setTimeout(() => {
-          if (!isDraggingRef.current) {
-            setIsMobileVisible(false);
-          }
-        }, 1000);
-      }
-
       if (!isHome) return;
 
       const scrollPos = window.scrollY + window.innerHeight * 0.35;
@@ -145,6 +146,17 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
           updateScrollState();
           rafId = null;
         });
+      }
+
+      // Auto-hide mobile notch 1.5 seconds after scrolling stops
+      if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+        setIsMobileVisible(true);
+        if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = setTimeout(() => {
+          if (!isDraggingRef.current) {
+            setIsMobileVisible(false);
+          }
+        }, 1500);
       }
     }
 
@@ -173,9 +185,6 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
         try {
           attachedLenis.off('scroll', handleScroll);
         } catch (_) {}
-      }
-      if (mobileHideTimerRef.current) {
-        clearTimeout(mobileHideTimerRef.current);
       }
     };
   }, [currentRoute]);
@@ -212,6 +221,11 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
       return;
     }
 
+    if (isMobile) {
+      setIsMobileVisible(true);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    }
+
     isDraggingRef.current = true;
     startYRef.current = e.clientY;
     startOffsetRef.current = offsetY;
@@ -234,14 +248,14 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
         isDraggingRef.current = false;
         setIsDragging(false);
 
-        // When user finishes dragging on mobile, restart the 1s idle auto-hide timer
+        // When user finishes dragging on mobile, restart the 1.5s idle auto-hide timer
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-          if (mobileHideTimerRef.current) {
-            clearTimeout(mobileHideTimerRef.current);
+          if (hideTimerRef.current) {
+            clearTimeout(hideTimerRef.current);
           }
-          mobileHideTimerRef.current = setTimeout(() => {
+          hideTimerRef.current = setTimeout(() => {
             setIsMobileVisible(false);
-          }, 1000);
+          }, 1500);
         }
       }
     };
@@ -260,7 +274,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
   const scrollToTarget = (target) => {
     if (target === 0) {
       if (window.lenis) {
-        window.lenis.scrollTo(0, { duration: 1.1 });
+        window.lenis.scrollTo(0, { duration: 1.5 });
       } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
@@ -271,7 +285,7 @@ export default function RightScrollPills({ play, currentRoute = '/' }) {
     const el = selector ? document.querySelector(selector) : target;
 
     if (window.lenis && el) {
-      window.lenis.scrollTo(el, { duration: 1.1, offset: 0 });
+      window.lenis.scrollTo(el, { duration: 1.5, offset: 0 });
     } else if (el && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ behavior: 'smooth' });
     } else if (el) {

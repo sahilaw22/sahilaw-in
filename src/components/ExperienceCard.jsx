@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TechIcon } from './TechIcons.jsx';
 import './ExperienceSection.css';
 
 const parseDescription = (text) => {
@@ -250,6 +251,7 @@ export function ExperienceCard({
                 {skillsList.map((tech, idx) => {
                   const name = typeof tech === 'string' ? tech : tech.name;
                   const href = typeof tech === 'object' ? tech.href : null;
+                  const showIcons = experience.showSkillIcons !== false && experience.show_skill_icons !== false;
                   return href ? (
                     <a
                       key={idx}
@@ -259,11 +261,13 @@ export function ExperienceCard({
                       className="sleek-exp-tech-chip skill-inner-shadow"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      {showIcons && <span className="sleek-exp-skill-icon"><TechIcon name={name} size={13} /></span>}
                       <span>{name}</span>
                     </a>
                   ) : (
                     <span key={idx} className="sleek-exp-tech-chip skill-inner-shadow">
-                      {name}
+                      {showIcons && <span className="sleek-exp-skill-icon"><TechIcon name={name} size={13} /></span>}
+                      <span>{name}</span>
                     </span>
                   );
                 })}

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { PORTFOLIO_EMAIL, openGmailDirect, copyToClipboard } from '../lib/emailHelper.js';
 import { usePortfolioData } from '../data/usePortfolioData.js';
+import { getSocialIconSvg } from './SocialIcons.jsx';
+import TechText from './TechText';
 
 export default function ContactSection({ play }) {
   const [localTime, setLocalTime] = useState('');
   const [copied, setCopied] = useState(false);
-  const { meta } = usePortfolioData();
+  const [isHovered, setIsHovered] = useState(false);
+  const { meta, social_links } = usePortfolioData();
 
   const email = meta?.email || PORTFOLIO_EMAIL;
   const contactStatus = meta?.contact_status || 'OPEN TO PRODUCT DESIGN ROLES';
@@ -55,16 +58,54 @@ export default function ContactSection({ play }) {
   return (
     <section id="section-contact" className="portfolio-section portfolio-contact-section">
       <div className="contact-image-container">
-        {/* Category Header */}
-        <div className="contact-image-tag">
-          <span>CONTACT</span>
-        </div>
+        {/* Contact Header Block with Hover TechText Animation (Desktop only) */}
+        <div
+          className="contact-header-interactive-wrap cursor-target"
+          data-cursor-label="Interact"
+          onMouseEnter={() => {
+            if (typeof window !== 'undefined' && window.innerWidth > 768) {
+              setIsHovered(true);
+            }
+          }}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          {/* Category Header */}
+          <div className="contact-image-tag">
+            <span>CONTACT</span>
+          </div>
 
-        {/* Main Headline */}
-        <h2 className="contact-image-title">
-          <span className="contact-title-line-1">LET'S MAKE SOMETHING</span>
-          <span className="contact-title-line-2">FEEL RIGHT</span>
-        </h2>
+          {/* Main Headline */}
+          <div className="contact-title-interactive-wrap">
+            {/* Static Headline */}
+            <h2 className={`contact-image-title ${isHovered ? 'is-hovered' : ''}`}>
+              <span className="contact-title-line-1">LET'S BUILD</span>
+              <span className="contact-title-line-2">SOMETHING FEEL RIGHT</span>
+            </h2>
+
+            {/* TechText Canvas on Hover */}
+            <div
+              className={`contact-techtext-wrapper ${isHovered ? 'is-active' : ''}`}
+              aria-hidden={!isHovered}
+            >
+              <TechText
+                text="LET'S TALK"
+                fontFamily="'Share Tech', 'Share', 'Space Grotesk', sans-serif"
+                fontWeight={600}
+                fontSize={150}
+                align="left"
+                reveal="letter"
+                dashLength={4}
+                dashGap={2}
+                specks={15}
+                intro="none"
+                introDuration={2}
+                clickKick
+                guides={false}
+                color="#ffffff"
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Status Meta Items */}
         <div className="contact-image-meta">
@@ -147,46 +188,48 @@ export default function ContactSection({ play }) {
           </div>
         </div>
 
-        {/* Secondary Socials: 3D Mechanical Keycaps Row */}
+        {/* Secondary Socials: Transparent Icon Links Row */}
         <div className="contact-keycaps-row">
-          <a
-            href={linkedinUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="contact-keycap-btn cursor-target" data-cursor-label="LinkedIn" aria-label="LinkedIn"
-            onClick={() => play?.('click')}
-          >
-            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-              <rect x="2" y="9" width="4" height="12" />
-              <circle cx="4" cy="4" r="2" />
-            </svg>
-          </a>
-
-          <a
-            href={threadsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="contact-keycap-btn cursor-target" data-cursor-label="Threads" aria-label="Threads"
-            onClick={() => play?.('click')}
-          >
-            <svg aria-hidden="true" width="22" height="22" viewBox="-12 -12 346 400">
-              <path fill="currentColor" stroke="currentColor" strokeWidth="16" strokeLinejoin="round" d="M267.149,173.742c-.469-54.261-29.885-86.958-79.575-86.958-33.166,0-61.058,15.001-75.708,38.909l32.111,22.384c8.321-13.126,19.806-24.025,40.901-24.025,23.791,0,36.096,13.243,39.612,37.854-11.485-1.758-22.97-2.695-34.807-2.695-64.223,0-94.459,29.064-94.459,67.504,0,39.143,30.236,62.113,74.77,62.113,48.87,0,78.052-32.932,90.005-73.715,12.423,5.625,20.978,18.751,20.978,38.44,0,52.738-60.824,81.45-112.39,81.45-76.059,0-125.75-49.925-125.75-131.141,0-99.498,65.746-163.252,154.111-163.252,59.301,0,88.599,26.017,108.522,60.941l32.815-22.97C316.605,33.342,268.204.997,195.543.997,79.755.997,1,83.15,1,202.337c0,108.991,77.114,172.276,168.995,172.276,75.942,0,152.705-44.3,152.705-120.125,0-39.612-22.736-65.863-55.55-80.747ZM168.588,249.332c-16.759,0-31.525-7.969-31.525-22.619,0-23.087,19.362-35.187,46.064-35.187,12.423,0,23.439,1.758,32.345,4.922-3.75,34.453-24.843,52.884-46.884,52.884Z" />
-            </svg>
-          </a>
-
-          <a
-            href={githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="contact-keycap-btn cursor-target" data-cursor-label="GitHub" aria-label="GitHub"
-            onClick={() => play?.('click')}
-          >
-            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-              <path d="M9 18c-4.51 2-5-2-7-2" />
-            </svg>
-          </a>
+          {(Array.isArray(social_links) && social_links.length > 0
+            ? social_links.filter(s => s.is_published !== false && s.url)
+            : [
+                { id: 'social-github', platform: 'GitHub', url: githubUrl, icon: 'github' },
+                { id: 'social-linkedin', platform: 'LinkedIn', url: linkedinUrl, icon: 'linkedin' },
+                { id: 'social-threads', platform: 'Threads', url: threadsUrl, icon: 'threads' },
+              ]
+          )
+          .filter((s) => {
+            const p = (s.platform || '').toLowerCase();
+            return p !== 'x' && !p.includes('twitter') && p !== 'email' && !s.url?.startsWith('mailto:');
+          })
+          .map((s) => {
+            const isEmail = (s.platform || '').toLowerCase() === 'email' || s.url?.startsWith('mailto:');
+            return (
+              <a
+                key={s.id || s.platform}
+                href={s.url}
+                target={isEmail ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                className="scoot-btn-3d cursor-target"
+                data-cursor-label={s.platform}
+                aria-label={s.platform}
+                onClick={(e) => {
+                  e.currentTarget.blur();
+                  play?.('click');
+                  if (isEmail) {
+                    e.preventDefault();
+                    openGmailDirect(email);
+                  }
+                }}
+                onPointerUp={(e) => e.currentTarget.blur()}
+                onMouseLeave={(e) => e.currentTarget.blur()}
+                onTouchEnd={(e) => e.currentTarget.blur()}
+              >
+                {getSocialIconSvg(s.icon || s.platform)}
+                <span className="social-icon-tooltip" aria-hidden="true">{s.platform}</span>
+              </a>
+            );
+          })}
         </div>
 
         {/* Horizontal Technical Divider */}

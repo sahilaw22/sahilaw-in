@@ -3,7 +3,6 @@ import {
   normalizeText,
   detectConversationalIntent,
   selectAnswer,
-  stringSimilarity,
 } from './matchingEngine.js';
 import { INITIAL_KNOWLEDGE_ENTRIES, INITIAL_TEMPLATES, INITIAL_SETTINGS } from './knowledgeSeed.js';
 

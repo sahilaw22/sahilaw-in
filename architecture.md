@@ -83,6 +83,7 @@ Avara/
     │   ├── CertificationsSection.jsx # Certifications list with image preview modal and hover preview
     │   ├── ContactSection.jsx     # Email copy action, live clock, and direct reach links
     │   ├── DetailModal.jsx        # Project detail modal dialog with keyboard navigation
+    │   ├── EducationSection.css   # Education card layout and institution badge styles
     │   ├── EducationSection.jsx   # Academic history with degree badges
     │   ├── ErrorBoundary.jsx      # React error boundary fallback container
     │   ├── ExperienceCard.jsx     # Accordion card with role details & tech chips
@@ -92,6 +93,8 @@ Avara/
     │   ├── FeaturedProjectsSection.jsx # Pinned cascading card deck
     │   ├── GlassDistortionSVG.jsx # SVG filter definition for liquid glass effect
     │   ├── HeroHeader.jsx         # Hero greeting title, inline avatar, and rotating role badge
+    │   ├── ICanScrollSection.css  # 5-slot vertical rolling wheel viewport, gradient, and glow styling
+    │   ├── ICanScrollSection.jsx  # Capabilities action words wheel with smooth entrance/exit transitions
     │   ├── InteractiveAvatar.css  # Avatar sizing, lens clips, and pupil styles
     │   ├── InteractiveAvatar.jsx  # Spring-physics googly eye tracking and blink animation
     │   ├── LatticeLoader.jsx      # Procedural matrix loader for assistant queries
@@ -107,6 +110,8 @@ Avara/
     │   ├── SkillsSection.jsx      # Categorized skill badges
     │   ├── SocialIcons.jsx        # Social media vector links
     │   ├── TechIcons.jsx          # SVG dictionary for technology chips
+    │   ├── TechText.css           # Interactive canvas typography styling
+    │   ├── TechText.jsx           # Procedural dashed canvas typography component
     │   ├── TextRevealParagraph.jsx # Word-level scroll text reveal narrative
     │   └── ui/                    # Reusable interactive widgets
     │       ├── expandable-tabs.css # Navigation dock styling
@@ -161,6 +166,13 @@ Avara/
 - Blinking runs on a randomized interval (3.2s to 6.5s) with a 160ms symmetrical blink curve.
 - Listens to `visibilitychange` to suspend animation loops when the tab is hidden, preventing background CPU or battery drain.
 
+### Action Words Scroll Wheel (`ICanScrollSection.jsx`)
+- 5-slot vertical rolling wheel on desktop (>768px) with continuous cubic ease appear/fade transitions.
+- Displays the active center word, exactly 2 words above, and 2 words below in clear visibility; outer words fade smoothly to 0.00 opacity without abrupt pops.
+- Vivid reddish gradient (`linear-gradient(135deg, #ff3366 0%, #f43f5e 50%, #e11d48 100%)`) with drop-shadow glow across words.
+- Single-line word cycle animation along the X-axis on mobile (<=768px).
+- Action words list dynamically customizes from the Admin Dashboard and persists across SQLite and Supabase.
+
 ### Ribbon Cursor (`Ribbons.jsx`)
 - Uses WebGL2 shaders to render a fluid ribbon trail on desktop devices.
 - Strictly gated via `isDesktopPointer`: skips mounting entirely on mobile devices, touchscreens, and viewports `<= 820px`.
@@ -184,7 +196,7 @@ Avara/
 - Locks background window and body scroll while active, and automatically suppresses floating side navigation pills.
 
 ### Centralized Data Layer (`usePortfolioData.js`)
-- Multi-tier data hierarchy: local storage cache (`portfolio_content_cache_v13`) -> backend API (`/api/content`) -> canonical fallback (`portfolioData.jsx`).
+- Multi-tier data hierarchy: local storage cache (`portfolio_content_cache_v14`) -> backend API (`/api/portfolio-content`) -> canonical fallback (`portfolioData.jsx`).
 - Supports real-time Supabase remote synchronization when configured, with seamless offline degradation.
 - Uses window CustomEvents (`portfolio_data_updated`) for instantaneous cross-component and cross-tab UI synchronization upon any administrative update.
 
