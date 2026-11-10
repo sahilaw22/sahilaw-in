@@ -198,111 +198,111 @@ function assistantReply(question, pendingAuth = false) {
   // 1. GitHub specifically
   if (q.includes('github') || q.includes('repo') || q.includes('git ') || q === 'git') {
     return {
-      plainText: "You can explore Sahil's open-source projects and code repositories directly on GitHub (https://github.com/sahilaw22).",
-      formattedText: "You can explore Sahil's open-source projects and code repositories directly on [GitHub](https://github.com/sahilaw22).",
+      plainText: "You can explore my open-source projects and code repositories directly on GitHub (https://github.com/sahilaw22).",
+      formattedText: "You can explore my open-source projects and code repositories directly on [GitHub](https://github.com/sahilaw22).",
     };
   }
 
   // 2. LinkedIn specifically
   if (q.includes('linkedin')) {
     return {
-      plainText: "You can view Sahil's professional profile, experience, and recommendations on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a).",
-      formattedText: "You can view Sahil's professional profile, experience, and recommendations on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a).",
+      plainText: "You can view my professional profile, experience, and recommendations on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a).",
+      formattedText: "You can view my professional profile, experience, and recommendations on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a).",
     };
   }
 
   // 3. Contact / Email query
   if (q.includes('contact') || q.includes('email') || q.includes('reach') || q.includes('message') || q.includes('mail') || q.includes('freelance') || q.includes('touch')) {
     return {
-      plainText: "You can contact Sahil directly via email at sahilaw502@gmail.com for engineering roles, freelance inquiries, or product collaborations.\n\nYou can also connect with him on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a) or check his open-source work on GitHub (https://github.com/sahilaw22).",
-      formattedText: "You can contact Sahil directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com) for engineering roles, freelance inquiries, or product collaborations.\n\nYou can also connect with him on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a) or check his open-source work on [GitHub](https://github.com/sahilaw22).",
+      plainText: "You can reach me directly at sahilaw502@gmail.com for engineering roles, internships, or project collaborations.\n\nYou can also find me on LinkedIn (https://www.linkedin.com/in/sahil-a-057a0231a) and review my repositories on GitHub (https://github.com/sahilaw22).",
+      formattedText: "You can reach me directly at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com) for engineering roles, internships, or project collaborations.\n\nYou can also find me on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a) and review my repositories on [GitHub](https://github.com/sahilaw22).",
     };
   }
 
   // 4. Quick Prompt: "about my strongest skills" / skills / tech stack
   if (q.includes('skill') || q.includes('tech') || q.includes('stack') || q.includes('language') || q.includes('framework') || q.includes('tool')) {
     return {
-      plainText: "Sahil's core competencies center on React 18, TypeScript, Tailwind CSS, Next.js, and mobile development with Flutter and Dart. He builds responsive web interfaces with fluid GSAP animations and Web Audio API synthesis.\n\nHe also engineers intelligent systems including LLM agent workflows and Gemini API streaming interfaces. Review his verified credentials in his Resume (#/careers) or inspect code samples in Projects (#/projects).",
-      formattedText: "Sahil's core competencies center on **React 18**, **TypeScript**, **Tailwind CSS**, **Next.js**, and mobile development with **Flutter** and **Dart**. He builds responsive web interfaces with fluid GSAP animations and Web Audio API synthesis.\n\nHe also engineers intelligent systems including LLM agent workflows and Gemini API streaming interfaces. Review his verified credentials in his [Resume](#/careers) or inspect code samples in [Projects](#/projects).",
+      plainText: "My daily frontend stack is React 18, TypeScript, Tailwind CSS, and Next.js. On mobile, I build cross-platform apps using Flutter and Dart. I also build browser audio workstations with the Web Audio API and hook web interfaces into streaming LLM APIs.\n\nCheck out working examples in Projects (#/projects) or view my full coursework and credentials in my Resume (#/careers).",
+      formattedText: "My daily frontend stack is **React 18**, **TypeScript**, **Tailwind CSS**, and **Next.js**. On mobile, I build cross-platform apps using **Flutter** and **Dart**. I also build browser audio workstations with the Web Audio API and hook web interfaces into streaming LLM APIs.\n\nCheck out working examples in [Projects](#/projects) or view my full coursework and credentials in my [Resume](#/careers).",
     };
   }
 
   // 5. Quick Prompt: "how I build products" / build process
   if (q.includes('build') || q.includes('product') || q.includes('process') || q.includes('architecture') || q.includes('workflow')) {
     return {
-      plainText: "Sahil builds with intent and thinks in motion. He believes exceptional engineering begins with clarity, clean code structure, and tactile micro-feedback that makes digital tools feel alive.\n\nYou can see this philosophy in action throughout this site's interactive audio feedback, draggable physics elements, and inside the Projects showcase (#/projects).",
-      formattedText: "Sahil builds with intent and thinks in motion. He believes exceptional engineering begins with clarity, clean code structure, and tactile micro-feedback that makes digital tools feel alive.\n\nYou can see this philosophy in action throughout this site's interactive audio feedback, draggable physics elements, and inside the [Projects showcase](#/projects).",
+      plainText: "I design interfaces in Figma first to nail typography, layout hierarchy, and component states, then implement them cleanly in code with accessible keyboard navigation and fluid motion. I care about tactile feedback, fast load times, and keeping dependencies minimal.\n\nYou can test this directly in the interactive audio feedback on this site and inside the Projects showcase (#/projects).",
+      formattedText: "I design interfaces in Figma first to nail typography, layout hierarchy, and component states, then implement them cleanly in code with accessible keyboard navigation and fluid motion. I care about tactile feedback, fast load times, and keeping dependencies minimal.\n\nYou can test this directly in the interactive audio feedback on this site and inside the [Projects showcase](#/projects).",
     };
   }
 
   // 6. Quick Prompt: "about my projects" / projects / portfolio
   if (q.includes('project') || q.includes('portfolio') || q.includes('work') || q.includes('app')) {
     return {
-      plainText: "Sahil's highlighted work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key projects include this 3D audio-reactive portfolio, the browser-based Web Audio Synth, and the ConnectKit Theme for Web3 wallet onboarding.\n\nHe also developed Lurian AI for low-latency conversational streaming. Explore all interactive builds in Projects (#/projects) or browse the source code on GitHub (https://github.com/sahilaw22).",
-      formattedText: "Sahil's highlighted work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key projects include this 3D audio-reactive portfolio, the browser-based [Web Audio Synth](#/projects), and the [ConnectKit Theme](#/projects) for Web3 wallet onboarding.\n\nHe also developed [Lurian AI](#/chat) for low-latency conversational streaming. Explore all interactive builds in [Projects](#/projects) or browse the source code on [GitHub](https://github.com/sahilaw22).",
+      plainText: "My key builds include Sahil Recreation, an interactive portfolio with GSAP animations and Web Audio spatial sound; the browser-based Web Audio Synth; the ConnectKit Theme for Web3 wallet onboarding; and Lurian AI for conversational interactions.\n\nExplore all interactive builds in Projects (#/projects) or browse the source code on GitHub (https://github.com/sahilaw22).",
+      formattedText: "My key builds include [Sahil Recreation](#/projects), an interactive portfolio with GSAP animations and Web Audio spatial sound; the browser-based [Web Audio Synth](#/projects); the [ConnectKit Theme](#/projects) for Web3 wallet onboarding; and [Lurian AI](#/chat) for conversational interactions.\n\nExplore all interactive builds in [Projects](#/projects) or browse the source code on [GitHub](https://github.com/sahilaw22).",
     };
   }
 
   // 7. Quick Prompt: "why a team should hire me" / why hire / role / job
   if (q.includes('hire') || q.includes('why') || q.includes('team') || q.includes('role') || q.includes('job') || q.includes('join') || q.includes('candidate')) {
     return {
-      plainText: "A team should hire Sahil for three concrete strengths:\n\n1. Frontend Craft & Motion: Proven mastery of React 18, TypeScript, Tailwind CSS, and Flutter, translating Figma prototypes into fluid, accessible, and high-performance interfaces.\n2. Practical AI Engineering: Direct experience integrating Gemini APIs, LLM streaming pipelines, and agent workflows into consumer-facing web surfaces.\n3. Product Ownership & Execution: A track record across engineering and growth roles at FlyRank AI and Big Block Theory, focusing on measurable user impact rather than vanity code.\n\nInspect his interactive builds in Projects (#/projects) or email him at sahilaw502@gmail.com.",
-      formattedText: "A team should hire Sahil for three concrete strengths:\n\n1. **Frontend Craft & Motion**: Proven mastery of React 18, TypeScript, Tailwind CSS, and Flutter, translating Figma prototypes into fluid, accessible, and high-performance interfaces.\n2. **Practical AI Engineering**: Direct experience integrating Gemini APIs, LLM streaming pipelines, and agent workflows into consumer-facing web surfaces.\n3. **Product Ownership & Execution**: A track record across engineering and growth roles at FlyRank AI and Big Block Theory, focusing on measurable user impact rather than vanity code.\n\nInspect his interactive builds in [Projects](#/projects) or [email him directly](mailto:sahilaw502@gmail.com).",
+      plainText: "I bring three practical strengths to an engineering team:\n\n1. Frontend craft: I translate Figma designs into fast, accessible, keyboard-navigable React, Next.js, and Flutter code with clean state management.\n2. Applied AI integrations: I have real-world experience building low-latency LLM streaming interfaces, prompt pipelines, and deterministic conversational systems.\n3. Production execution: From frontend internships at FlyRank AI and BigTopSocial to open-source contributions, I focus on shipping working code that solves real problems.\n\nInspect my builds in Projects (#/projects) or contact me at sahilaw502@gmail.com.",
+      formattedText: "I bring three practical strengths to an engineering team:\n\n1. **Frontend craft**: I translate Figma designs into fast, accessible, keyboard-navigable React, Next.js, and Flutter code with clean state management.\n2. **Applied AI integrations**: I have real-world experience building low-latency LLM streaming interfaces, prompt pipelines, and deterministic conversational systems.\n3. **Production execution**: From frontend internships at FlyRank AI and BigTopSocial to open-source contributions, I focus on shipping working code that solves real problems.\n\nInspect my builds in [Projects](#/projects) or [contact me directly](mailto:sahilaw502@gmail.com).",
     };
   }
 
   // 8. Resume / Experience / Background / CV / Education
   if (q.includes('resume') || q.includes('experience') || q.includes('background') || q.includes('cv') || q.includes('education') || q.includes('career')) {
     return {
-      plainText: "You can review Sahil's complete career timeline, technical background, and education on his Resume (#/careers).",
-      formattedText: "You can review Sahil's complete career timeline, technical background, and education on his [Resume](#/careers).",
+      plainText: "You can review my complete career timeline, technical background, and education on my Resume (#/careers).",
+      formattedText: "You can review my complete career timeline, technical background, and education on my [Resume](#/careers).",
     };
   }
 
   // 9. Who is he / About him
   if (q.includes('who') || q.includes('about')) {
     return {
-      plainText: "Sahil is a frontend engineer focused on building performant, visually refined web applications featured in Projects (#/projects).",
-      formattedText: "Sahil is a frontend engineer focused on building performant, visually refined web applications featured in [Projects](#/projects).",
+      plainText: "I am a computer engineering student at GCET Jammu focusing on frontend development, UI design, and practical AI interfaces. Explore my work in Projects (#/projects).",
+      formattedText: "I am a computer engineering student at GCET Jammu focusing on frontend development, UI design, and practical AI interfaces. Explore my work in [Projects](#/projects).",
     };
   }
 
   // 10. Greetings: "hi", "hello", "hey", etc.
   if (/^(hi|hello|hey|heyy|yo|sup|greetings|good\s*(morning|afternoon|evening))\b/i.test(q) || q === 'hi' || q === 'hello' || q === 'hey') {
     return {
-      plainText: "Hello! I am Sahil's portfolio assistant, ready to help you explore his work, skills, and background in Projects (#/projects).",
-      formattedText: "Hello! I am Sahil's portfolio assistant, ready to help you explore his work, skills, and background in [Projects](#/projects).",
+      plainText: "Hi! I am Sahil. You can ask me about my projects, technical stack, work experience, or how to reach me directly in Projects (#/projects).",
+      formattedText: "Hi! I am Sahil. You can ask me about my [projects](#/projects), technical stack, work experience, or how to [reach me directly](mailto:sahilaw502@gmail.com).",
     };
   }
 
   // 11. Affirmations: "yes", "sure", "show me", etc.
   if (/^(yes|yeah|yep|yup|sure|definitely|absolutely|show me|tell me|go ahead|please do)\b/i.test(q) || q === 'yes' || q === 'sure' || q === 'yeah') {
     return {
-      plainText: "You can view all his interactive builds and web applications in Projects (#/projects).",
-      formattedText: "You can view all his interactive builds and web applications in [Projects](#/projects).",
+      plainText: "You can view all my interactive builds and web applications in Projects (#/projects).",
+      formattedText: "You can view all my interactive builds and web applications in [Projects](#/projects).",
     };
   }
 
   // 12. Acknowledgments: "ok", "thanks", "great", etc.
   if (/^(ok|okay|got it|cool|nice|great|awesome|perfect|sounds good|thanks|thank you|thx)\b/i.test(q) || q === 'ok' || q === 'okay' || q === 'thanks') {
     return {
-      plainText: "Glad to help! You can reach Sahil directly via email at sahilaw502@gmail.com.",
-      formattedText: "Glad to help! You can reach Sahil directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com).",
+      plainText: "Glad to help! You can reach me directly via email at sahilaw502@gmail.com.",
+      formattedText: "Glad to help! You can reach me directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com).",
     };
   }
 
   // 13. Negatives: "no", "nope", "not now"
   if (/^(no|nope|nah|not now|never mind|nothing)\b/i.test(q) || q === 'no' || q === 'nope') {
     return {
-      plainText: "Understood. I am here whenever you want to explore Sahil's work or check his Projects (#/projects).",
-      formattedText: "Understood. I am here whenever you want to explore Sahil's work or check his [Projects](#/projects).",
+      plainText: "Understood. I am here whenever you want to explore my work or check Projects (#/projects).",
+      formattedText: "Understood. I am here whenever you want to explore my work or check [Projects](#/projects).",
     };
   }
 
   // 14. Professional Fallback for unhandled / off-topic queries
   return {
-    plainText: "I am here specifically to provide information about Sahil, including his technical skills, background, and featured Projects (#/projects). Please feel free to ask about his work, experience, or contact details.",
-    formattedText: "I am here specifically to provide information about Sahil, including his technical skills, background, and featured [Projects](#/projects). Please feel free to ask about his work, experience, or contact details.",
+    plainText: "I focus on software engineering, my projects, skills, and background. Ask about my projects in Projects (#/projects) or check my career details in Resume (#/careers).",
+    formattedText: "I focus on software engineering, my projects, skills, and background. Ask about my [projects](#/projects) or check my career details in [Resume](#/careers).",
   };
 }
 

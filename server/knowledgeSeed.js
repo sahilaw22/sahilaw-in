@@ -23,55 +23,55 @@ export const INITIAL_TEMPLATES = [
     key: 'greeting',
     name: 'Greeting Response',
     template:
-      "Hey there! I am Sahil's portfolio assistant. Feel free to ask about his [featured projects](#/projects), technical stack, work experience, or how to [get in touch](mailto:sahilaw502@gmail.com).",
+      "Hi! I am Sahil. You can ask me about my [projects](#/projects), technical stack, work experience, or how to [reach me directly](mailto:sahilaw502@gmail.com).",
   },
   {
     key: 'thanks',
     name: 'Thanks Response',
     template:
-      "You are welcome! Let me know if you'd like to check out his [projects](#/projects) or review his [technical resume](#/careers).",
+      "You are welcome! Let me know if you want to look into my [projects](#/projects) or view my [resume](#/careers).",
   },
   {
     key: 'acknowledgement',
     name: 'Acknowledgement Response',
     template:
-      "Got it! Let me know if you would like to explore specific projects like the [Web Audio Synth](#/projects) or check out his [skills](#/careers).",
+      "Got it. Let me know if you want to explore the [Web Audio Synth](#/projects) or review my [technical stack](#/careers).",
   },
   {
     key: 'farewell',
     name: 'Farewell Response',
     template:
-      "Thanks for visiting Sahil's portfolio! Feel free to [reach out via email](mailto:sahilaw502@gmail.com) anytime. Have a great day!",
+      "Thanks for visiting! You can reach me anytime at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com). Have a great day.",
   },
   {
     key: 'help',
     name: 'Help & Capabilities',
     template:
-      "I am a deterministic portfolio assistant. You can ask me about Sahil's [projects](#/projects), his work with React and Flutter, his internship history, or his [contact details](mailto:sahilaw502@gmail.com).",
+      "You can ask me about my [projects](#/projects), React and Flutter engineering, internships, or [contact details](mailto:sahilaw502@gmail.com).",
   },
   {
     key: 'identity',
     name: 'Assistant Identity',
     template:
-      "I am Sahil's custom portfolio assistant. I run on deterministic rules and verified portfolio facts without relying on external generative LLM APIs.",
+      "I am Sahil's portfolio interface. I run on a deterministic matching engine using verified facts from this codebase without external generative model calls.",
   },
   {
     key: 'out_of_scope',
     name: 'Out of Scope Query',
     template:
-      "I focus specifically on Sahil's software engineering projects, technical skills, and experience. Feel free to ask about his [projects](#/projects) or review his [resume](#/careers)!",
+      "I focus on software engineering, my projects, skills, and background. Ask about my [projects](#/projects) or check my [resume](#/careers).",
   },
   {
     key: 'ambiguous',
     name: 'Ambiguous Question Clarification',
     template:
-      "Your question could refer to a few different areas. Could you clarify whether you're asking about a specific build like the [Web Audio Synth](#/projects), his skills, or his work experience?",
+      "Your question could refer to a few different areas. Are you looking for a specific project like the [Web Audio Synth](#/projects), my skills, or work experience?",
   },
   {
     key: 'fallback',
     name: 'Unanswered / Low Confidence Fallback',
     template:
-      "I don't have a verified answer for that yet, but I have logged your question for Sahil to review. In the meantime, feel free to explore his [projects](#/projects) or [email him directly](mailto:sahilaw502@gmail.com).",
+      "I do not have a verified answer for that topic yet. You can explore my [projects](#/projects), view my [skills](#/careers), or email me directly at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com).",
   },
 ];
 
@@ -93,7 +93,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['sahil', 'wani', 'who', 'about', 'intro', 'background', 'bio', 'student', 'engineer'],
     answer:
-      "Sahil Ahmed Wani is a Computer Science undergraduate working as a **Frontend AI Engineer** and **UI/UX Designer**. He focuses on pairing responsive web interfaces with intelligent agent systems.\n\nFeel free to explore his work in [Projects](#/projects), review his professional background on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a), or inspect his open-source code on [GitHub](https://github.com/sahilaw22).",
+      "I am a Computer Science undergraduate at GCET Jammu working as a frontend AI engineer and UI designer. I build responsive web and mobile interfaces using React, TypeScript, Tailwind CSS, and Flutter, connecting them to practical AI workflows and audio tools.\n\nYou can inspect my work in [Projects](#/projects), check my background on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a), or review my code on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'View Projects', url: '#/projects' },
       { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sahil-a-057a0231a' },
@@ -118,7 +118,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['philosophy', 'design', 'craft', 'build', 'approach', 'products', 'principles'],
     answer:
-      "Sahil builds with intent and thinks in motion. He believes exceptional engineering begins with clarity, clean code structure, and tactile micro-feedback that makes digital tools feel alive.\n\nYou can see this philosophy in action throughout this site's interactive audio feedback, draggable physics elements, and inside the [Projects showcase](#/projects).",
+      "I design interfaces in Figma first to nail typography, layout hierarchy, and component states, then implement them cleanly in code with accessible keyboard navigation and fluid motion. I care about tactile feedback, fast load times, and keeping dependencies minimal.\n\nYou can test this directly in the interactive audio feedback on this site and inside the [Projects showcase](#/projects).",
     links: [{ label: 'View Projects', url: '#/projects' }],
     related_entities: ['Frontend craft', 'Motion', 'Tactile feedback'],
   },
@@ -141,7 +141,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['hire', 'candidate', 'team', 'join', 'why', 'value', 'impact', 'skills', 'engineer'],
     answer:
-      "A team should hire Sahil for three concrete strengths:\n\n1. **Frontend Craft & Motion**: Proven mastery of React 18, TypeScript, Tailwind CSS, and Flutter, translating Figma prototypes into fluid, accessible, and high-performance interfaces.\n2. **Practical AI Engineering**: Direct experience integrating Gemini APIs, LLM streaming pipelines, and agent workflows into consumer-facing web surfaces.\n3. **Product Ownership & Execution**: A track record across engineering and growth roles at FlyRank AI and Big Block Theory, focusing on measurable user impact rather than vanity code.\n\nInspect his interactive builds in [Projects](#/projects) or [email him directly](mailto:sahilaw502@gmail.com).",
+      "I bring three practical strengths to an engineering team:\n\n1. Frontend craft: I translate Figma designs into fast, accessible, keyboard-navigable React, Next.js, and Flutter code with clean state management.\n2. Applied AI integrations: I have real-world experience building low-latency LLM streaming interfaces, prompt pipelines, and deterministic conversational systems.\n3. Production execution: From frontend internships at FlyRank AI and BigTopSocial to open-source contributions, I focus on shipping working code that solves real problems.\n\nInspect my builds in [Projects](#/projects) or contact me at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com).",
     links: [
       { label: 'View Resume', url: '#/careers' },
       { label: 'Email Sahil', url: 'mailto:sahilaw502@gmail.com' },
@@ -169,7 +169,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['projects', 'built', 'work', 'portfolio', 'showcase', 'apps', 'systems'],
     answer:
-      "Sahil's work spans interactive audio web apps, Web3 design systems, and frontend AI interfaces. Key highlights include [Sahil Recreation](#/projects), his 3D audio-reactive portfolio engineered with React 18, GSAP, and Web Audio, alongside the browser-based [Web Audio Synth](#/projects).\n\nHe has also developed the [ConnectKit Theme](#/projects) for Web3 wallet onboarding and built [Lurian AI](#/chat) for streaming conversational interfaces. Explore the full interactive gallery in [Projects](#/projects) or browse his code on [GitHub](https://github.com/sahilaw22).",
+      "My key builds include [Sahil Recreation](#/projects), an interactive portfolio with GSAP animations and Web Audio spatial sound; the [Web Audio Synth](#/projects), a native multi-oscillator browser synthesizer with real-time canvas waveforms; the [ConnectKit Theme](#/projects), an accessible Web3 wallet design system; and [Lurian AI](#/chat), a conversational assistant built on deterministic matching.\n\nExplore all builds in [Projects](#/projects) or browse the source repositories on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'View Projects', url: '#/projects' },
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
@@ -192,7 +192,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['audio', 'synth', 'synthesizer', 'web audio', 'oscillator', 'canvas', 'music', 'sound', 'waveform'],
     answer:
-      "The **Web Audio Synth** is a fully browser-based audio workstation built natively with the Web Audio API without external audio libraries. Features include multi-oscillator synthesis (sine, saw, square waves), a low-pass filter with resonance control, and an ADSR envelope.\n\nIt also includes touch-friendly hardware knobs and a real-time waveform visualizer rendered on an HTML Canvas. You can inspect the project in [Projects](#/projects) or check the code on [GitHub](https://github.com/sahilaw22).",
+      "I built the **Web Audio Synth** as a pure browser-based audio workstation using only the native Web Audio API and HTML5 Canvas, without third-party audio packages. It features multi-oscillator synthesis (sine, saw, square waves), low-pass filter resonance control, ADSR envelopes, and an interactive waveform visualizer.\n\nTest the synthesizer in [Projects](#/projects) or inspect the implementation on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'Synth Showcase', url: '#/projects' },
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
@@ -212,7 +212,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['recreation', 'portfolio', 'site', 'website', 'built', 'audio engine', 'gsap', 'sound'],
     answer:
-      "**Sahil Recreation** is this active portfolio experience. It was engineered from scratch using React 18, GSAP 3, and the Web Audio API, featuring spatially aware ambient audio feedback and physics-based draggable brand logos.\n\nIt also incorporates a 3D card carousel, a matrix code background canvas, and this zero-dependency rule-based assistant. Explore all project cards in [Projects](#/projects).",
+      "**Sahil Recreation** is this portfolio experience. I engineered it from scratch using React 18, GSAP 3, and the Web Audio API, featuring spatial ambient audio feedback and physics-based draggable brand logos.\n\nIt also incorporates a 3D card carousel, a matrix code background canvas, and this zero-dependency deterministic assistant. Explore all project cards in [Projects](#/projects).",
     links: [{ label: 'View Projects', url: '#/projects' }],
     related_entities: ['React 18', 'GSAP 3', 'Web Audio API', 'Vite'],
   },
@@ -228,7 +228,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['connectkit', 'web3', 'wallet', 'crypto', 'theme', 'storybook', 'modal'],
     answer:
-      "**ConnectKit Theme** is a comprehensive design system and component library for Web3 wallet connection flows. Built on top of ConnectKit, it includes animated modal transitions and responsive dark/light mode support.\n\nIt features reusable React components for wallet selection, balance display, network switching, and transaction confirmations documented with Storybook. Check it out in [Projects](#/projects).",
+      "**ConnectKit Theme** is a design system and component library for Web3 wallet connection flows. Built on top of ConnectKit, it includes animated modal transitions and responsive dark and light mode support.\n\nIt features reusable React components for wallet selection, balance display, network switching, and transaction confirmations documented with Storybook. Check it out in [Projects](#/projects).",
     links: [{ label: 'View Projects', url: '#/projects' }],
     related_entities: ['ConnectKit', 'Figma', 'Storybook', 'Framer Motion', 'TypeScript'],
   },
@@ -244,7 +244,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['lurian', 'ai', 'assistant', 'companion', 'conversational', 'edge'],
     answer:
-      "**Lurian AI** is an intelligent conversational companion designed to help visitors explore case studies and architectural decisions. It was built using React 18, TypeScript, and serverless edge functions for low-latency streaming responses.\n\nYou can test the full-page conversation interface at [Chat](#/chat) or review the implementation on [GitHub](https://github.com/sahilaw22).",
+      "**Lurian AI** is this conversational assistant. I engineered it with React 18, TypeScript, and a deterministic rule-based matching engine that runs in the browser and on serverless endpoints with zero hallucinations and zero external API dependencies.\n\nYou can explore case studies here in [Chat](#/chat) or view the codebase on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'Open Chat', url: '#/chat' },
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
@@ -273,7 +273,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['skills', 'technologies', 'tech', 'stack', 'languages', 'frameworks', 'tools'],
     answer:
-      "Sahil specializes in modern web development and cross-platform mobile apps. His daily toolkit centers on **React 18**, **TypeScript**, **Next.js**, and **Tailwind CSS**, alongside mobile engineering with **Flutter** and **Dart**.\n\nHe also builds intelligent agent workflows with the Gemini API and constructs interactive audio systems with the Web Audio API. Explore live code examples in [Projects](#/projects) or view his full skill breakdown in [Resume](#/careers).",
+      "My daily frontend stack is React 18, TypeScript, Tailwind CSS, and Next.js. On mobile, I build cross-platform apps using Flutter and Dart. I also build browser audio workstations with the Web Audio API and hook web interfaces into streaming LLM APIs.\n\nCheck out working examples in [Projects](#/projects) or view my full coursework and credentials in my [Resume](#/careers).",
     links: [
       { label: 'View Projects', url: '#/projects' },
       { label: 'View Resume', url: '#/careers' },
@@ -293,7 +293,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['react', 'react.js', 'reactjs', 'frontend', 'hooks'],
     answer:
-      "Yes, React is Sahil's primary frontend framework. He works with React 18, custom hooks, performance profiling, lazy loading, and modern component design systems.\n\nHe applied React professionally during his frontend AI internship at FlyRank AI and built this entire portfolio with React 18. You can inspect live builds in [Projects](#/projects) or check his code on [GitHub](https://github.com/sahilaw22).",
+      "Yes, React is my primary frontend framework. I work with React 18, custom hooks, performance profiling, lazy loading, and modern component systems.\n\nI applied React professionally during my frontend AI internship at FlyRank AI and built this entire portfolio with React 18. You can inspect live builds in [Projects](#/projects) or check my code on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'View Projects', url: '#/projects' },
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
@@ -313,7 +313,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['flutter', 'dart', 'mobile', 'android', 'app development', 'ios'],
     answer:
-      "Yes, Sahil develops cross-platform mobile applications using Flutter and Dart. He focuses on responsive layouts, clean state management, native performance, and translating Figma prototypes into fluid apps.\n\nHe is currently preparing his mobile application builds for Google Play Store release. You can read more about his mobile background in [Resume](#/careers).",
+      "Yes, I develop cross-platform mobile applications using Flutter and Dart. I focus on responsive layouts, clean state management, native performance, and translating Figma prototypes into fluid apps.\n\nI am currently preparing mobile application builds for Google Play Store release. You can read more about my mobile background in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Flutter', 'Dart', 'Mobile Development', 'Figma'],
   },
@@ -331,7 +331,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['ai', 'artificial intelligence', 'llm', 'agents', 'gemini', 'rag', 'prompt engineering', 'python'],
     answer:
-      "Sahil works actively at the intersection of frontend craft and AI engineering. His competencies include building LLM agent workflows, RAG architectures, prompt engineering, and integrating the Gemini API for streaming model outputs.\n\nHe completed Google and Kaggle's AI Agents Intensive course and built real-time streaming interfaces at FlyRank AI. You can review his credentials in [Resume](#/careers).",
+      "I work actively at the intersection of frontend craft and AI engineering. My experience includes building LLM agent workflows, RAG architectures, prompt engineering, and integrating the Gemini API for streaming model outputs.\n\nI completed Google and Kaggle's AI Agents Intensive course and built real-time streaming interfaces at FlyRank AI. You can review my credentials in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['LLM Agents', 'Gemini API', 'Prompt Engineering', 'RAG'],
   },
@@ -351,7 +351,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['experience', 'work', 'internships', 'jobs', 'roles', 'companies', 'employment'],
     answer:
-      "Sahil has completed multiple specialized engineering and growth roles. Most recently, he interned at **FlyRank AI** building streaming LLM interfaces with React and Next.js, and currently serves as a Reddit Growth & Research Intern at **Big Block Theory**.\n\nPreviously, he worked with **Perplexity** as a Campus Partner leading developer adoption workshops. You can explore his complete career timeline in his [Interactive Resume](#/careers).",
+      "I have held engineering and growth roles across multiple organizations: as a Web Developer Intern at **BigTopSocial** deploying production Next.js sites; as a Frontend AI Intern at **FlyRank AI** building streaming LLM interfaces; as a Frontend Developer Intern at **Lamp Hub** building web quiz systems; and as a Reddit Growth & Research Intern at **Big Block Theory**.\n\nI also served as a Campus Partner for **Perplexity**. View my full timeline in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Big Block Theory', 'FlyRank AI', 'Perplexity'],
   },
@@ -366,7 +366,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['big block theory', 'reddit', 'growth', 'research', 'analytics'],
     answer:
-      "At **Big Block Theory** (JUL 2026 - PRESENT), Sahil serves as a Reddit Growth & Research Intern. He analyzes user behavior and platform engagement to develop data-driven content formats that drive organic user acquisition.\n\nHe works closely with cross-functional product teams to scale user retention. Learn more in his [Resume](#/careers).",
+      "At **Big Block Theory** (JUL 2026 - PRESENT), I serve as a Reddit Growth & Research Intern. I analyze user behavior and platform engagement to develop data-driven content formats that support organic user acquisition.\n\nI work closely with cross-functional product teams to scale user retention. Learn more in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Big Block Theory', 'Growth Strategy', 'Reddit Analytics'],
   },
@@ -381,7 +381,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['flyrank', 'flyrank ai', 'frontend ai', 'streaming', 'llm', 'ranking'],
     answer:
-      "At **FlyRank AI** (JUL 2026 - SEP 2026), Sahil worked as a Frontend AI Intern. He engineered responsive interfaces for AI-driven ranking tools using React, Next.js, TypeScript, and Tailwind CSS.\n\nHis primary contribution was designing real-time streaming chat surfaces and latency-optimized search dashboards. Read more in his [Resume](#/careers).",
+      "At **FlyRank AI** (JUL 2026 - SEP 2026), I worked as a Frontend AI Intern. I engineered responsive interfaces for AI-driven ranking tools using React, Next.js, TypeScript, and Tailwind CSS.\n\nMy primary contribution was designing real-time streaming chat surfaces and latency-optimized search dashboards. Read more in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['FlyRank AI', 'React', 'Next.js', 'LLM Streaming'],
   },
@@ -396,7 +396,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['perplexity', 'perplexity ai', 'campus partner', 'ambassador', 'workshops'],
     answer:
-      "At **Perplexity** (SEP 2025 - NOV 2025), Sahil served as a Campus Partner. He spearheaded AI awareness initiatives and organized hands-on developer workshops demonstrating workflow optimization with Perplexity Pro.\n\nHis role focused on helping students and developers integrate AI search engines into their research workflows. Learn more in his [Resume](#/careers).",
+      "At **Perplexity** (SEP 2025 - NOV 2025), I served as a Campus Partner. I led AI awareness sessions and organized hands-on developer workshops demonstrating workflow optimization with Perplexity Pro.\n\nMy role focused on helping students and developers integrate AI search tools into their research workflows. Learn more in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Perplexity', 'AI Evangelism', 'Perplexity Pro'],
   },
@@ -416,7 +416,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['education', 'college', 'gcet', 'jammu', 'degree', 'cse', 'computer science', 'btech'],
     answer:
-      "Sahil is currently a 3rd-year undergraduate pursuing a **Bachelor of Technology (B.Tech) in Computer Science & Engineering** at GCET Jammu (Government College of Engineering and Technology), expected to graduate in 2027.\n\nHis coursework emphasizes Data Structures, Algorithms, Database Systems, Computer Networks, and Software Engineering. Review his academic details in [Resume](#/careers).",
+      "I am an undergraduate student pursuing my **B.Tech in Computer Science and Engineering** at GCET Jammu (Government College of Engineering and Technology), batch of 2024 to 2028.\n\nMy core studies cover Data Structures and Algorithms, Database Management Systems, Operating Systems, Computer Networks, and Object-Oriented Programming. Review my academic details in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['GCET Jammu', 'Computer Science & Engineering', 'B.Tech'],
   },
@@ -432,7 +432,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['certifications', 'credentials', 'badges', 'courses', 'google', 'kaggle'],
     answer:
-      "Sahil holds several verified technical credentials, notably the **AI Agents Intensive** certification issued by Google and Kaggle.\n\nHe has also completed certifications in modern frontend architecture and mobile development. Check out the verified links in his [Resume](#/careers).",
+      "I hold several verified technical credentials, notably the **AI Agents Intensive** certification issued by Google and Kaggle.\n\nI have also completed certifications in modern frontend architecture and cloud computing from IBM and HP LIFE. Check out the verified links in my [Resume](#/careers).",
     links: [{ label: 'View Resume', url: '#/careers' }],
     related_entities: ['Google', 'Kaggle', 'AI Agents Intensive'],
   },
@@ -455,7 +455,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['resume', 'cv', 'career', 'timeline', 'credentials', 'experience', 'pdf'],
     answer:
-      "You can review Sahil's complete career timeline, technical abilities, and education on his [Resume page](#/careers).\n\nIt features comprehensive details on his engineering internships, academic milestones at GCET Jammu, and verified credentials. You can also [reach him via email](mailto:sahilaw502@gmail.com) for a PDF copy.",
+      "You can review my complete career timeline, technical abilities, and education on my [Resume page](#/careers).\n\nIt features comprehensive details on my engineering internships, academic milestones at GCET Jammu, and verified credentials. You can also [reach me via email](mailto:sahilaw502@gmail.com) for a PDF copy.",
     links: [
       { label: 'View Resume', url: '#/careers' },
       { label: 'Email Sahil', url: 'mailto:sahilaw502@gmail.com' },
@@ -482,7 +482,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['contact', 'email', 'reach', 'message', 'hire', 'touch', 'gmail', 'collaborate'],
     answer:
-      "You can contact Sahil directly via email at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com) for engineering roles, freelance inquiries, or product collaborations.\n\nYou can also connect with him on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a) or explore his open-source work on [GitHub](https://github.com/sahilaw22).",
+      "You can reach me directly at [sahilaw502@gmail.com](mailto:sahilaw502@gmail.com) for engineering roles, internships, or project collaborations.\n\nYou can also find me on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a) and review my repositories on [GitHub](https://github.com/sahilaw22).",
     links: [
       { label: 'Email Sahil', url: 'mailto:sahilaw502@gmail.com' },
       { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sahil-a-057a0231a' },
@@ -503,7 +503,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['available', 'hiring', 'work', 'job', 'internship', 'freelance', 'roles', 'open to work'],
     answer:
-      "Yes! Sahil is actively open to **Frontend AI Engineering**, **Product Design**, and **Mobile App Development** roles and high-impact internships.\n\nHe is ready to contribute to ambitious engineering teams. Feel free to [send him an email](mailto:sahilaw502@gmail.com) or review his [Resume](#/careers).",
+      "Yes, I am actively open to **Frontend AI Engineering**, **Product Design**, and **Mobile App Development** roles and internships.\n\nI am ready to contribute to ambitious engineering teams. You can [send me an email](mailto:sahilaw502@gmail.com) or review my [Resume](#/careers).",
     links: [
       { label: 'Send Email', url: 'mailto:sahilaw502@gmail.com' },
       { label: 'View Resume', url: '#/careers' },
@@ -522,7 +522,7 @@ export const INITIAL_KNOWLEDGE_ENTRIES = [
     ],
     keywords: ['social', 'links', 'github', 'linkedin', 'twitter', 'profiles', 'online'],
     answer:
-      "You can find Sahil across key developer platforms. Review his code and repositories on [GitHub](https://github.com/sahilaw22), or connect with him on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a).\n\nFor direct inquiries, you can always reach him via [email](mailto:sahilaw502@gmail.com).",
+      "You can find my work across key developer platforms. Review my code and repositories on [GitHub](https://github.com/sahilaw22), or connect with me on [LinkedIn](https://www.linkedin.com/in/sahil-a-057a0231a).\n\nFor direct inquiries, you can always reach me via [email](mailto:sahilaw502@gmail.com).",
     links: [
       { label: 'GitHub', url: 'https://github.com/sahilaw22' },
       { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sahil-a-057a0231a' },
